@@ -217,6 +217,34 @@ Have you implemented this approach? I'd love to hear your results.
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Production</h1>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Production Pipeline Coming Soon</h3>
+              <p className="text-gray-600">Content workflow management and review system</p>
+            </div>
+          </div>
+        )
+      
+      case 'plan':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Content Calendar</h1>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar Coming Soon</h3>
+              <p className="text-gray-600">Schedule and plan your content strategy</p>
+            </div>
+          </div>
+        )
+      
+      case 'analytics':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics</h1>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BarChart className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Coming Soon</h3>
@@ -602,31 +630,3 @@ Have you implemented this approach? I'd love to hear your results.
     </div>
   )
 }
-                <BarChart3 className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Production Pipeline Coming Soon</h3>
-              <p className="text-gray-600">Content workflow management and review system</p>
-            </div>
-          </div>
-        )
-      
-      case 'plan':
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Content Calendar</h1>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar Coming Soon</h3>
-              <p className="text-gray-600">Schedule and plan your content strategy</p>
-            </div>
-          </div>
-        )
-      
-      case 'analytics':
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics</h1>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
