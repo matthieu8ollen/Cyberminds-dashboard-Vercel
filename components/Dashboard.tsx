@@ -14,7 +14,7 @@ import {
 } from '../lib/supabase'
 import {
   LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp,
-  Copy, Save, Edit, XCircle, ChevronDown, Plus, Filter, Clock, Tag, Search
+  Copy, Save, Edit, XCircle, ChevronDown, Plus, Filter, Clock, Tag, Search, Bell // Ensure Bell is imported
 } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import LinkedInPostPreview from './LinkedInPostPreview' // Import the new component
@@ -46,17 +46,38 @@ export default function Dashboard() {
   const [tone, setTone] = useState<ToneType>('insightful_cfo')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null) // Ref for profile menu for click outside detection
+  const editorRef = useRef<HTMLDivElement>(null); // Ref for the contentEditable div
 
-  // State for content ideas
+  // State for content ideas (from IdeasPage)
   const [contentIdeas, setContentIdeas] = useState<ContentIdea[]>([])
   const [ideasLoading, setIdeasLoading] = useState(false)
   const [ideaFilter, setIdeaFilter] = useState<string>('all')
   const [ideaCategoryFilter, setIdeaCategoryFilter] = useState<string>('all')
   const [ideaSearchTerm, setIdeaSearchTerm] = useState<string>('')
 
-  // State for content calendar
+  // State for content calendar (from Plan page)
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([]) // Use 'any' for now, will define type later
   const [calendarLoading, setCalendarLoading] = useState(false)
+
+  // State for trending topics (for the right sidebar in generator)
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
+  const [trendingTopicsLoading, setTrendingTopicsLoading] = useState(true)
+
+  // Fetch trending topics on component mount
+  useEffect(() => {
+    const fetchTopics = async () => {
+      setTrendingTopicsLoading(true)
+      const { data, error } = await getTrendingTopics()
+      if (error) {
+        console.error('Error fetching trending topics:', error)
+      } else {
+        setTrendingTopics(data || [])
+      }
+      setTrendingTopicsLoading(false)
+    }
+    fetchTopics()
+  }, [])
+
 
   // Dummy data for content types and tones
   const contentTypes = [
@@ -181,10 +202,10 @@ export default function Dashboard() {
       }
       await saveGeneratedContent(newContent)
       // Optionally, refresh saved content list or show success message
-      console.log('Content saved successfully!')
+      showCustomModal('Content saved successfully!', null);
     } catch (error) {
       console.error('Failed to save content:', error)
-      // Show error message to user
+      showCustomModal('Failed to save content. Please try again.', null);
     } finally {
       setIsGenerating(false)
     }
@@ -199,8 +220,14 @@ export default function Dashboard() {
     tempTextArea.select();
     document.execCommand('copy'); // Deprecated but widely supported for iframes
     document.body.removeChild(tempTextArea);
-    // You might want to add a small visual feedback here (e.g., "Copied!")
-    console.log('Content copied to clipboard!');
+    showCustomModal('Content copied to clipboard!', null);
+  };
+
+  // Handle changes in contentEditable div
+  const handleEditorChange = () => {
+    if (editorRef.current) {
+      setSelectedDraftContent(editorRef.current.innerHTML);
+    }
   };
 
   // Handle clicking outside the profile menu to close it
@@ -246,9 +273,9 @@ export default function Dashboard() {
     switch (activePage) {
       case 'generator':
         return (
-          <div className="flex flex-col lg:flex-row gap-6 p-6">
+          <div className="flex flex-col lg:flex-row gap-6 p-6 min-h-[calc(100vh-80px)]"> {/* Adjusted min-height */}
             {/* Left Pane: Content Generation Form & Editor */}
-            <div className="lg:w-1/2 bg-white rounded-xl shadow-lg p-6 flex flex-col">
+            <div className="lg:w-3/5 bg-white rounded-xl shadow-lg p-6 flex flex-col"> {/* Adjusted width */}
               <h2 className="text-2xl font-bold text-gray-800 mb-6">AI Content Generator</h2>
 
               {/* Content Type Selector */}
@@ -343,6 +370,10 @@ export default function Dashboard() {
                         onClick={() => {
                           setSelectedDraftType(draft.type);
                           setSelectedDraftContent(draft.content);
+                          // Update contentEditable div directly
+                          if (editorRef.current) {
+                            editorRef.current.innerHTML = draft.content;
+                          }
                         }}
                         className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                                     ${selectedDraftType === draft.type
@@ -355,18 +386,19 @@ export default function Dashboard() {
                     ))}
                   </div>
 
-                  {/* Rich Text Editor Placeholder */}
+                  {/* Rich Text Editor (contentEditable div) */}
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[200px] mb-4">
                     <h4 className="font-semibold text-gray-800 mb-2">{selectedDraftTitle}</h4>
-                    {/* This textarea is a placeholder for a rich text editor */}
-                    <textarea
-                      className="w-full h-48 bg-transparent text-gray-800 focus:outline-none resize-none"
-                      value={selectedDraftContent.replace(/<[^>]*>/g, '')} // Remove HTML tags for simple textarea display
-                      onChange={(e) => setSelectedDraftContent(e.target.value)}
-                      placeholder="Your generated content will appear here..."
-                    ></textarea>
+                    <div
+                      ref={editorRef}
+                      contentEditable={true}
+                      className="w-full h-48 bg-transparent text-gray-800 focus:outline-none overflow-y-auto"
+                      dangerouslySetInnerHTML={{ __html: selectedDraftContent }}
+                      onInput={handleEditorChange} // Use onInput for real-time updates
+                    ></div>
                     <p className="text-right text-xs text-gray-500 mt-2">
-                      {selectedDraftContent.replace(/<[^>]*>/g, '').length} characters
+                      {/* Calculate character count from plain text content */}
+                      {editorRef.current?.textContent?.length || 0} characters
                     </p>
                   </div>
 
@@ -389,6 +421,7 @@ export default function Dashboard() {
                       Copy
                     </button>
                     {/* Add an Edit button if a full rich text editor is integrated */}
+                    {/* For now, the contentEditable div is the "editor" */}
                     {/* <button className="flex items-center bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition">
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
@@ -398,56 +431,104 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Right Pane: LinkedIn Post Preview */}
-            <div className="lg:w-1/2 flex flex-col items-center justify-center p-4 lg:p-0">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">LinkedIn Post Preview</h3>
-              {selectedDraftContent ? (
-                <LinkedInPostPreview
-                  content={selectedDraftContent}
-                  title={selectedDraftTitle}
-                  authorName={user?.email?.split('@')[0] || 'CyberMinds User'}
-                  authorTitle={profile?.role || 'Finance Professional'}
-                  // You can add a dynamic profile picture URL here if available in user profile
-                  // profilePicUrl={profile?.profile_pic_url}
-                />
-              ) : (
-                <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500 border border-gray-200 w-full max-w-xl mx-auto">
-                  <Rss className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Generate content to see a live LinkedIn preview here!</p>
-                </div>
-              )}
+            {/* Right Pane: LinkedIn Post Preview & Dashboard Summary */}
+            <div className="lg:w-2/5 flex flex-col gap-6 p-4 lg:p-0"> {/* Adjusted width */}
+              {/* LinkedIn Post Preview */}
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">LinkedIn Post Preview</h3>
+                {selectedDraftContent ? (
+                  <LinkedInPostPreview
+                    content={selectedDraftContent}
+                    title={selectedDraftTitle}
+                    authorName={user?.email?.split('@')[0] || 'CyberMinds User'}
+                    authorTitle={profile?.role || 'Finance Professional'}
+                    // You can add a dynamic profile picture URL here if available in user profile
+                    // profilePicUrl={profile?.profile_pic_url}
+                  />
+                ) : (
+                  <div className="bg-white rounded-lg p-8 text-center text-gray-500 w-full mx-auto">
+                    <Rss className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Generate content to see a live LinkedIn preview here!</p>
+                  </div>
+                )}
 
-              {/* Action Buttons for Posting/Scheduling */}
-              {selectedDraftContent && (
-                <div className="flex space-x-4 mt-6">
-                  <button
-                    onClick={() => showCustomModal('Are you sure you want to schedule this post?', () => console.log('Post Scheduled!'))}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors duration-300 flex items-center"
-                  >
-                    <Calendar className="w-5 h-5 mr-2" />
-                    Schedule Post
-                  </button>
-                  <button
-                    onClick={() => showCustomModal('Are you sure you want to post this now?', () => console.log('Post Now!'))}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-300 flex items-center"
-                  >
-                    <Zap className="w-5 h-5 mr-2" />
-                    Post Now
-                  </button>
+                {/* Action Buttons for Posting/Scheduling */}
+                {selectedDraftContent && (
+                  <div className="flex space-x-4 mt-6 justify-center">
+                    <button
+                      onClick={() => showCustomModal('Are you sure you want to schedule this post?', () => console.log('Post Scheduled!'))}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors duration-300 flex items-center text-sm"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Schedule
+                    </button>
+                    <button
+                      onClick={() => showCustomModal('Are you sure you want to post this now?', () => console.log('Post Now!'))}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-300 flex items-center text-sm"
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      Post Now
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Usage Statistics (Mock Data for now) */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Your Usage This Month</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center justify-center">
+                    <p className="text-2xl font-bold text-blue-700">{profile?.posts_generated_this_month || 0}</p>
+                    <p className="text-blue-600 text-sm">Posts Generated</p>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded-lg flex flex-col items-center justify-center">
+                    <p className="text-2xl font-bold text-green-700">{profile?.posts_saved_this_month || 0}</p>
+                    <p className="text-green-600 text-sm">Posts Saved</p>
+                  </div>
                 </div>
-              )}
+                <p className="text-sm text-gray-600 mt-4 text-center">
+                  You have {profile?.posts_remaining !== undefined ? profile.posts_remaining : 'N/A'} posts remaining this month.
+                </p>
+              </div>
+
+              {/* Trending in Finance */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Trending in Finance</h3>
+                {trendingTopicsLoading ? (
+                  <div className="flex items-center justify-center text-gray-500">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-2"></div>
+                    Loading trends...
+                  </div>
+                ) : trendingTopics.length > 0 ? (
+                  <ul className="space-y-3">
+                    {trendingTopics.map((topic) => (
+                      <li key={topic.id} className="flex items-start">
+                        <TrendingUp className="w-4 h-4 text-indigo-500 mr-2 flex-shrink-0 mt-1" />
+                        <div>
+                          <p className="font-medium text-gray-800 text-sm">{topic.topic}</p>
+                          <p className="text-gray-600 text-xs">{topic.description}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm text-center">No trending topics available.</p>
+                )}
+              </div>
             </div>
           </div>
         )
       case 'ideas':
         return <IdeasPage onWritePost={(idea) => {
-          // This function needs to be updated to handle setting the idea content
-          // into the main generator's selectedDraftContent and selectedDraftTitle
           setActivePage('generator'); // Switch to generator page
-          // For now, we'll just set the title and a placeholder content
           setSelectedDraftTitle(idea.title);
-          setSelectedDraftContent(`<p>This is a draft for the idea: <strong>${idea.title}</strong></p><p>${idea.description || ''}</p><p><em>(Content will be generated by AI)</em></p>`);
+          // Set content to a basic HTML structure for the contentEditable div
+          setSelectedDraftContent(`<p><strong>${idea.title}</strong></p><p>${idea.description || ''}</p><p><em>(AI-generated content will replace this placeholder.)</em></p>`);
           setGeneratedDrafts([]); // Clear previous drafts
+          // Ensure the contentEditable div is updated if it's already rendered
+          if (editorRef.current) {
+            editorRef.current.innerHTML = `<p><strong>${idea.title}</strong></p><p>${idea.description || ''}</p><p><em>(AI-generated content will replace this placeholder.)</em></p>`;
+          }
         }} />
       case 'production':
         return (
