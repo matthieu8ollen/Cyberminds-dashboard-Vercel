@@ -12,9 +12,12 @@ import {
 } from '../lib/supabase'
 import { LogOut, Settings, BarChart3, Zap, User } from 'lucide-react'
 
+type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
+type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
+
 export default function Dashboard() {
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const [activeTab, setActiveTab] = useState('framework')
+  const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedPosts, setGeneratedPosts] = useState<string[]>([])
   const [showGenerated, setShowGenerated] = useState(false)
@@ -26,7 +29,7 @@ export default function Dashboard() {
   const [formData, setFormData] = useState({
     topic: '',
     points: '5',
-    tone: profile?.preferred_tone || 'insightful_cfo',
+    tone: (profile?.preferred_tone || 'insightful_cfo') as ToneType,
     context: ''
   })
 
@@ -34,6 +37,12 @@ export default function Dashboard() {
     loadTrendingTopics()
     loadSavedContent()
   }, [])
+
+  useEffect(() => {
+    if (profile?.preferred_tone) {
+      setFormData(prev => ({ ...prev, tone: profile.preferred_tone as ToneType }))
+    }
+  }, [profile])
 
   const loadTrendingTopics = async () => {
     const { data } = await getTrendingTopics()
@@ -94,7 +103,7 @@ What's your experience with ${data.topic}? Share your thoughts below! 👇
 
       `📊 The ${data.topic} Framework That Changed Everything
 
-As a ${toneStyles[data.tone as keyof typeof toneStyles]} finance leader, I've learned that ${data.topic} isn't just about numbers—it's about strategic insight.
+As a ${toneStyles[data.tone]} finance leader, I've learned that ${data.topic} isn't just about numbers—it's about strategic insight.
 
 Here are the ${data.points} pillars that matter most:
 
@@ -140,7 +149,7 @@ Have you implemented this approach? I'd love to hear your results.
     const content = {
       user_id: user.id,
       content_text: generatedPosts[postIndex],
-      content_type: activeTab as any,
+      content_type: activeTab,
       tone_used: formData.tone,
       prompt_input: formData.topic,
       is_saved: true
@@ -152,18 +161,18 @@ Have you implemented this approach? I'd love to hear your results.
   }
 
   const contentTypes = [
-    { id: 'framework', label: '📊 Framework', icon: '📊' },
-    { id: 'story', label: '💡 Story', icon: '💡' },
-    { id: 'trend', label: '📈 Trend Take', icon: '📈' },
-    { id: 'mistake', label: '⚠️ Mistake Story', icon: '⚠️' },
-    { id: 'metrics', label: '📊 Metrics', icon: '📊' }
+    { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
+    { id: 'story' as ContentType, label: '💡 Story', icon: '💡' },
+    { id: 'trend' as ContentType, label: '📈 Trend Take', icon: '📈' },
+    { id: 'mistake' as ContentType, label: '⚠️ Mistake Story', icon: '⚠️' },
+    { id: 'metrics' as ContentType, label: '📊 Metrics', icon: '📊' }
   ]
 
   const toneOptions = [
-    { value: 'insightful_cfo', label: 'Insightful CFO' },
-    { value: 'bold_operator', label: 'Bold Operator' },
-    { value: 'strategic_advisor', label: 'Strategic Advisor' },
-    { value: 'data_driven_expert', label: 'Data-Driven Expert' }
+    { value: 'insightful_cfo' as ToneType, label: 'Insightful CFO' },
+    { value: 'bold_operator' as ToneType, label: 'Bold Operator' },
+    { value: 'strategic_advisor' as ToneType, label: 'Strategic Advisor' },
+    { value: 'data_driven_expert' as ToneType, label: 'Data-Driven Expert' }
   ]
 
   return (
@@ -301,7 +310,7 @@ Have you implemented this approach? I'd love to hear your results.
                     </label>
                     <select
                       value={formData.tone}
-                      onChange={(e) => setFormData({ ...formData, tone: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, tone: e.target.value as ToneType })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
                       {toneOptions.map((option) => (
