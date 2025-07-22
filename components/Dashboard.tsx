@@ -14,7 +14,7 @@ import {
 } from '../lib/supabase'
 import {
   LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp,
-  Copy, Save, Edit, XCircle, ChevronDown, Plus, Filter, Clock, Tag, Search, Bell // Ensure Bell is imported
+  Copy, Save, Edit, XCircle, ChevronDown, Plus, Filter, Clock, Tag, Search, Bell, Users // Ensure Users is imported
 } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import LinkedInPostPreview from './LinkedInPostPreview' // Import the new component
@@ -82,7 +82,7 @@ export default function Dashboard() {
   // Dummy data for content types and tones
   const contentTypes = [
     { id: 'framework', name: 'Framework Post', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'story', name: 'Story Post', icon: <Users className="w-5 h-5" /> },
+    { id: 'story', name: 'Story Post', icon: <Users className="w-5 h-5" /> }, // Users icon is now correctly imported
     { id: 'trend', name: 'Trend Take', icon: <TrendingUp className="w-5 h-5" /> },
     { id: 'mistake', name: 'Mistake Story', icon: <XCircle className="w-5 h-5" /> },
     { id: 'metrics', name: 'Metrics Post', icon: <BarChart className="w-5 h-5" /> },
