@@ -414,9 +414,9 @@ class LinkedInAPIService {
     return tokens
   }
 
-  private extractProfilePictureUrl(profilePicture: any): string | undefined {
+ private extractProfilePictureUrl(profilePicture: any): string | undefined {
     try {
-const displayImage = profilePicture?.displayImage?.elements?.[0]
+      const displayImage = profilePicture?.displayImage?.elements?.[0]
       const identifiers = displayImage?.identifiers
       if (identifiers && identifiers.length > 0) {
         return identifiers[0].identifier
