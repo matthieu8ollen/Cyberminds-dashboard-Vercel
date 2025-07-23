@@ -199,7 +199,7 @@ export default function Dashboard() {
 
   // Helper functions to get dynamic data for rendering
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
-  const getProfileDisplayName = () => profile?.full_name || user?.email?.split('@')[0] || 'Finance Pro'
+  const getProfileDisplayName = () => user?.email?.split('@')[0] || 'Finance Pro'
   const getProfileTitle = () => profile?.role || 'Chief Financial Officer'
 
   // Main render function to switch between pages
