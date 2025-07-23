@@ -81,7 +81,7 @@ export default function ProductionPipeline() {
     setLoading(true)
     try {
       const { data } = await getSavedContent(user.id)
-      if (data) {
+      if (data && data.length > 0) {
         // Transform saved content into cards with production status
         const contentCards: ContentCard[] = data.map(item => ({
           ...item,
@@ -91,7 +91,7 @@ export default function ProductionPipeline() {
         }))
         setContent(contentCards)
       } else {
-        // Create mock content for demonstration
+        // Create mock content for demonstration if no real data
         setContent(createMockContent())
       }
     } catch (error) {
@@ -104,12 +104,13 @@ export default function ProductionPipeline() {
 
   const getInitialStatus = (item: GeneratedContent): ContentStatus => {
     // Logic to determine initial status based on content properties
-    if (item.is_saved && !item.published_at) {
+    if (item.status === 'pending_review' || (item.is_saved && !item.published_at && item.status !== 'approved')) {
       return 'action_required'
     }
-    if (item.published_at) {
+    if (item.status === 'approved' || item.status === 'scheduled' || item.published_at) {
       return 'ready_scheduled'
     }
+    // You might want a specific status for 'ai_in_progress'
     return 'action_required'
   }
 
@@ -169,22 +170,22 @@ export default function ProductionPipeline() {
   }
 
   const updateContentStatus = async (contentId: string, newStatus: ContentStatus, notes?: string) => {
+    // Optimistically update the UI
     setContent(prev => prev.map(item => 
       item.id === contentId 
         ? { ...item, status: newStatus, review_notes: notes || item.review_notes }
         : item
     ))
 
-    // In a real app, you'd update the database here
-    // await updateGeneratedContent(contentId, { status: newStatus, review_notes: notes })
+    // Update the database
+    await updateGeneratedContent(contentId, { status: newStatus as any, /* review_notes: notes */ })
   }
 
   const getStatusCounts = () => {
-    const counts = STATUS_COLUMNS.map(column => ({
+    return STATUS_COLUMNS.map(column => ({
       ...column,
       count: content.filter(item => item.status === column.id).length
     }))
-    return counts
   }
 
   const getContentIcon = (toneUsed: string) => {
@@ -196,27 +197,27 @@ export default function ProductionPipeline() {
     }
   }
 
-  const ContentPreview = ({ content }: { content: ContentCard }) => (
+  const ContentPreviewModal = ({ content: previewContent, onClose }: { content: ContentCard, onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Content Preview</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {content.content_type} • {content.tone_used} style
+              <p className="text-sm text-gray-600 mt-1 capitalize">
+                {previewContent.content_type} • {previewContent.tone_used} style
               </p>
             </div>
             <button 
-              onClick={() => setShowPreview(false)}
-              className="text-gray-400 hover:text-gray-600"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 p-1"
             >
               ✕
             </button>
           </div>
         </div>
         
-        <div className="p-6 overflow-y-auto max-h-96">
+        <div className="p-6 overflow-y-auto flex-1">
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             {/* LinkedIn-style preview */}
             <div className="p-4 border-b border-gray-100">
@@ -227,8 +228,8 @@ export default function ProductionPipeline() {
                 <div className="flex-1">
                   <h4 className="text-sm font-semibold text-gray-900">Your Name</h4>
                   <p className="text-xs text-gray-600">Chief Financial Officer</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-xs text-gray-500">2h</span>
+                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                    <span>2h</span>
                   </div>
                 </div>
               </div>
@@ -236,7 +237,7 @@ export default function ProductionPipeline() {
             
             <div className="p-4">
               <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
-                {content.content_text}
+                {previewContent.content_text}
               </div>
             </div>
             
@@ -262,16 +263,16 @@ export default function ProductionPipeline() {
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-between">
             <button
-              onClick={() => setShowPreview(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg"
             >
               Close
             </button>
             <div className="flex space-x-3">
-              <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">
                 Edit Content
               </button>
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                 Schedule Post
               </button>
             </div>
@@ -281,7 +282,7 @@ export default function ProductionPipeline() {
     </div>
   )
 
-  const ContentCard = ({ item }: { item: ContentCard }) => {
+  const ContentCardComponent = ({ item }: { item: ContentCard }) => {
     const IconComponent = getContentIcon(item.tone_used || '')
     
     return (
@@ -293,7 +294,7 @@ export default function ProductionPipeline() {
               {item.tone_used} {item.content_type}
             </span>
           </div>
-          <button className="text-gray-400 hover:text-gray-600">
+          <button className="text-gray-400 hover:text-gray-600 p-1">
             <MoreHorizontal className="w-4 h-4" />
           </button>
         </div>
@@ -406,20 +407,20 @@ export default function ProductionPipeline() {
             <div className="flex rounded-lg border border-gray-300">
               <button
                 onClick={() => setViewMode('board')}
-                className={`px-4 py-2 text-sm font-medium ${
+                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
                   viewMode === 'board'
                     ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Board
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-4 py-2 text-sm font-medium ${
+                className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
                   viewMode === 'list'
                     ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 List
@@ -429,7 +430,7 @@ export default function ProductionPipeline() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {statusCounts.map((column) => {
             const Icon = column.icon
             return (
@@ -451,13 +452,13 @@ export default function ProductionPipeline() {
 
       {/* Content Board */}
       {viewMode === 'board' ? (
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {statusCounts.map((column) => {
             const Icon = column.icon
             const columnContent = content.filter(item => item.status === column.id)
             
             return (
-              <div key={column.id} className={`rounded-lg border-2 ${column.color} min-h-96`}>
+              <div key={column.id} className={`rounded-lg border-2 ${column.color} min-h-[500px]`}>
                 <div className={`p-4 rounded-t-lg ${column.headerColor} border-b`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -471,7 +472,7 @@ export default function ProductionPipeline() {
                 
                 <div className="p-4 space-y-4">
                   {columnContent.map((item) => (
-                    <ContentCard key={item.id} item={item} />
+                    <ContentCardComponent key={item.id} item={item} />
                   ))}
                   
                   {columnContent.length === 0 && (
@@ -487,61 +488,50 @@ export default function ProductionPipeline() {
       ) : (
         /* List View */
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">All Content</h3>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {content.map((item) => (
-              <div key={item.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        statusCounts.find(s => s.id === item.status)?.headerColor
-                      }`}>
-                        {statusCounts.find(s => s.id === item.status)?.title}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900 capitalize">
-                        {item.tone_used} {item.content_type}
-                      </span>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {content.map((item) => (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900 capitalize">{item.tone_used} {item.content_type}</div>
+                    <div className="text-sm text-gray-500 line-clamp-1">{item.content_text}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      statusCounts.find(s => s.id === item.status)?.headerColor
+                    }`}>
+                      {statusCounts.find(s => s.id === item.status)?.title}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>Created: {new Date(item.created_at).toLocaleDateString()}</div>
+                    {item.scheduled_date && <div>Scheduled: {new Date(item.scheduled_date).toLocaleDateString()}</div>}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-3">
+                      <button onClick={() => { setSelectedContent(item); setShowPreview(true); }} className="text-indigo-600 hover:text-indigo-900"><Eye className="w-4 h-4" /></button>
+                      <button className="text-gray-400 hover:text-gray-600"><Edit3 className="w-4 h-4" /></button>
+                      <button className="text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {item.content_text.substring(0, 200)}...
-                    </p>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                      <span>Created {new Date(item.created_at).toLocaleDateString()}</span>
-                      {item.scheduled_date && (
-                        <span>Scheduled {new Date(item.scheduled_date).toLocaleDateString()}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => {
-                        setSelectedContent(item)
-                        setShowPreview(true)
-                      }}
-                      className="text-indigo-600 hover:text-indigo-700"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button className="text-gray-400 hover:text-red-600">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Preview Modal */}
       {showPreview && selectedContent && (
-        <ContentPreview content={selectedContent} />
+        <ContentPreviewModal content={selectedContent} onClose={() => setShowPreview(false)} />
       )}
     </div>
   )
