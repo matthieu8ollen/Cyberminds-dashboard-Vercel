@@ -4,6 +4,8 @@ export interface ScheduledContent {
   content_text: string
   content_type: string
   tone_used: string
+  prompt_input: string | null
+  is_saved: boolean
   scheduled_date: string
   scheduled_time: string
   status: 'scheduled' | 'published' | 'failed' | 'draft'
