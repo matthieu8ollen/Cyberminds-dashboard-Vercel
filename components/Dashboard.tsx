@@ -388,19 +388,8 @@ Which of these resonates most with your experience? Let's discuss! 👇
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
-     case 'production':
+    case 'production':
   return <ProductionPipeline />
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Production Pipeline</h1>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <BarChart3 className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Production Pipeline Coming Soon</h3>
-        <p className="text-gray-600">Advanced content workflow management</p>
-      </div>
-    </div>
-  )
       case 'plan':
         return <ContentCalendar />
       case 'analytics':
