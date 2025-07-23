@@ -623,18 +623,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Posts Generated</span>
-                        <span className="font-semibold text-gray-900">
-                          {profile?.posts_generated_this_month || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Posts Saved</span>
-                        <span className="font-semibold text-gray-900">
-                          {profile?.posts_saved_this_month || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">Plan</span>
                         <span className="font-semibold text-indigo-600 capitalize">
                           {profile?.plan_type || 'Starter'}
@@ -809,3 +797,15 @@ Which of these resonates most with your experience? Let's discuss! 👇
     </div>
   )
 }
+                        <span className="text-gray-600">Posts Generated</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_generated_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Saved</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_saved_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
