@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { User, Heart, MessageCircle, Repeat2, Send, MoreHorizontal, ThumbsUp, Globe } from 'lucide-react'
 
 interface LinkedInPreviewProps {
-  content: string
+  content: string // This will now be an HTML string
   profileName?: string
   profileTitle?: string
   profileImage?: string
@@ -22,63 +22,6 @@ export default function LinkedInPreview({
   const handleLike = () => {
     setLiked(!liked)
     setLikeCount(prev => liked ? prev - 1 : prev + 1)
-  }
-
-  // Format content with LinkedIn-style formatting
-  const formatContent = (text: string) => {
-    return text
-      .split('\n')
-      .map((line, index) => {
-        // Handle hashtags
-        if (line.startsWith('#') || line.includes('#')) {
-          return (
-            <p key={index} className="mb-2">
-              {line.split(' ').map((word, wordIndex) => (
-                <span key={wordIndex}>
-                  {word.startsWith('#') ? (
-                    <span className="text-blue-600 hover:underline cursor-pointer font-medium">
-                      {word}
-                    </span>
-                  ) : (
-                    word
-                  )}
-                  {wordIndex < line.split(' ').length - 1 && ' '}
-                </span>
-              ))}
-            </p>
-          )
-        }
-        
-        // Handle numbered points
-        if (/^\d+[\.️⃣]/.test(line.trim())) {
-          return (
-            <p key={index} className="mb-3 font-medium">
-              {line}
-            </p>
-          )
-        }
-        
-        // Handle emoji bullets
-        if (/^[🎯⚡🔥💎🚀⭐🌟💡📊📈]/.test(line.trim())) {
-          return (
-            <p key={index} className="mb-3">
-              {line}
-            </p>
-          )
-        }
-        
-        // Handle empty lines
-        if (line.trim() === '') {
-          return <div key={index} className="mb-2"></div>
-        }
-        
-        // Regular paragraphs
-        return (
-          <p key={index} className="mb-2">
-            {line}
-          </p>
-        )
-      })
   }
 
   return (
@@ -123,11 +66,12 @@ export default function LinkedInPreview({
         </div>
       </div>
 
-      {/* Post Content */}
+      {/* Post Content - Updated to render HTML */}
       <div className="p-4">
-        <div className="text-sm text-gray-900 leading-relaxed">
-          {formatContent(content)}
-        </div>
+        <div 
+          className="text-sm text-gray-900 leading-relaxed prose prose-sm"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
       </div>
 
       {/* Engagement Stats */}
