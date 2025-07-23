@@ -416,3 +416,200 @@ class LinkedInAPIService {
 
   private extractProfilePictureUrl(profilePicture: any): string | undefined {
     try {
+const displayImage = profilePicture?.displayImage?.elements?.[0]
+      const identifiers = displayImage?.identifiers
+      if (identifiers && identifiers.length > 0) {
+        return identifiers[0].identifier
+      }
+    } catch (error) {
+      console.error('Error extracting profile picture URL:', error)
+    }
+    return undefined
+  }
+
+  private calculateEngagement(data: any): number {
+    const likes = data.numLikes || 0
+    const comments = data.numComments || 0
+    const shares = data.numShares || 0
+    const impressions = data.numImpressions || 1
+
+    return Math.round(((likes + comments * 2 + shares * 3) / impressions) * 100)
+  }
+
+  private getMockMetrics(): PostMetrics {
+    return {
+      likes: Math.floor(Math.random() * 50) + 10,
+      comments: Math.floor(Math.random() * 15) + 2,
+      shares: Math.floor(Math.random() * 8) + 1,
+      views: Math.floor(Math.random() * 500) + 100,
+      clicks: Math.floor(Math.random() * 25) + 5,
+      engagement: Math.floor(Math.random() * 10) + 3,
+      impressions: Math.floor(Math.random() * 1000) + 200
+    }
+  }
+
+  private generateState(): string {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  }
+
+  logout(): void {
+    this.tokens = null
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('linkedin_tokens')
+    }
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.getProfile()
+      return true
+    } catch (error) {
+      console.error('Connection test failed:', error)
+      return false
+    }
+  }
+
+  private rateLimitDelay = 0
+  
+  async withRateLimit<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.rateLimitDelay > Date.now()) {
+      const delay = this.rateLimitDelay - Date.now()
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+
+    try {
+      const result = await operation()
+      this.rateLimitDelay = 0
+      return result
+    } catch (error: any) {
+      if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+        this.rateLimitDelay = Date.now() + (Math.random() * 30000) + 30000
+        throw new Error('Rate limit exceeded. Please try again later.')
+      }
+      throw error
+    }
+  }
+
+  async batchPublish(posts: PublishRequest[]): Promise<Array<{
+    success: boolean
+    post?: LinkedInPost
+    error?: string
+  }>> {
+    const results = []
+    
+    for (let i = 0; i < posts.length; i++) {
+      try {
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+        
+        const post = await this.withRateLimit(() => this.publishPost(posts[i]))
+        results.push({ success: true, post })
+      } catch (error) {
+        results.push({ 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+      }
+    }
+    
+    return results
+  }
+
+  validatePostContent(text: string): {
+    isValid: boolean
+    errors: string[]
+    warnings: string[]
+  } {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    if (text.length === 0) {
+      errors.push('Post content cannot be empty')
+    }
+    if (text.length > 3000) {
+      errors.push('Post content exceeds LinkedIn\'s 3000 character limit')
+    }
+
+    if (text.length > 1300) {
+      warnings.push('Posts over 1300 characters may be truncated in feeds')
+    }
+
+    if (text.includes('bit.ly') || text.includes('tinyurl')) {
+      warnings.push('Shortened URLs may reduce engagement')
+    }
+
+    const hashtagCount = (text.match(/#\w+/g) || []).length
+    if (hashtagCount > 5) {
+      warnings.push('Too many hashtags may reduce reach (recommended: 3-5)')
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    }
+  }
+
+  async getOptimalPostingTimes(): Promise<Array<{
+    hour: number
+    dayOfWeek: number
+    engagementScore: number
+  }>> {
+    return [
+      { hour: 9, dayOfWeek: 2, engagementScore: 0.92 },
+      { hour: 14, dayOfWeek: 3, engagementScore: 0.89 },
+      { hour: 17, dayOfWeek: 4, engagementScore: 0.91 },
+      { hour: 8, dayOfWeek: 2, engagementScore: 0.85 },
+      { hour: 12, dayOfWeek: 3, engagementScore: 0.88 }
+    ]
+  }
+
+  async retryFailedPost(originalRequest: PublishRequest, maxRetries: number = 3): Promise<LinkedInPost> {
+    let lastError: Error | null = null
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 1) {
+          const delay = Math.pow(2, attempt - 1) * 1000
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+        
+        return await this.publishPost(originalRequest)
+      } catch (error) {
+        lastError = error as Error
+        console.warn(`Publish attempt ${attempt} failed:`, error)
+        
+        if (error instanceof Error && (
+          error.message.includes('invalid token') ||
+          error.message.includes('permission denied') ||
+          error.message.includes('content policy')
+        )) {
+          throw error
+        }
+      }
+    }
+    
+    throw lastError || new Error('Max retries exceeded')
+  }
+}
+
+export const linkedInAPI = new LinkedInAPIService()
+
+export const useLinkedInAuth = () => {
+  const isAuthenticated = linkedInAPI.isAuthenticated()
+  
+  const login = () => {
+    const authUrl = linkedInAPI.getAuthorizationUrl()
+    window.location.href = authUrl
+  }
+  
+  const logout = () => {
+    linkedInAPI.logout()
+    window.location.reload()
+  }
+  
+  return { isAuthenticated, login, logout }
+}
+
+export default linkedInAPI
