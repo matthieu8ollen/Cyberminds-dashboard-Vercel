@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { getSavedContent, GeneratedContent } from '../lib/supabase'
 
-interface ScheduledContent extends GeneratedContent {
+interface ScheduledContent extends Omit<GeneratedContent, 'status'> {
   scheduled_date: string
   scheduled_time: string
   status: 'scheduled' | 'published' | 'failed' | 'draft'
