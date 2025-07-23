@@ -15,10 +15,13 @@ import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, 
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
-// === Rich Text Editor & AI Tools Integration START ===
+// === Calendar, Rich Text Editor & AI Tools Integration START ===
+import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
 import { aiImprovementService } from '../lib/aiImprovementService'
-// === Rich Text Editor & AI Tools Integration END ===
+import { schedulingService } from '../lib/schedulingService'
+import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
+// === Calendar, Rich Text Editor & AI Tools Integration END ===
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -35,6 +38,13 @@ interface GeneratedDraft {
 
 export default function Dashboard() {
   const { user, profile, signOut, refreshProfile } = useAuth()
+  // === Calendar, LinkedIn, Rich Text, AI Tools State ===
+  const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
+  const [useRichEditor, setUseRichEditor] = useState(true)
+  const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+  // === End Calendar, LinkedIn, Rich Text, AI Tools State ===
+
   const [activePage, setActivePage] = useState<ActivePage>('generator')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -46,12 +56,6 @@ export default function Dashboard() {
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
-
-  // === Rich Text Editor & AI Tools Integration START ===
-  const [useRichEditor, setUseRichEditor] = useState(true)
-  const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
-  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
-  // === Rich Text Editor & AI Tools Integration END ===
 
   // Form data
   const [formData, setFormData] = useState({
@@ -85,7 +89,6 @@ export default function Dashboard() {
   }
 
   const handleWriteFromIdea = (idea: ContentIdea) => {
-    // Switch to generator page and pre-fill with idea
     setActivePage('generator')
     setFormData(prev => ({
       ...prev,
@@ -93,35 +96,27 @@ export default function Dashboard() {
       context: idea.description || ''
     }))
     setSelectedIdea(idea)
-    
-    // Auto-generate content from the idea
-    setTimeout(() => {
-      handleGenerate()
-    }, 100)
+    setTimeout(() => { handleGenerate() }, 100)
   }
 
   const handleGenerate = async () => {
     if (!formData.topic.trim()) return
 
     setIsGenerating(true)
-    
-    // Simulate AI generation with 3 different drafts
     setTimeout(() => {
       const drafts = generateMultipleDrafts(formData)
       setGeneratedDrafts(drafts)
-      setSelectedDraft('bold') // Default to first tab
+      setSelectedDraft('bold')
       setShowGenerated(true)
-      setShowPreview(true) // Automatically show preview when content is generated
+      setShowPreview(true)
       setIsGenerating(false)
-      
-      // Update user stats
       if (profile && user) {
         updateUserProfile(user.id, {
           posts_generated_this_month: (profile.posts_generated_this_month || 0) + 1,
           posts_remaining: Math.max(0, (profile.posts_remaining || 0) - 1)
         }).then(() => refreshProfile())
       }
-    }, 3000) // Slightly longer for multiple drafts
+    }, 3000)
   }
 
   const generateMultipleDrafts = (data: typeof formData): GeneratedDraft[] => {
@@ -162,9 +157,7 @@ export default function Dashboard() {
       "The uncomfortable truth about",
       "Stop doing this immediately:"
     ]
-
     const intro = boldIntros[Math.floor(Math.random() * boldIntros.length)]
-
     return `${intro} ${topic}
 
 ${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:
@@ -208,9 +201,7 @@ What metrics are you tracking for ${topic}? Share your experience below.
       `Plot twist: Everything you know about ${topic} is backwards.`,
       `${topic} through the lens of a recovering perfectionist CFO:`
     ]
-
     const intro = creativeIntros[Math.floor(Math.random() * creativeIntros.length)]
-
     return `${intro}
 
 ${Array.from({length: points}, (_, i) => {
@@ -262,15 +253,13 @@ Which of these resonates most with your experience? Let's discuss! 👇
 
   const handleSaveDraft = async () => {
     if (!user || !generatedDrafts.length) return
-
     const selectedDraftContent = generatedDrafts.find(d => d.type === selectedDraft)
     if (!selectedDraftContent) return
-
     const content = {
       user_id: user.id,
       content_text: selectedDraftContent.content,
       content_type: activeTab,
-      tone_used: selectedDraft, // Store which draft variation was selected
+      tone_used: selectedDraft,
       prompt_input: formData.topic,
       is_saved: true,
       idea_id: selectedIdea?.id,
@@ -282,13 +271,12 @@ Which of these resonates most with your experience? Let's discuss! 👇
         selected_draft: selectedDraft
       }
     }
-
     await saveGeneratedContent(content)
     await loadSavedContent()
     await refreshProfile()
   }
 
-  // === AI IMPROVEMENT FUNCTIONS ===
+  // === AI IMPROVEMENT & SCHEDULING FUNCTIONS ===
   const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
     try {
       return await aiImprovementService.improveText(text, type)
@@ -301,7 +289,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
   const improveDraftWithAI = async (draftType: DraftType, improvementType: 'bold' | 'improve' | 'expand') => {
     const draft = generatedDrafts.find(d => d.type === draftType)
     if (!draft) return
-
     try {
       const improvedContent = await aiImprovementService.improveText(draft.content, improvementType)
       setGeneratedDrafts(prev => prev.map(d =>
@@ -314,10 +301,32 @@ Which of these resonates most with your experience? Let's discuss! 👇
     }
   }
 
+  const handleQuickSchedule = async (content: string, contentType: ContentType, toneUsed: string) => {
+    try {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const scheduledContent = await schedulingService.scheduleContent({
+        user_id: user?.id || '',
+        content_text: content,
+        content_type: contentType,
+        tone_used: toneUsed,
+        prompt_input: formData.topic,
+        is_saved: false,
+        created_at: new Date().toISOString(),
+        scheduled_date: tomorrow.toISOString().split('T')[0],
+        scheduled_time: '09:00'
+      })
+      console.log('Content scheduled successfully:', scheduledContent)
+      setActivePage('plan')
+    } catch (error) {
+      console.error('Error scheduling content:', error)
+    }
+  }
+  // === END AI IMPROVEMENT & SCHEDULING FUNCTIONS ===
+
   // === KEYBOARD SHORTCUTS HELP COMPONENT ===
   const KeyboardShortcutsHelp = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null
-
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -337,14 +346,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
             <div className="flex justify-between">
               <span>Expand content (AI)</span>
               <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+E</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Bold formatting</span>
-              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+Shift+B</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Italic formatting</span>
-              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+Shift+I</kbd>
             </div>
           </div>
           <div className="mt-4 text-xs text-gray-500">
@@ -380,56 +381,62 @@ Which of these resonates most with your experience? Let's discuss! 👇
     { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
   ]
 
-  const getCurrentDraftContent = () => {
-    return generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
-  }
-
-  const getProfileDisplayName = () => {
-    if (user?.email) return user.email.split('@')[0]
-    return 'Finance Professional'
-  }
-
-  const getProfileTitle = () => {
-    if (profile?.role) return profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    return 'Chief Financial Officer'
-  }
+  const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
+  const getProfileDisplayName = () => (user?.email ? user.email.split('@')[0] : 'Finance Professional')
+  const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
-      
       case 'production':
         return <ProductionPipeline />
-      
       case 'plan':
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Content Calendar</h1>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar Coming Soon</h3>
-              <p className="text-gray-600">Schedule and plan your content strategy</p>
-            </div>
-          </div>
-        )
-      
+        return <ContentCalendar />
       case 'analytics':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">LinkedIn Integration</h3>
+                    <p className="text-sm text-gray-600">
+                      {isLinkedInConnected 
+                        ? 'Connected - Automated publishing enabled' 
+                        : 'Not connected - Manual publishing only'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={isLinkedInConnected ? disconnectLinkedIn : connectLinkedIn}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    isLinkedInConnected
+                      ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
+                </button>
+              </div>
+            </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BarChart className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Coming Soon</h3>
-              <p className="text-gray-600">Track your content performance and engagement</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {isLinkedInConnected ? 'Analytics Coming Soon' : 'Connect LinkedIn for Analytics'}
+              </h3>
+              <p className="text-gray-600">
+                {isLinkedInConnected 
+                  ? 'Track your content performance and engagement metrics'
+                  : 'Connect your LinkedIn account to view detailed analytics'}
+              </p>
             </div>
           </div>
         )
-      
       case 'feed':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -443,13 +450,10 @@ Which of these resonates most with your experience? Let's discuss! 👇
             </div>
           </div>
         )
-      
-      default: // generator
+      default:
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid gap-8" style={{ gridTemplateColumns: showPreview && showGenerated ? '1fr 400px' : '2fr 1fr' }}>
-              
-              {/* Content Generator */}
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <div className="mb-6">
@@ -463,8 +467,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       </div>
                     )}
                   </div>
-
-                  {/* Content Type Tabs */}
                   <div className="flex space-x-2 mb-6 overflow-x-auto">
                     {contentTypes.map((type) => (
                       <button
@@ -480,8 +482,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       </button>
                     ))}
                   </div>
-
-                  {/* Content Form */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -492,13 +492,12 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         value={formData.topic}
                         onChange={(e) => {
                           setFormData({ ...formData, topic: e.target.value })
-                          setSelectedIdea(null) // Clear selected idea when manually editing
+                          setSelectedIdea(null)
                         }}
                         placeholder="e.g., SaaS metrics every CFO should track"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       />
                     </div>
-                    
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -515,7 +514,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                           <option value="10">10 points</option>
                         </select>
                       </div>
-                      
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Base Tone
@@ -533,8 +531,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         </select>
                       </div>
                     </div>
-                    
-                    {/* === RICH TEXT EDITOR CONTEXT SECTION === */}
+                    {/* Rich Text Editor Context Section */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="block text-sm font-medium text-gray-700">
@@ -568,10 +565,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         />
                       )}
                     </div>
-                    {/* === END RICH TEXT EDITOR CONTEXT SECTION === */}
                   </div>
-
-                  {/* Generate Button */}
                   <div className="mt-6 flex justify-between items-center">
                     <div className="text-sm text-gray-500">
                       💡 Tip: We'll create 3 different variations for you to choose from
@@ -595,7 +589,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     </button>
                   </div>
                 </div>
-
                 {/* Generated Content - Multi-Draft Interface */}
                 {showGenerated && generatedDrafts.length > 0 && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 fade-in">
@@ -621,8 +614,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         </button>
                       </div>
                     </div>
-                    
-                    {/* Draft Selection Tabs */}
+                    {/* Enhanced Draft Tabs With AI Tools */}
                     <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
                       {generatedDrafts.map((draft) => {
                         const Icon = draft.icon
@@ -668,8 +660,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         )
                       })}
                     </div>
-
-                    {/* === DRAFT CONTENT DISPLAY (EDITABLE) === */}
+                    {/* Draft Content Display (Editable) */}
                     <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-indigo-500">
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -695,6 +686,18 @@ Which of these resonates most with your experience? Let's discuss! 👇
                             className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
                           >
                             📋 Copy
+                          </button>
+                          {/* Add Schedule Button */}
+                          <button 
+                            onClick={() => handleQuickSchedule(
+                              generatedDrafts.find(d => d.type === selectedDraft)?.content || '',
+                              activeTab,
+                              selectedDraft
+                            )}
+                            className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium transition flex items-center space-x-2"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            <span>Schedule</span>
                           </button>
                           <button 
                             onClick={() => setEditingDraft(editingDraft === selectedDraft ? null : selectedDraft)}
@@ -739,11 +742,9 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         </div>
                       )}
                     </div>
-                    {/* === END DRAFT CONTENT DISPLAY === */}
                   </div>
                 )}
               </div>
-
               {/* LinkedIn Preview Sidebar */}
               {showPreview && showGenerated && (
                 <div className="space-y-6">
@@ -768,8 +769,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                   </div>
                 </div>
               )}
-
-              {/* Original Sidebar - Only show when preview is hidden */}
+              {/* Sidebar */}
               {(!showPreview || !showGenerated) && (
                 <div className="space-y-6">
                   {/* Stats */}
@@ -807,7 +807,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       </div>
                     </div>
                   </div>
-
                   {/* Recent Saves */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-4">
@@ -846,7 +845,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       )}
                     </div>
                   </div>
-
                   {/* Trending Topics */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 Trending in Finance</h3>
@@ -865,12 +863,41 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       Get Content Ideas →
                     </button>
                   </div>
+                  {/* LinkedIn Status to Sidebar */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Publishing</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className="text-sm text-gray-600">LinkedIn</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {isLinkedInConnected ? 'Connected' : 'Not Connected'}
+                        </span>
+                      </div>
+                      {!isLinkedInConnected && (
+                        <button
+                          onClick={connectLinkedIn}
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition"
+                        >
+                          Connect LinkedIn
+                        </button>
+                      )}
+                      {isLinkedInConnected && (
+                        <div className="text-xs text-green-600 bg-green-50 rounded-lg p-2">
+                          ✅ Auto-publishing enabled
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-            <KeyboardShortcutsHelp
-              isOpen={showShortcutsHelp}
-              onClose={() => setShowShortcutsHelp(false)}
+            {/* Add Help Modal to Render */}
+            <KeyboardShortcutsHelp 
+              isOpen={showShortcutsHelp} 
+              onClose={() => setShowShortcutsHelp(false)} 
             />
           </div>
         )
@@ -890,7 +917,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                 </div>
                 <span className="text-xl font-bold text-gray-900">CyberMinds</span>
               </div>
-              
               {/* Main Navigation */}
               <div className="hidden md:flex items-center space-x-6">
                 {navigationItems.map((item) => {
@@ -912,7 +938,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                 })}
               </div>
             </div>
-            
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
@@ -920,7 +945,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                   {profile?.posts_remaining || 0} posts remaining
                 </span>
               </div>
-              
               <div className="relative">
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -933,7 +957,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     {getProfileDisplayName()}
                   </span>
                 </button>
-                
                 {showProfileMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="py-1">
@@ -961,8 +984,6 @@ Which of these resonates most with your experience? Let's discuss! 👇
           </div>
         </div>
       </nav>
-
-      {/* Page Content */}
       {renderPageContent()}
     </div>
   )
