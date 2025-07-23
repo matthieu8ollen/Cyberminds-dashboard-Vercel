@@ -14,7 +14,7 @@ import {
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
-// import ProductionPipeline from './ProductionPipeline'
+import ProductionPipeline from './ProductionPipeline'
 // === Calendar, Rich Text Editor & AI Tools Integration START ===
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
@@ -389,7 +389,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
      case 'production':
-  return (
+  return <ProductionPipeline />
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Production Pipeline</h1>
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
