@@ -306,13 +306,13 @@ Which of these resonates most with your experience? Let's discuss! 👇
   }
 
   const getProfileDisplayName = () => {
-    if (profile?.display_name) return profile.display_name
+    if (profile?.full_name) return profile.full_name
     if (user?.email) return user.email.split('@')[0]
     return 'Finance Professional'
   }
 
   const getProfileTitle = () => {
-    if (profile?.professional_title) return profile.professional_title
+    if (profile?.current_role) return profile.current_role
     return 'Chief Financial Officer'
   }
 
