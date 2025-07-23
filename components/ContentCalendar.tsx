@@ -69,6 +69,7 @@ export default function ContentCalendar() {
   useEffect(() => {
     loadScheduledContent()
     loadAvailableContent()
+    // eslint-disable-next-line
   }, [user])
 
   const loadScheduledContent = async () => {
@@ -118,13 +119,12 @@ export default function ContentCalendar() {
         status: 'published'
       }
     ]
-    
     setScheduledContent(mockScheduledContent)
   }
 
   const loadAvailableContent = async () => {
     if (!user) return
-    
+
     try {
       const { data } = await getSavedContent(user.id)
       if (data) {
@@ -138,23 +138,23 @@ export default function ContentCalendar() {
     }
   }
 
-  const getTomorrowDate = (): string => {
+  function getTomorrowDate(): string {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     return getDateString(tomorrow)
   }
 
-  const getYesterdayDate = (): string => {
+  function getYesterdayDate(): string {
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
     return getDateString(yesterday)
   }
 
-  const getDateString = (date: Date): string => {
+  function getDateString(date: Date): string {
     return date.toISOString().split('T')[0]
   }
 
-  const getDaysInMonth = (date: Date): Date[] => {
+  function getDaysInMonth(date: Date): Date[] {
     const year = date.getFullYear()
     const month = date.getMonth()
     const firstDay = new Date(year, month, 1)
@@ -181,7 +181,7 @@ export default function ContentCalendar() {
     return days
   }
 
-  const getContentForDate = (date: Date): ScheduledContent[] => {
+  function getContentForDate(date: Date): ScheduledContent[] {
     const dateString = getDateString(date)
     return scheduledContent.filter(content => 
       content.scheduled_date === dateString &&
@@ -189,7 +189,7 @@ export default function ContentCalendar() {
     )
   }
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  function navigateMonth(direction: 'prev' | 'next') {
     setCurrentDate(prev => {
       const newDate = new Date(prev)
       if (direction === 'prev') {
@@ -201,27 +201,27 @@ export default function ContentCalendar() {
     })
   }
 
-  const handleDateClick = (date: Date) => {
+  function handleDateClick(date: Date) {
     setSelectedDate(date)
     setShowScheduleModal(true)
   }
 
-  const handleContentClick = (content: ScheduledContent) => {
+  function handleContentClick(content: ScheduledContent) {
     setSelectedContent(content)
     setShowContentPreview(true)
   }
 
-  const handleDragStart = (e: React.DragEvent, content: ScheduledContent) => {
+  function handleDragStart(e: React.DragEvent, content: ScheduledContent) {
     setDraggedContent(content)
     e.dataTransfer.effectAllowed = 'move'
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
+  function handleDragOver(e: React.DragEvent) {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
   }
 
-  const handleDrop = (e: React.DragEvent, date: Date) => {
+  function handleDrop(e: React.DragEvent, date: Date) {
     e.preventDefault()
     if (draggedContent) {
       setScheduledContent(prev => prev.map(content =>
@@ -233,7 +233,7 @@ export default function ContentCalendar() {
     }
   }
 
-  const getStatusColor = (status: ScheduledContent['status']) => {
+  function getStatusColor(status: ScheduledContent['status']) {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'published': return 'bg-green-100 text-green-800 border-green-200'
@@ -243,7 +243,7 @@ export default function ContentCalendar() {
     }
   }
 
-  const getStatusIcon = (status: ScheduledContent['status']) => {
+  function getStatusIcon(status: ScheduledContent['status']) {
     switch (status) {
       case 'scheduled': return <Clock className="w-3 h-3" />
       case 'published': return <CheckCircle className="w-3 h-3" />
@@ -253,7 +253,7 @@ export default function ContentCalendar() {
     }
   }
 
-  const getContentTypeIcon = (type: string) => {
+  function getContentTypeIcon(type: string) {
     switch (type) {
       case 'framework': return <BarChart3 className="w-3 h-3" />
       case 'story': return <Target className="w-3 h-3" />
@@ -262,40 +262,39 @@ export default function ContentCalendar() {
     }
   }
 
-  const ContentCard = ({ content, isCompact = false }: { content: ScheduledContent; isCompact?: boolean }) => (
-    <div
-      draggable
-      onDragStart={(e) => handleDragStart(e, content)}
-      onClick={() => handleContentClick(content)}
-      className={`
-        bg-white border rounded-lg p-2 cursor-pointer hover:shadow-md transition-all duration-200
-        ${getStatusColor(content.status)} border
-        ${isCompact ? 'text-xs' : 'text-sm'}
-      `}
-    >
-      <div className="flex items-start justify-between mb-1">
-        <div className="flex items-center space-x-1">
-          {getContentTypeIcon(content.content_type)}
-          {getStatusIcon(content.status)}
-          {content.recurring && <RepeatIcon className="w-3 h-3 text-gray-500" />}
+  function ContentCard({ content, isCompact = false }: { content: ScheduledContent; isCompact?: boolean }) {
+    return (
+      <div
+        draggable
+        onDragStart={(e) => handleDragStart(e, content)}
+        onClick={() => handleContentClick(content)}
+        className={`
+          bg-white border rounded-lg p-2 cursor-pointer hover:shadow-md transition-all duration-200
+          ${getStatusColor(content.status)} border
+          ${isCompact ? 'text-xs' : 'text-sm'}
+        `}
+      >
+        <div className="flex items-start justify-between mb-1">
+          <div className="flex items-center space-x-1">
+            {getContentTypeIcon(content.content_type)}
+            {getStatusIcon(content.status)}
+            {content.recurring && <RepeatIcon className="w-3 h-3 text-gray-500" />}
+          </div>
+          <span className="text-xs text-gray-500">{content.scheduled_time}</span>
         </div>
-        <span className="text-xs text-gray-500">{content.scheduled_time}</span>
+        <p className={`font-medium text-gray-900 mb-1 ${isCompact ? 'line-clamp-1' : 'line-clamp-2'}`}>
+          {content.content_text.split('\n')[0].substring(0, isCompact ? 30 : 60)}...
+        </p>
+        <div className="flex items-center justify-between text-xs text-gray-600">
+          <span className="capitalize">{content.content_type}</span>
+          <span className="capitalize">{content.tone_used}</span>
+        </div>
       </div>
-      
-      <p className={`font-medium text-gray-900 mb-1 ${isCompact ? 'line-clamp-1' : 'line-clamp-2'}`}>
-        {content.content_text.split('\n')[0].substring(0, isCompact ? 30 : 60)}...
-      </p>
-      
-      <div className="flex items-center justify-between text-xs text-gray-600">
-        <span className="capitalize">{content.content_type}</span>
-        <span className="capitalize">{content.tone_used}</span>
-      </div>
-    </div>
-  )
+    )
+  }
 
-  const ScheduleModal = () => {
+  function ScheduleModal() {
     if (!showScheduleModal || !selectedDate) return null
-
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
@@ -312,7 +311,6 @@ export default function ContentCalendar() {
               </button>
             </div>
           </div>
-          
           <div className="p-6">
             <div className="mb-6">
               <h4 className="font-medium text-gray-900 mb-3">Available Content</h4>
@@ -337,7 +335,6 @@ export default function ContentCalendar() {
                 ))}
               </div>
             </div>
-            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
@@ -347,7 +344,6 @@ export default function ContentCalendar() {
                   ))}
                 </select>
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Recurring</label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
@@ -359,7 +355,6 @@ export default function ContentCalendar() {
               </div>
             </div>
           </div>
-          
           <div className="p-6 border-t border-gray-200 bg-gray-50">
             <div className="flex justify-end space-x-3">
               <button
@@ -388,7 +383,6 @@ export default function ContentCalendar() {
               Schedule, manage and publish your content strategy
             </p>
           </div>
-          
           <div className="flex items-center space-x-4">
             <div className="flex rounded-lg border border-gray-300">
               {(['month', 'week', 'day'] as CalendarView[]).map(viewType => (
@@ -405,7 +399,6 @@ export default function ContentCalendar() {
                 </button>
               ))}
             </div>
-            
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <select
@@ -420,14 +413,12 @@ export default function ContentCalendar() {
                 <option value="draft">Drafts</option>
               </select>
             </div>
-            
             <button className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
               <Plus className="w-4 h-4" />
               <span>Schedule Content</span>
             </button>
           </div>
         </div>
-
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center">
@@ -442,7 +433,6 @@ export default function ContentCalendar() {
               </div>
             </div>
           </div>
-          
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="p-2 rounded-lg bg-green-100">
@@ -456,7 +446,6 @@ export default function ContentCalendar() {
               </div>
             </div>
           </div>
-          
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="p-2 rounded-lg bg-red-100">
@@ -470,7 +459,6 @@ export default function ContentCalendar() {
               </div>
             </div>
           </div>
-          
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="p-2 rounded-lg bg-purple-100">
@@ -486,7 +474,6 @@ export default function ContentCalendar() {
           </div>
         </div>
       </div>
-
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
@@ -497,11 +484,9 @@ export default function ContentCalendar() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
               <h2 className="text-xl font-semibold text-gray-900">
                 {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
-              
               <button
                 onClick={() => navigateMonth('next')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -509,7 +494,6 @@ export default function ContentCalendar() {
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
-            
             <button
               onClick={() => setCurrentDate(new Date())}
               className="px-3 py-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
@@ -518,7 +502,6 @@ export default function ContentCalendar() {
             </button>
           </div>
         </div>
-
         <div className="grid grid-cols-7 border-b border-gray-200">
           {DAYS_OF_WEEK.map(day => (
             <div key={day} className="px-4 py-3 text-sm font-medium text-gray-500 text-center">
@@ -526,13 +509,11 @@ export default function ContentCalendar() {
             </div>
           ))}
         </div>
-
         <div className="grid grid-cols-7 min-h-[600px]">
           {getDaysInMonth(currentDate).map((date, index) => {
             const isCurrentMonth = date.getMonth() === currentDate.getMonth()
             const isToday = date.toDateString() === new Date().toDateString()
             const dayContent = getContentForDate(date)
-            
             return (
               <div
                 key={index}
@@ -554,19 +535,16 @@ export default function ContentCalendar() {
                   `}>
                     {date.getDate()}
                   </span>
-                  
                   {dayContent.length > 0 && (
                     <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
                       {dayContent.length}
                     </span>
                   )}
                 </div>
-                
                 <div className="space-y-1">
                   {dayContent.slice(0, 2).map(content => (
                     <ContentCard key={content.id} content={content} isCompact />
                   ))}
-                  
                   {dayContent.length > 2 && (
                     <div className="text-xs text-gray-500 text-center py-1">
                       +{dayContent.length - 2} more
@@ -578,9 +556,7 @@ export default function ContentCalendar() {
           })}
         </div>
       </div>
-
       <ScheduleModal />
-
       {showContentPreview && selectedContent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
@@ -606,13 +582,11 @@ export default function ContentCalendar() {
                 </button>
               </div>
             </div>
-            
             <div className="p-6 overflow-y-auto max-h-96">
               <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
                 {selectedContent.content_text}
               </div>
             </div>
-            
             <div className="p-6 border-t border-gray-200 bg-gray-50">
               <div className="flex justify-between">
                 <div className="flex space-x-2">
@@ -646,6 +620,8 @@ export default function ContentCalendar() {
                     <Trash2 className="w-4 h-4" />
                     <span>Delete</span>
                   </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
