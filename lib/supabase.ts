@@ -38,7 +38,8 @@ export interface GeneratedContent {
   tone_used: string
   prompt_input: string | null
   is_saved: boolean
-  status?: 'draft' | 'pending_review' | 'approved' | 'scheduled' | 'published' | 'archived'
+  // CORRECTED STATUS: Added the types used by the Production Pipeline
+  status?: 'draft' | 'pending_review' | 'approved' | 'scheduled' | 'published' | 'archived' | 'action_required' | 'ai_in_progress' | 'ready_scheduled'
   variations_data?: any
   word_count?: number
   linkedin_post_url?: string
@@ -165,7 +166,6 @@ export const saveGeneratedContent = async (content: Omit<GeneratedContent, 'id' 
   return { data, error }
 }
 
-// NEW FUNCTION ADDED HERE
 export const updateGeneratedContent = async (contentId: string, updates: Partial<GeneratedContent>) => {
   const { data, error } = await supabase
     .from('generated_content')
