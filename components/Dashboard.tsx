@@ -15,6 +15,10 @@ import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, 
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
+// === Rich Text Editor & AI Tools Integration START ===
+import RichTextEditor from './RichTextEditor'
+import { aiImprovementService } from '../lib/aiImprovementService'
+// === Rich Text Editor & AI Tools Integration END ===
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -42,6 +46,12 @@ export default function Dashboard() {
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
+
+  // === Rich Text Editor & AI Tools Integration START ===
+  const [useRichEditor, setUseRichEditor] = useState(true)
+  const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+  // === Rich Text Editor & AI Tools Integration END ===
 
   // Form data
   const [formData, setFormData] = useState({
@@ -278,6 +288,74 @@ Which of these resonates most with your experience? Let's discuss! 👇
     await refreshProfile()
   }
 
+  // === AI IMPROVEMENT FUNCTIONS ===
+  const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
+    try {
+      return await aiImprovementService.improveText(text, type)
+    } catch (error) {
+      console.error('AI improvement failed:', error)
+      return text
+    }
+  }
+
+  const improveDraftWithAI = async (draftType: DraftType, improvementType: 'bold' | 'improve' | 'expand') => {
+    const draft = generatedDrafts.find(d => d.type === draftType)
+    if (!draft) return
+
+    try {
+      const improvedContent = await aiImprovementService.improveText(draft.content, improvementType)
+      setGeneratedDrafts(prev => prev.map(d =>
+        d.type === draftType
+          ? { ...d, content: improvedContent }
+          : d
+      ))
+    } catch (error) {
+      console.error('Bulk AI improvement failed:', error)
+    }
+  }
+
+  // === KEYBOARD SHORTCUTS HELP COMPONENT ===
+  const KeyboardShortcutsHelp = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    if (!isOpen) return null
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Keyboard Shortcuts</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span>Make text bolder (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+B</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Improve clarity (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+I</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Expand content (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+E</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Bold formatting</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+Shift+B</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Italic formatting</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+Shift+I</kbd>
+            </div>
+          </div>
+          <div className="mt-4 text-xs text-gray-500">
+            Select text first to use AI improvements
+          </div>
+        </div>
+      </div>
+    )
+  }
+  // === END KEYBOARD SHORTCUTS HELP COMPONENT ===
+
   const contentTypes = [
     { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
     { id: 'story' as ContentType, label: '💡 Story', icon: '💡' },
@@ -456,18 +534,41 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       </div>
                     </div>
                     
+                    {/* === RICH TEXT EDITOR CONTEXT SECTION === */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Context (Optional)
-                      </label>
-                      <textarea
-                        value={formData.context}
-                        onChange={(e) => setFormData({ ...formData, context: e.target.value })}
-                        placeholder="Any specific details, examples, or angle you want to include..."
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        rows={3}
-                      />
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Additional Context (Optional)
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">Rich Editor</span>
+                          <button
+                            type="button"
+                            onClick={() => setUseRichEditor(!useRichEditor)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useRichEditor ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                          >
+                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useRichEditor ? 'translate-x-5' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+                      {useRichEditor ? (
+                        <RichTextEditor
+                          content={formData.context}
+                          onChange={(content) => setFormData({ ...formData, context: content })}
+                          placeholder="Any specific details, examples, or angle you want to include..."
+                          onAIImprove={handleAIImprovement}
+                        />
+                      ) : (
+                        <textarea
+                          value={formData.context}
+                          onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+                          placeholder="Any specific details, examples, or angle you want to include..."
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          rows={3}
+                        />
+                      )}
                     </div>
+                    {/* === END RICH TEXT EDITOR CONTEXT SECTION === */}
                   </div>
 
                   {/* Generate Button */}
@@ -526,23 +627,49 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       {generatedDrafts.map((draft) => {
                         const Icon = draft.icon
                         return (
-                          <button
-                            key={draft.type}
-                            onClick={() => setSelectedDraft(draft.type)}
-                            className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
-                              selectedDraft === draft.type
-                                ? 'bg-white text-indigo-700 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-800'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            <span>{draft.label}</span>
-                          </button>
+                          <div key={draft.type} className="flex-1">
+                            <button
+                              onClick={() => setSelectedDraft(draft.type)}
+                              className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
+                                selectedDraft === draft.type
+                                  ? 'bg-white text-indigo-700 shadow-sm'
+                                  : 'text-gray-600 hover:text-gray-800'
+                              }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{draft.label}</span>
+                            </button>
+                            {selectedDraft === draft.type && (
+                              <div className="flex justify-center space-x-1 mt-2">
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'bold')}
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
+                                  title="Make bolder"
+                                >
+                                  🔥
+                                </button>
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'improve')}
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
+                                  title="Improve clarity"
+                                >
+                                  ✨
+                                </button>
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'expand')}
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
+                                  title="Expand content"
+                                >
+                                  📝
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )
                       })}
                     </div>
 
-                    {/* Draft Content */}
+                    {/* === DRAFT CONTENT DISPLAY (EDITABLE) === */}
                     <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-indigo-500">
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -569,12 +696,50 @@ Which of these resonates most with your experience? Let's discuss! 👇
                           >
                             📋 Copy
                           </button>
+                          <button 
+                            onClick={() => setEditingDraft(editingDraft === selectedDraft ? null : selectedDraft)}
+                            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
+                          >
+                            {editingDraft === selectedDraft ? '👁️ View' : '✏️ Edit'}
+                          </button>
                         </div>
                       </div>
-                      <div className="text-gray-800 leading-relaxed whitespace-pre-line">
-                        {generatedDrafts.find(d => d.type === selectedDraft)?.content}
-                      </div>
+                      {editingDraft === selectedDraft ? (
+                        <div className="mb-4">
+                          <RichTextEditor
+                            content={generatedDrafts.find(d => d.type === selectedDraft)?.content || ''}
+                            onChange={(content) => {
+                              setGeneratedDrafts(prev => prev.map(draft =>
+                                draft.type === selectedDraft
+                                  ? { ...draft, content }
+                                  : draft
+                              ))
+                            }}
+                            onAIImprove={handleAIImprovement}
+                            placeholder="Edit your generated content..."
+                          />
+                          <div className="flex justify-end space-x-2 mt-3">
+                            <button
+                              onClick={() => setEditingDraft(null)}
+                              className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => setEditingDraft(null)}
+                              className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            >
+                              ✓ Done Editing
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-800 leading-relaxed whitespace-pre-line">
+                          {generatedDrafts.find(d => d.type === selectedDraft)?.content}
+                        </div>
+                      )}
                     </div>
+                    {/* === END DRAFT CONTENT DISPLAY === */}
                   </div>
                 )}
               </div>
@@ -703,6 +868,10 @@ Which of these resonates most with your experience? Let's discuss! 👇
                 </div>
               )}
             </div>
+            <KeyboardShortcutsHelp
+              isOpen={showShortcutsHelp}
+              onClose={() => setShowShortcutsHelp(false)}
+            />
           </div>
         )
     }
