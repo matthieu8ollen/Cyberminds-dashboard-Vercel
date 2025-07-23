@@ -10,7 +10,7 @@ const RichTextEditor = ({ content, onChange }: { content: string, onChange: (new
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // Configure extensions as needed
+        // Configure extensions as needed in the future
       }),
       BubbleMenu.configure({
         element: document.querySelector('.menu-container') as HTMLElement,
@@ -29,7 +29,9 @@ const RichTextEditor = ({ content, onChange }: { content: string, onChange: (new
 
   // When the external content changes (e.g., switching drafts), update the editor
   useEffect(() => {
+    // Check if the editor content is different from the prop to avoid infinite loops
     if (editor && editor.getHTML() !== content) {
+      // Set the new content without triggering the onUpdate callback again
       editor.commands.setContent(content, false); // 'false' prevents the cursor from jumping
     }
   }, [content, editor]);
@@ -65,7 +67,7 @@ const RichTextEditor = ({ content, onChange }: { content: string, onChange: (new
         </button>
       </div>
 
-      {/* Inline AI Tools Bubble Menu */}
+      {/* Inline AI Tools Bubble Menu (Placeholder) */}
       {editor && <BubbleMenu editor={editor} tippyOptions={{ duration: 100, placement: 'top-start' }}>
         <div className="flex space-x-1 bg-gray-800 text-white rounded-lg p-1 shadow-xl border border-gray-700">
           <button className="flex items-center space-x-1 p-2 rounded hover:bg-gray-700 transition-colors">
