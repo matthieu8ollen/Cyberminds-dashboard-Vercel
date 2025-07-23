@@ -24,6 +24,9 @@ export default function LinkedInPreview({
     setLikeCount(prev => liked ? prev - 1 : prev + 1)
   }
 
+  // The formatContent function is no longer needed as we will render HTML directly.
+  // This is a key change for Phase 4 to support rich text.
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm max-w-md mx-auto">
       {/* LinkedIn Post Header */}
@@ -66,10 +69,10 @@ export default function LinkedInPreview({
         </div>
       </div>
 
-      {/* Post Content - Updated to render HTML */}
+      {/* Post Content - Updated to render HTML directly */}
       <div className="p-4">
         <div 
-          className="text-sm text-gray-900 leading-relaxed prose prose-sm"
+          className="text-sm text-gray-900 leading-relaxed prose max-w-none"
           dangerouslySetInnerHTML={{ __html: content }}
         />
       </div>
