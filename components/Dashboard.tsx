@@ -302,20 +302,19 @@ Which of these resonates most with your experience? Let's discuss! 👇
   }
 
   const handleQuickSchedule = async (content: string, contentType: ContentType, toneUsed: string) => {
-    try {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      const scheduledContent = await schedulingService.scheduleContent({
-        user_id: user?.id || '',
-        content_text: content,
-        content_type: contentType,
-        tone_used: toneUsed,
-        prompt_input: formData.topic,
-        is_saved: false,
-        created_at: new Date().toISOString(),
-        scheduled_date: tomorrow.toISOString().split('T')[0],
-        scheduled_time: '09:00'
-      })
+  try {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const scheduledContent = await schedulingService.scheduleContent({
+      user_id: user?.id || '',
+      content_text: content,
+      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+      tone_used: toneUsed,
+      prompt_input: formData.topic,
+      is_saved: false,
+      scheduled_date: tomorrow.toISOString().split('T')[0],
+      scheduled_time: '09:00'
+    })
       console.log('Content scheduled successfully:', scheduledContent)
       setActivePage('plan')
     } catch (error) {
