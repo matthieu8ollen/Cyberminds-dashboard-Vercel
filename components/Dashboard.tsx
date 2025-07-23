@@ -15,7 +15,6 @@ import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, 
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
-import RichTextEditor from './RichTextEditor' // Import the new editor for Phase 4
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -24,7 +23,7 @@ type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
   type: DraftType
-  content: string // This will now be generated as HTML
+  content: string
   label: string
   description: string
   icon: any
@@ -37,10 +36,6 @@ export default function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
   const [selectedDraft, setSelectedDraft] = useState<DraftType>('bold')
-  
-  // New state for the rich text editor's content
-  const [editorContent, setEditorContent] = useState('')
-
   const [showGenerated, setShowGenerated] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
@@ -66,12 +61,6 @@ export default function Dashboard() {
       setFormData(prev => ({ ...prev, tone: profile.preferred_tone as ToneType }))
     }
   }, [profile])
-
-  // When the selected draft changes, update the editor content
-  useEffect(() => {
-    const newContent = generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
-    setEditorContent(newContent)
-  }, [selectedDraft, generatedDrafts])
 
   const loadTrendingTopics = async () => {
     const { data } = await getTrendingTopics()
@@ -108,7 +97,7 @@ export default function Dashboard() {
     
     // Simulate AI generation with 3 different drafts
     setTimeout(() => {
-      const drafts = generateMultipleDraftsAsHtml(formData)
+      const drafts = generateMultipleDrafts(formData)
       setGeneratedDrafts(drafts)
       setSelectedDraft('bold') // Default to first tab
       setShowGenerated(true)
@@ -124,11 +113,35 @@ export default function Dashboard() {
       }
     }, 3000) // Slightly longer for multiple drafts
   }
-  
-  const textToHtml = (text: string) => {
-    // A simple conversion: wrap each line in a <p> tag.
-    // Tiptap will handle the rest.
-    return text.split('\n').filter(line => line.trim() !== '').map(line => `<p>${line}</p>`).join('')
+
+  const generateMultipleDrafts = (data: typeof formData): GeneratedDraft[] => {
+    const topic = data.topic
+    const points = parseInt(data.points)
+    const context = data.context
+
+    return [
+      {
+        type: 'bold',
+        label: 'Bold',
+        description: 'Direct and confident approach',
+        icon: Target,
+        content: generateBoldDraft(topic, points, context, activeTab)
+      },
+      {
+        type: 'insightful',
+        label: 'Insightful',
+        description: 'Data-driven and analytical',
+        icon: BarChart3,
+        content: generateInsightfulDraft(topic, points, context, activeTab)
+      },
+      {
+        type: 'wildcard',
+        label: 'Wildcard',
+        description: 'Creative and engaging twist',
+        icon: Sparkles,
+        content: generateWildcardDraft(topic, points, context, activeTab)
+      }
+    ]
   }
 
   const generateBoldDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
@@ -142,15 +155,39 @@ export default function Dashboard() {
 
     const intro = boldIntros[Math.floor(Math.random() * boldIntros.length)]
 
-    return `${intro} ${topic}\n\n${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:\n\n${Array.from({length: points}, (_, i) => 
+    return `${intro} ${topic}
+
+${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:
+
+${Array.from({length: points}, (_, i) => 
   `${i + 1}. ${getBoldPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `💡 Reality check: ${context}` : ''}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
+).join('\n\n')}
+
+${context ? `\n💡 Reality check: ${context}` : ''}
+
+Most finance leaders get this wrong. Don't be one of them.
+
+What's your take? Agree or disagree? 👇
+
+#Finance #CFO #Leadership #SaaS #RealTalk`
   }
 
   const generateInsightfulDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
-    return `📊 Deep dive: ${topic}\n\nAfter analyzing patterns across 100+ finance organizations, here are the key insights:\n\n${Array.from({length: points}, (_, i) => 
+    return `📊 Deep dive: ${topic}
+
+After analyzing patterns across 100+ finance organizations, here are the key insights:
+
+${Array.from({length: points}, (_, i) => 
   `${i + 1}️⃣ ${getInsightfulPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `📈 Key finding: ${context}` : ''}\n\nThe data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.\n\nWhat metrics are you tracking for ${topic}? Share your experience below.\n\n#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
+).join('\n\n')}
+
+${context ? `\n📈 Key finding: ${context}` : ''}
+
+The data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.
+
+What metrics are you tracking for ${topic}? Share your experience below.
+
+#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
   }
 
   const generateWildcardDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
@@ -164,10 +201,20 @@ export default function Dashboard() {
 
     const intro = creativeIntros[Math.floor(Math.random() * creativeIntros.length)]
 
-    return `${intro}\n\n${Array.from({length: points}, (_, i) => {
+    return `${intro}
+
+${Array.from({length: points}, (_, i) => {
   const emojis = ['🎯', '⚡', '🔥', '💎', '🚀', '⭐', '🌟', '💡']
   return `${emojis[i % emojis.length]} ${getWildcardPoint(topic, i)}`
-}).join('\n\n')}\n\n${context ? `🎭 Plot twist: ${context}` : ''}\n\nBeen there, done that, bought the t-shirt (and learned the hard way).\n\nWhich of these resonates most with your experience? Let's discuss! 👇\n\n#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
+}).join('\n\n')}
+
+${context ? `\n🎭 Plot twist: ${context}` : ''}
+
+Been there, done that, bought the t-shirt (and learned the hard way).
+
+Which of these resonates most with your experience? Let's discuss! 👇
+
+#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
   }
 
   const getBoldPoint = (topic: string, index: number): string => {
@@ -203,24 +250,17 @@ export default function Dashboard() {
     return points[index % points.length]
   }
 
-  const generateMultipleDraftsAsHtml = (data: typeof formData): GeneratedDraft[] => {
-    const { topic, points, context } = data
-    const numPoints = parseInt(points)
-    return [
-      { type: 'bold', label: 'Bold', description: 'Direct and confident approach', icon: Target, content: textToHtml(generateBoldDraft(topic, numPoints, context, activeTab)) },
-      { type: 'insightful', label: 'Insightful', description: 'Data-driven and analytical', icon: BarChart3, content: textToHtml(generateInsightfulDraft(topic, numPoints, context, activeTab)) },
-      { type: 'wildcard', label: 'Wildcard', description: 'Creative and engaging twist', icon: Sparkles, content: textToHtml(generateWildcardDraft(topic, numPoints, context, activeTab)) }
-    ]
-  }
-
   const handleSaveDraft = async () => {
-    if (!user || !editorContent) return
+    if (!user || !generatedDrafts.length) return
+
+    const selectedDraftContent = generatedDrafts.find(d => d.type === selectedDraft)
+    if (!selectedDraftContent) return
 
     const content = {
       user_id: user.id,
-      content_text: editorContent, // Save the HTML content from the editor
+      content_text: selectedDraftContent.content,
       content_type: activeTab,
-      tone_used: selectedDraft,
+      tone_used: selectedDraft, // Store which draft variation was selected
       prompt_input: formData.topic,
       is_saved: true,
       idea_id: selectedIdea?.id,
@@ -239,11 +279,11 @@ export default function Dashboard() {
   }
 
   const contentTypes = [
-    { id: 'framework' as ContentType, label: '📊 Framework' },
-    { id: 'story' as ContentType, label: '💡 Story' },
-    { id: 'trend' as ContentType, label: '📈 Trend Take' },
-    { id: 'mistake' as ContentType, label: '⚠️ Mistake Story' },
-    { id: 'metrics' as ContentType, label: '📊 Metrics' }
+    { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
+    { id: 'story' as ContentType, label: '💡 Story', icon: '💡' },
+    { id: 'trend' as ContentType, label: '📈 Trend Take', icon: '📈' },
+    { id: 'mistake' as ContentType, label: '⚠️ Mistake Story', icon: '⚠️' },
+    { id: 'metrics' as ContentType, label: '📊 Metrics', icon: '📊' }
   ]
 
   const toneOptions = [
@@ -261,6 +301,10 @@ export default function Dashboard() {
     { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
     { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
   ]
+
+  const getCurrentDraftContent = () => {
+    return generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
+  }
 
   const getProfileDisplayName = () => {
     if (user?.email) return user.email.split('@')[0]
@@ -498,25 +542,38 @@ export default function Dashboard() {
                       })}
                     </div>
 
-                    {/* RICH TEXT EDITOR INTEGRATION */}
-                    <RichTextEditor 
-                      content={editorContent} 
-                      onChange={setEditorContent} 
-                    />
-                    
-                    <div className="flex justify-end space-x-2 mt-4">
-                      <button 
-                        onClick={handleSaveDraft}
-                        className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium transition"
-                      >
-                        💾 Save This Draft
-                      </button>
-                      <button 
-                        onClick={() => navigator.clipboard.writeText(editorContent)}
-                        className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
-                      >
-                        📋 Copy HTML
-                      </button>
+                    {/* Draft Content */}
+                    <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-indigo-500">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">
+                            {generatedDrafts.find(d => d.type === selectedDraft)?.label} Style
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {generatedDrafts.find(d => d.type === selectedDraft)?.description}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={handleSaveDraft}
+                            className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium transition"
+                          >
+                            💾 Save This Draft
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const content = generatedDrafts.find(d => d.type === selectedDraft)?.content
+                              if (content) navigator.clipboard.writeText(content)
+                            }}
+                            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
+                          >
+                            📋 Copy
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-gray-800 leading-relaxed whitespace-pre-line">
+                        {generatedDrafts.find(d => d.type === selectedDraft)?.content}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -536,10 +593,13 @@ export default function Dashboard() {
                       </button>
                     </div>
                     <LinkedInPreview 
-                      content={editorContent} 
-                      profileName={getProfileDisplayName()} 
-                      profileTitle={getProfileTitle()} 
+                      content={getCurrentDraftContent()}
+                      profileName={getProfileDisplayName()}
+                      profileTitle={getProfileTitle()}
                     />
+                    <div className="mt-4 text-xs text-gray-500 text-center">
+                      Preview updates as you switch between drafts
+                    </div>
                   </div>
                 </div>
               )}
@@ -551,11 +611,35 @@ export default function Dashboard() {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center"><span className="text-gray-600">Posts Generated</span><span className="font-semibold text-gray-900">{profile?.posts_generated_this_month || 0}</span></div>
-                      <div className="flex justify-between items-center"><span className="text-gray-600">Posts Saved</span><span className="font-semibold text-gray-900">{profile?.posts_saved_this_month || 0}</span></div>
-                      <div className="flex justify-between items-center"><span className="text-gray-600">Plan</span><span className="font-semibold text-indigo-600 capitalize">{profile?.plan_type || 'Starter'}</span></div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-4"><div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, ((profile?.posts_generated_this_month || 0) / 50) * 100))}%` }}></div></div>
-                      <div className="text-sm text-gray-500 text-center">{profile?.posts_remaining || 0} posts remaining ({profile?.plan_type} Plan)</div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Generated</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_generated_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Saved</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_saved_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Plan</span>
+                        <span className="font-semibold text-indigo-600 capitalize">
+                          {profile?.plan_type || 'Starter'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
+                        <div 
+                          className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ 
+                            width: `${Math.max(0, Math.min(100, ((profile?.posts_generated_this_month || 0) / 50) * 100))}%` 
+                          }}
+                        ></div>
+                      </div>
+                      <div className="text-sm text-gray-500 text-center">
+                        {profile?.posts_remaining || 0} posts remaining ({profile?.plan_type} Plan)
+                      </div>
                     </div>
                   </div>
 
@@ -563,10 +647,38 @@ export default function Dashboard() {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Recent Saves</h3>
-                      <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All</button>
+                      <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                        View All
+                      </button>
                     </div>
                     <div className="space-y-3">
-                      {savedContent.length > 0 ? (savedContent.map((content) => (<div key={content.id} className="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition border-l-4 border-indigo-500"><div className="text-sm font-medium text-gray-900 mb-1 truncate">{content.content_text.substring(0, 50)}...</div><div className="text-xs text-gray-500 capitalize flex items-center gap-2"><span>{content.content_type}</span>{content.tone_used && (<><span>•</span><span className="capitalize">{content.tone_used} style</span></>)}<span>•</span><span>{new Date(content.created_at).toLocaleDateString()}</span></div></div>))) : (<div className="text-sm text-gray-500 text-center py-4">No saved content yet. Generate and save your first post!</div>)}
+                      {savedContent.length > 0 ? (
+                        savedContent.map((content) => (
+                          <div 
+                            key={content.id}
+                            className="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition border-l-4 border-indigo-500"
+                          >
+                            <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                              {content.content_text.substring(0, 50)}...
+                            </div>
+                            <div className="text-xs text-gray-500 capitalize flex items-center gap-2">
+                              <span>{content.content_type}</span>
+                              {content.tone_used && (
+                                <>
+                                  <span>•</span>
+                                  <span className="capitalize">{content.tone_used} style</span>
+                                </>
+                              )}
+                              <span>•</span>
+                              <span>{new Date(content.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-4">
+                          No saved content yet. Generate and save your first post!
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -574,9 +686,19 @@ export default function Dashboard() {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 Trending in Finance</h3>
                     <div className="space-y-3">
-                      {trendingTopics.map((topic) => (<div key={topic.id} className="text-sm"><div className="font-medium text-gray-900 mb-1">{topic.topic_title}</div><div className="text-gray-600 text-xs">{topic.description}</div></div>))}
+                      {trendingTopics.map((topic) => (
+                        <div key={topic.id} className="text-sm">
+                          <div className="font-medium text-gray-900 mb-1">{topic.topic_title}</div>
+                          <div className="text-gray-600 text-xs">{topic.description}</div>
+                        </div>
+                      ))}
                     </div>
-                    <button onClick={() => setActivePage('ideas')} className="w-full mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium">Get Content Ideas →</button>
+                    <button 
+                      onClick={() => setActivePage('ideas')}
+                      className="w-full mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    >
+                      Get Content Ideas →
+                    </button>
                   </div>
                 </div>
               )}
@@ -588,39 +710,80 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center"><span className="text-white font-bold text-sm">CM</span></div>
+                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">CM</span>
+                </div>
                 <span className="text-xl font-bold text-gray-900">CyberMinds</span>
               </div>
+              
+              {/* Main Navigation */}
               <div className="hidden md:flex items-center space-x-6">
-                {navigationItems.map((item) => { const Icon = item.icon; return (
-                  <button key={item.id} onClick={() => setActivePage(item.id)} className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${activePage === item.id ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                    <Icon className="w-4 h-4" /><span>{item.label}</span>
-                  </button>
-                )})}
+                {navigationItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActivePage(item.id)}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                        activePage === item.id
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
+            
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
-                <span className="text-sm text-gray-600">{profile?.posts_remaining || 0} posts remaining</span>
+                <span className="text-sm text-gray-600">
+                  {profile?.posts_remaining || 0} posts remaining
+                </span>
               </div>
+              
               <div className="relative">
-                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition">
-                  <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center"><User className="w-3 h-3 text-white" /></div>
-                  <span className="text-sm font-medium text-gray-700">{getProfileDisplayName()}</span>
+                <button 
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition"
+                >
+                  <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
+                    <User className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {getProfileDisplayName()}
+                  </span>
                 </button>
+                
                 {showProfileMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="py-1">
-                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><Settings className="w-4 h-4 mr-3" />Settings</button>
-                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><BarChart3 className="w-4 h-4 mr-3" />Usage</button>
+                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <Settings className="w-4 h-4 mr-3" />
+                        Settings
+                      </button>
+                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <BarChart3 className="w-4 h-4 mr-3" />
+                        Usage
+                      </button>
                       <hr className="my-1" />
-                      <button onClick={signOut} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><LogOut className="w-4 h-4 mr-3" />Sign Out</button>
+                      <button 
+                        onClick={signOut}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign Out
+                      </button>
                     </div>
                   </div>
                 )}
@@ -629,9 +792,9 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
-      <main>
-        {renderPageContent()}
-      </main>
+
+      {/* Page Content */}
+      {renderPageContent()}
     </div>
   )
 }
