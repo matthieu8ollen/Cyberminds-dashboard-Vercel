@@ -165,6 +165,18 @@ export const saveGeneratedContent = async (content: Omit<GeneratedContent, 'id' 
   return { data, error }
 }
 
+// NEW FUNCTION ADDED HERE
+export const updateGeneratedContent = async (contentId: string, updates: Partial<GeneratedContent>) => {
+  const { data, error } = await supabase
+    .from('generated_content')
+    .update(updates)
+    .eq('id', contentId)
+    .select()
+    .single()
+    
+  return { data, error }
+}
+
 export const getGeneratedContent = async (userId: string, limit: number = 10) => {
   const { data, error } = await supabase
     .from('generated_content')
