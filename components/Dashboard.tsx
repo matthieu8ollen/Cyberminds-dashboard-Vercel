@@ -147,7 +147,7 @@ export default function Dashboard() {
     return [
       {
         type: 'bold', label: 'Bold', description: 'Direct and confident approach', icon: Target,
-        content: `Stop doing this immediately: ${topic}\n\nThe framework that actually works:\n\n${Array.from({length: numPoints}, (_, i) => `${i + 1}. ${getBoldPoint(topic, i)}`).join('\n\n')}\n\n💡 Reality check: ${context || 'Traditional methods are failing modern finance teams.'}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? �\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
+        content: `Stop doing this immediately: ${topic}\n\nThe framework that actually works:\n\n${Array.from({length: numPoints}, (_, i) => `${i + 1}. ${getBoldPoint(topic, i)}`).join('\n\n')}\n\n💡 Reality check: ${context || 'Traditional methods are failing modern finance teams.'}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
       },
       {
         type: 'insightful', label: 'Insightful', description: 'Data-driven and analytical', icon: BarChart3,
@@ -414,4 +414,3 @@ export default function Dashboard() {
     </div>
   )
 }
-�
