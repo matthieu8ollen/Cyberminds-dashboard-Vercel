@@ -39,7 +39,7 @@ export interface GeneratedContent {
   prompt_input: string | null
   is_saved: boolean
   // CORRECTED STATUS: Added the types used by the Production Pipeline
-  status?: 'draft' | 'pending_review' | 'approved' | 'scheduled' | 'published' | 'archived' | 'action_required' | 'ai_in_progress' | 'ready_scheduled'
+  status?: 'draft' | 'scheduled' | 'published' | 'failed'
   variations_data?: any
   word_count?: number
   linkedin_post_url?: string
