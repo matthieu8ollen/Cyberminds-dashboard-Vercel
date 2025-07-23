@@ -14,6 +14,7 @@ import {
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
+import ProductionPipeline from './ProductionPipeline'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -314,26 +315,13 @@ Which of these resonates most with your experience? Let's discuss! 👇
   const getProfileTitle = () => {
     if (profile?.current_role) return profile.current_role
     return 'Chief Financial Officer'
-  }
-
-  const renderPageContent = () => {
+  }const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
       
       case 'production':
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Production</h1>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BarChart3 className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Production Pipeline Coming Soon</h3>
-              <p className="text-gray-600">Content workflow management and review system</p>
-            </div>
-          </div>
-        )
+        return <ProductionPipeline />
       
       case 'plan':
         return (
@@ -623,6 +611,18 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Generated</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_generated_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Saved</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_saved_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">Plan</span>
                         <span className="font-semibold text-indigo-600 capitalize">
                           {profile?.plan_type || 'Starter'}
@@ -797,15 +797,3 @@ Which of these resonates most with your experience? Let's discuss! 👇
     </div>
   )
 }
-                        <span className="text-gray-600">Posts Generated</span>
-                        <span className="font-semibold text-gray-900">
-                          {profile?.posts_generated_this_month || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Posts Saved</span>
-                        <span className="font-semibold text-gray-900">
-                          {profile?.posts_saved_this_month || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
