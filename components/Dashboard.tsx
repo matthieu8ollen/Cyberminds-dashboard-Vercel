@@ -14,7 +14,7 @@ import {
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
-import ProductionPipeline from './ProductionPipeline'
+// import ProductionPipeline from './ProductionPipeline'
 // === Calendar, Rich Text Editor & AI Tools Integration START ===
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
