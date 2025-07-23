@@ -265,15 +265,15 @@ class SchedulingService {
     try {
       const result = await this.attemptPublish(item.content_id)
       
-      if (result.success) {
-        await this.updatePublishingQueue(item.content_id, {
-          status: 'completed'
-        })
-      } else {
-        await this.handlePublishingFailure(item, result.error)
-      }
+     if (result.success) {
+  await this.updatePublishingQueue(item.content_id, {
+    status: 'completed'
+  })
+} else {
+  await this.handlePublishingFailure(item, result.error || new Error('Unknown publishing error'))
+}
     } catch (error) {
-      await this.handlePublishingFailure(item, error as Error)
+     await this.handlePublishingFailure(item, error instanceof Error ? error : new Error(String(error)))
     }
   }
 
