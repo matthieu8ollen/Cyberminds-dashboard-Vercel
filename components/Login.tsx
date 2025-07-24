@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
+
+type ViewMode = 'login' | 'signup' | 'forgot-password' | 'reset-sent'
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true)
+  const [view, setView] = useState<ViewMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const { signIn, signUp } = useAuth()
@@ -17,14 +21,24 @@ export default function Login() {
     setMessage('')
 
     try {
-      const { data, error } = isLogin 
-        ? await signIn(email, password)
-        : await signUp(email, password)
-
-      if (error) {
-        setMessage(error.message)
-      } else if (!isLogin) {
-        setMessage('Check your email for the confirmation link!')
+      if (view === 'signup') {
+        if (password !== confirmPassword) {
+          setMessage('Passwords do not match')
+          setLoading(false)
+          return
+        }
+        
+        const { data, error } = await signUp(email, password)
+        if (error) {
+          setMessage(error.message)
+        } else {
+          setMessage('Check your email for the confirmation link!')
+        }
+      } else if (view === 'login') {
+        const { data, error } = await signIn(email, password)
+        if (error) {
+          setMessage(error.message)
+        }
       }
     } catch (error) {
       setMessage('An unexpected error occurred')
@@ -32,6 +46,235 @@ export default function Login() {
       setLoading(false)
     }
   }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email.trim()) {
+      setMessage('Please enter your email address')
+      return
+    }
+
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      
+      if (error) {
+        setMessage(error.message)
+      } else {
+        setView('reset-sent')
+      }
+    } catch (error) {
+      setMessage('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const renderForgotPassword = () => (
+    <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <form className="space-y-6" onSubmit={handleForgotPassword}>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Reset Your Password</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Enter your email address and we'll send you a link to reset your password.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email address
+          </label>
+          <div className="mt-1">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              placeholder="Enter your email"
+            />
+          </div>
+        </div>
+
+        {message && (
+          <div className={`text-sm ${message.includes('error') || message.includes('Invalid') ? 'text-red-600' : 'text-green-600'}`}>
+            {message}
+          </div>
+        )}
+
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full justify-center rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="loading-spinner"></div>
+            ) : (
+              'Send Reset Link'
+            )}
+          </button>
+        </div>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setView('login')}
+            className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+          >
+            ← Back to Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+
+  const renderResetSent = () => (
+    <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Check Your Email</h3>
+        <p className="text-sm text-gray-600 mb-6">
+          We've sent a password reset link to <strong>{email}</strong>. 
+          Click the link in the email to reset your password.
+        </p>
+        <div className="space-y-3">
+          <button
+            onClick={() => setView('login')}
+            className="w-full rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+          >
+            Back to Sign In
+          </button>
+          <button
+            onClick={handleForgotPassword}
+            disabled={loading}
+            className="w-full text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+          >
+            Resend Email
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderLoginSignup = () => (
+    <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email address
+          </label>
+          <div className="mt-1">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <div className="mt-1">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={view === 'signup' ? 'new-password' : 'current-password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        {view === 'signup' && (
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
+            <div className="mt-1">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {view === 'login' && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <button
+                type="button"
+                onClick={() => setView('forgot-password')}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          </div>
+        )}
+
+        {message && (
+          <div className={`text-sm ${message.includes('Check your email') ? 'text-green-600' : 'text-red-600'}`}>
+            {message}
+          </div>
+        )}
+
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full justify-center rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="loading-spinner"></div>
+            ) : (
+              view === 'login' ? 'Sign in' : 'Sign up'
+            )}
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-6">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Welcome to CyberMinds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -42,90 +285,27 @@ export default function Login() {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          {isLogin ? 'Sign in to your account' : 'Create your account'}
+          {view === 'forgot-password' ? 'Reset Password' : 
+           view === 'reset-sent' ? 'Email Sent' :
+           view === 'login' ? 'Sign in to your account' : 'Create your account'}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            {isLogin ? 'Sign up' : 'Sign in'}
-          </button>
-        </p>
+        {view === 'login' || view === 'signup' ? (
+          <p className="mt-2 text-center text-sm text-gray-600">
+            {view === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              onClick={() => setView(view === 'login' ? 'signup' : 'login')}
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              {view === 'login' ? 'Sign up' : 'Sign in'}
+            </button>
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-
-            {message && (
-              <div className={`text-sm ${message.includes('Check your email') ? 'text-green-600' : 'text-red-600'}`}>
-                {message}
-              </div>
-            )}
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full justify-center rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
-              >
-                {loading ? (
-                  <div className="loading-spinner"></div>
-                ) : (
-                  isLogin ? 'Sign in' : 'Sign up'
-                )}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">Welcome to CyberMinds</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {view === 'forgot-password' ? renderForgotPassword() :
+         view === 'reset-sent' ? renderResetSent() :
+         renderLoginSignup()}
       </div>
     </div>
   )
