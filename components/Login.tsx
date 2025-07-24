@@ -169,28 +169,47 @@ export default function Login() {
           >
             Back to Sign In
           </button>
-          <button
-            onClick={() => {
-              if (email.trim()) {
-                handleForgotPassword(new Event('submit') as any)
-              } else {
-                setMessage('Please enter your email address')
-              }
-            }}
-            disabled={loading || resendCountdown > 0}
-            className={`w-full text-sm font-medium ${
-              resendCountdown > 0 
-                ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-indigo-600 hover:text-indigo-500'
-            }`}
-          >
-            {resendCountdown > 0 
-              ? `Resend in ${resendCountdown}s` 
-              : loading 
-              ? 'Sending...' 
-              : 'Resend Email'
-            }
-          </button>
+       <button
+  onClick={async () => {
+    if (!email.trim()) {
+      setMessage('Please enter your email address')
+      return
+    }
+
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      
+      if (error) {
+        setMessage(error.message)
+      } else {
+        setMessage('Reset link sent again!')
+        setResendCountdown(30)
+      }
+    } catch (error) {
+      setMessage('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }}
+  disabled={loading || resendCountdown > 0}
+  className={`w-full text-sm font-medium ${
+    resendCountdown > 0 
+      ? 'text-gray-400 cursor-not-allowed' 
+      : 'text-indigo-600 hover:text-indigo-500'
+  }`}
+>
+  {resendCountdown > 0 
+    ? `Resend in ${resendCountdown}s` 
+    : loading 
+    ? 'Sending...' 
+    : 'Resend Email'
+  }
+</button>
         </div>
       </div>
     </div>
