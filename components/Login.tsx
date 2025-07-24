@@ -13,7 +13,17 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [resendCountdown, setResendCountdown] = useState(0)
   const { signIn, signUp } = useAuth()
+  useEffect(() => {
+  let timer: NodeJS.Timeout
+  if (resendCountdown > 0) {
+    timer = setTimeout(() => {
+      setResendCountdown(resendCountdown - 1)
+    }, 1000)
+  }
+  return () => clearTimeout(timer)
+}, [resendCountdown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,9 +75,10 @@ export default function Login() {
       
       if (error) {
         setMessage(error.message)
-      } else {
-        setView('reset-sent')
-      }
+     } else {
+  setView('reset-sent')
+  setResendCountdown(30)
+}
     } catch (error) {
       setMessage('An unexpected error occurred')
     } finally {
