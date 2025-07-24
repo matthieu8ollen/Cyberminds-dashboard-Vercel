@@ -119,7 +119,7 @@ export const signOut = async () => {
   return { error }
 }
 
-// Database helpers with debug logging
+// Database helpers with timeout fix
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     console.log('🔍 getUserProfile: Starting with timeout approach for userId:', userId)
