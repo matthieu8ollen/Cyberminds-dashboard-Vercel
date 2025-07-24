@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { 
   getTrendingTopics, 
@@ -12,7 +12,6 @@ import {
   ContentIdea
 } from '../lib/supabase'
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
-import { useEffect, useRef } from 'react'
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
@@ -59,18 +58,16 @@ export default function Dashboard() {
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
 useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-      setShowProfileMenu(false)
-    }
+  const handleClickOutside = () => {
+    setShowProfileMenu(false)
   }
 
   if (showProfileMenu) {
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('click', handleClickOutside)
   }
 
   return () => {
-    document.removeEventListener('mousedown', handleClickOutside)
+    document.removeEventListener('click', handleClickOutside)
   }
 }, [showProfileMenu])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
