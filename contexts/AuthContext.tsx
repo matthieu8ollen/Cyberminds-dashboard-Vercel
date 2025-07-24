@@ -8,10 +8,12 @@ interface AuthContextType {
   user: User | null
   profile: UserProfile | null
   loading: boolean
+  isSessionValid: boolean
   signUp: (email: string, password: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
@@ -28,103 +30,176 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isSessionValid, setIsSessionValid] = useState(true)
+  const [lastActivity, setLastActivity] = useState(Date.now())
 
   useEffect(() => {
-    console.log('🚀 AuthProvider: Starting initialization')
     let mounted = true
 
     const initializeAuth = async () => {
       try {
-        console.log('🔍 AuthProvider: Getting session...')
-        
-        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        console.log('📊 AuthProvider: Session result:', { session: !!session, error })
-        
-        if (!mounted) {
-          console.log('❌ AuthProvider: Component unmounted, stopping')
-          return
-        }
+        if (!mounted) return
 
         if (error) {
-          console.error('❌ AuthProvider: Session error:', error)
+          console.error('Session error:', error)
+          setIsSessionValid(false)
           setLoading(false)
           return
         }
 
-        setUser(session?.user ?? null)
-        console.log('👤 AuthProvider: User set:', !!session?.user)
-        
         if (session?.user) {
-          console.log('📝 AuthProvider: Loading profile...')
+          setUser(session.user)
+          setIsSessionValid(true)
+          setLastActivity(Date.now())
           await loadUserProfile(session.user.id)
         } else {
-          console.log('✅ AuthProvider: No user, loading complete')
+          setIsSessionValid(false)
           setLoading(false)
         }
       } catch (error) {
-        console.error('💥 AuthProvider: Initialization error:', error)
+        console.error('Auth initialization error:', error)
         if (mounted) {
           setUser(null)
           setProfile(null)
+          setIsSessionValid(false)
           setLoading(false)
         }
       }
     }
 
-    // Add a timeout as fallback
-    const timeout = setTimeout(() => {
-      console.log('⏰ AuthProvider: Timeout reached, forcing loading to false')
-      if (mounted) {
-        setLoading(false)
-      }
-    }, 5000) // 5 second timeout
-
-    // Initialize auth immediately
     initializeAuth()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 AuthProvider: Auth state changed:', event, !!session)
         if (!mounted) return
         
-        setUser(session?.user ?? null)
+        console.log('🔄 Auth state changed:', event)
+        
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setLastActivity(Date.now())
+        }
+        
         if (session?.user) {
-          await loadUserProfile(session.user.id)
+          setUser(session.user)
+          setIsSessionValid(true)
+          if (event !== 'TOKEN_REFRESHED') {
+            await loadUserProfile(session.user.id)
+          }
         } else {
+          setUser(null)
           setProfile(null)
+          setIsSessionValid(false)
           setLoading(false)
         }
       }
     )
 
     return () => {
-      console.log('🧹 AuthProvider: Cleaning up')
       mounted = false
-      clearTimeout(timeout)
       subscription.unsubscribe()
     }
   }, [])
 
+  // Session timeout checker
+  useEffect(() => {
+    if (!user) return
+
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error || !session) {
+          console.log('⚠️ Session expired or invalid')
+          setIsSessionValid(false)
+          setUser(null)
+          setProfile(null)
+          return
+        }
+
+        // Check if session is close to expiring (within 5 minutes)
+        const expiresAt = session.expires_at
+        const now = Math.floor(Date.now() / 1000)
+        const timeUntilExpiry = expiresAt ? expiresAt - now : 0
+
+        if (timeUntilExpiry < 300) { // Less than 5 minutes
+          console.log('🔄 Session expiring soon, refreshing...')
+          await supabase.auth.refreshSession()
+        }
+
+        setIsSessionValid(true)
+      } catch (error) {
+        console.error('Session check failed:', error)
+        setIsSessionValid(false)
+      }
+    }
+
+    // Check session every 2 minutes
+    const interval = setInterval(checkSession, 2 * 60 * 1000)
+    
+    // Also check on user activity
+    const handleActivity = () => {
+      setLastActivity(Date.now())
+      checkSession()
+    }
+
+    window.addEventListener('focus', handleActivity)
+    window.addEventListener('click', handleActivity)
+    window.addEventListener('keydown', handleActivity)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', handleActivity)
+      window.removeEventListener('click', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+    }
+  }, [user])
+
+  // Auto-logout after 24 hours of inactivity
+  useEffect(() => {
+    if (!user) return
+
+    const checkInactivity = () => {
+      const now = Date.now()
+      const timeSinceActivity = now - lastActivity
+      const maxInactivity = 24 * 60 * 60 * 1000 // 24 hours
+
+      if (timeSinceActivity > maxInactivity) {
+        console.log('⚠️ Auto-logout due to inactivity')
+        handleSignOut()
+      }
+    }
+
+    const interval = setInterval(checkInactivity, 60 * 1000) // Check every minute
+    return () => clearInterval(interval)
+  }, [user, lastActivity])
+
   const loadUserProfile = async (userId: string) => {
     try {
-      console.log('📂 AuthProvider: Loading user profile for:', userId)
       let userProfile = await getUserProfile(userId)
       
-      // If no profile exists, create one
       if (!userProfile) {
-        console.log('➕ AuthProvider: Creating new profile')
         userProfile = await createUserProfile(userId)
       }
       
-      console.log('✅ AuthProvider: Profile loaded:', !!userProfile)
       setProfile(userProfile)
     } catch (error) {
-      console.error('❌ AuthProvider: Error loading user profile:', error)
+      console.error('Error loading user profile:', error)
+      // Set a basic profile so the app doesn't break
+      setProfile({
+        id: userId,
+        plan_type: 'starter',
+        posts_remaining: 10,
+        preferred_tone: 'insightful_cfo',
+        niche: 'finance',
+        posts_generated_this_month: 0,
+        posts_saved_this_month: 0,
+        onboarding_completed: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
     } finally {
-      console.log('🏁 AuthProvider: Setting loading to false')
       setLoading(false)
     }
   }
@@ -143,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleSignIn = async (email: string, password: string) => {
     try {
+      setLastActivity(Date.now())
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -154,25 +230,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const handleSignOut = async () => {
+    setIsSessionValid(false)
     await supabase.auth.signOut()
   }
 
   const refreshProfile = async () => {
-    if (user) {
+    if (user && isSessionValid) {
       await loadUserProfile(user.id)
     }
   }
 
-  console.log('🎯 AuthProvider: Current state:', { user: !!user, profile: !!profile, loading })
+  const refreshSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession()
+      if (error) throw error
+      
+      setLastActivity(Date.now())
+      setIsSessionValid(true)
+      console.log('✅ Session refreshed successfully')
+    } catch (error) {
+      console.error('Failed to refresh session:', error)
+      setIsSessionValid(false)
+      await handleSignOut()
+    }
+  }
 
   const value = {
     user,
     profile,
     loading,
+    isSessionValid,
     signUp: handleSignUp,
     signIn: handleSignIn,
     signOut: handleSignOut,
     refreshProfile,
+    refreshSession,
   }
 
   return (
