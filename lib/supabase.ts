@@ -105,10 +105,13 @@ export const signOut = async () => {
   return { error }
 }
 
-// Database helpers with better error handling
+// Database helpers with debug logging
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
-    console.log('🔍 getUserProfile: Fetching profile for:', userId)
+    console.log('🔍 getUserProfile: Starting query for userId:', userId)
+    console.log('🔍 getUserProfile: Supabase client exists:', !!supabase)
+    
+    console.log('🔍 getUserProfile: About to execute query...')
     
     const { data, error } = await supabase
       .from('user_profiles')
@@ -116,19 +119,25 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
       .eq('id', userId)
       .single()
     
+    console.log('🔍 getUserProfile: Query completed!')
+    console.log('🔍 getUserProfile: Data received:', !!data)
+    console.log('🔍 getUserProfile: Error received:', error)
+    
     if (error) {
-      console.log('⚠️ getUserProfile: Error or no profile found:', error.message)
+      console.log('⚠️ getUserProfile: Error details:', error.message, error.code)
       // If no profile exists, that's okay - we'll create one
       if (error.code === 'PGRST116') {
+        console.log('✅ getUserProfile: No profile found (expected), returning null')
         return null
       }
+      console.error('❌ getUserProfile: Unexpected error:', error)
       throw error
     }
     
-    console.log('✅ getUserProfile: Profile found')
+    console.log('✅ getUserProfile: Profile found successfully')
     return data
   } catch (error) {
-    console.error('❌ getUserProfile: Unexpected error:', error)
+    console.error('💥 getUserProfile: Catch block - Unexpected error:', error)
     return null
   }
 }
