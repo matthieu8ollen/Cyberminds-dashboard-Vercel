@@ -12,6 +12,7 @@ import {
   ContentIdea
 } from '../lib/supabase'
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import IdeasPage from './IdeasPage'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
@@ -55,6 +56,23 @@ export default function Dashboard() {
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+      setShowProfileMenu(false)
+    }
+  }
+
+  if (showProfileMenu) {
+    document.addEventListener('mousedown', handleClickOutside)
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside)
+  }
+}, [showProfileMenu])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
 
   // Form data
@@ -944,7 +962,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                   {profile?.posts_remaining || 0} posts remaining
                 </span>
               </div>
-              <div className="relative">
+              <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition"
