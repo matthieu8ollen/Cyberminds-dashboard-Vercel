@@ -158,12 +158,18 @@ export default function Login() {
             Back to Sign In
           </button>
           <button
-            onClick={handleForgotPassword}
-            disabled={loading}
-            className="w-full text-sm text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            Resend Email
-          </button>
+  onClick={() => {
+    if (email.trim()) {
+      handleForgotPassword(new Event('submit') as any)
+    } else {
+      setMessage('Please enter your email address')
+    }
+  }}
+  disabled={loading}
+  className="w-full text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+>
+  {loading ? 'Sending...' : 'Resend Email'}
+</button>
         </div>
       </div>
     </div>
