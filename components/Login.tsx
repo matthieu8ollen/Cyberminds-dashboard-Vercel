@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -168,7 +168,7 @@ export default function Login() {
           >
             Back to Sign In
           </button>
-          <button
+         <button
   onClick={() => {
     if (email.trim()) {
       handleForgotPassword(new Event('submit') as any)
@@ -176,10 +176,19 @@ export default function Login() {
       setMessage('Please enter your email address')
     }
   }}
-  disabled={loading}
-  className="w-full text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+  disabled={loading || resendCountdown > 0}
+  className={`w-full text-sm font-medium ${
+    resendCountdown > 0 
+      ? 'text-gray-400 cursor-not-allowed' 
+      : 'text-indigo-600 hover:text-indigo-500'
+  }`}
 >
-  {loading ? 'Sending...' : 'Resend Email'}
+  {resendCountdown > 0 
+    ? `Resend in ${resendCountdown}s` 
+    : loading 
+    ? 'Sending...' 
+    : 'Resend Email'
+  }
 </button>
         </div>
       </div>
