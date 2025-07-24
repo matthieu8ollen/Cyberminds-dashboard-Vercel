@@ -953,12 +953,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
-                <span className="text-sm text-gray-600">
-                  {profile?.posts_remaining || 0} posts remaining
-                </span>
-              </div>
+      
               <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
