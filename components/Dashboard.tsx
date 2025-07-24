@@ -13,6 +13,7 @@ import {
 } from '../lib/supabase'
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
 import IdeasPage from './IdeasPage'
+import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 // === Calendar, Rich Text Editor & AI Tools Integration START ===
@@ -25,7 +26,7 @@ import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'generator' | 'ideas' | 'production' | 'plan' | 'analytics' | 'feed'
+type ActivePage = 'generator' | 'ideas' | 'writer-suite' | 'production' | 'plan' | 'analytics' | 'feed'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
@@ -387,13 +388,14 @@ Which of these resonates most with your experience? Let's discuss! 👇
   ]
 
   const navigationItems = [
-    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-    { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
-    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
-    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
-    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
-    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
-  ]
+  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+  { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
+  { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+  { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+  { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+  { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+  { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+]
 
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
   const getProfileDisplayName = () => (user?.email ? user.email.split('@')[0] : 'Finance Professional')
@@ -403,6 +405,11 @@ Which of these resonates most with your experience? Let's discuss! 👇
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
+        case 'writer-suite':
+  return <WriterSuite onComplete={(data) => {
+    console.log('Writer Suite completed:', data)
+    // Here you could save the final content, navigate to production, etc.
+  }} />
     case 'production':
   return <ProductionPipeline />
       case 'plan':
@@ -947,6 +954,11 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.label}</span>
+{item.premium && (
+  <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+    PRO
+  </span>
+)}
                     </button>
                   )
                 })}
