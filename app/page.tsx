@@ -12,23 +12,34 @@ function MainApp() {
   const { user, profile, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
+    // Only set initialLoad to false when we have definitive auth state
     if (user && profile) {
-      // Show onboarding if user hasn't completed it
       setShowOnboarding(!profile.onboarding_completed)
+      setInitialLoad(false)
+    } else if (!loading && !user) {
+      // Auth check is complete and no user found
+      setInitialLoad(false)
     }
-  }, [user, profile])
+  }, [user, profile, loading])
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false)
   }
 
-  if (!mounted || loading) {
+  // Show loading during hydration and initial auth check
+  if (!mounted || initialLoad) {
+    return <Loading />
+  }
+
+  // Show loading only during actual auth operations (not initial check)
+  if (loading && user === null) {
     return <Loading />
   }
 
