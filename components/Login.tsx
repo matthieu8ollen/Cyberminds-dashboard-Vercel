@@ -15,15 +15,16 @@ export default function Login() {
   const [message, setMessage] = useState('')
   const [resendCountdown, setResendCountdown] = useState(0)
   const { signIn, signUp } = useAuth()
+
   useEffect(() => {
-  let timer: NodeJS.Timeout
-  if (resendCountdown > 0) {
-    timer = setTimeout(() => {
-      setResendCountdown(resendCountdown - 1)
-    }, 1000)
-  }
-  return () => clearTimeout(timer)
-}, [resendCountdown])
+    let timer: NodeJS.Timeout
+    if (resendCountdown > 0) {
+      timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1)
+      }, 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [resendCountdown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,10 +76,10 @@ export default function Login() {
       
       if (error) {
         setMessage(error.message)
-     } else {
-  setView('reset-sent')
-  setResendCountdown(30)
-}
+      } else {
+        setView('reset-sent')
+        setResendCountdown(30)
+      }
     } catch (error) {
       setMessage('An unexpected error occurred')
     } finally {
@@ -168,28 +169,28 @@ export default function Login() {
           >
             Back to Sign In
           </button>
-         <button
-  onClick={() => {
-    if (email.trim()) {
-      handleForgotPassword(new Event('submit') as any)
-    } else {
-      setMessage('Please enter your email address')
-    }
-  }}
-  disabled={loading || resendCountdown > 0}
-  className={`w-full text-sm font-medium ${
-    resendCountdown > 0 
-      ? 'text-gray-400 cursor-not-allowed' 
-      : 'text-indigo-600 hover:text-indigo-500'
-  }`}
->
-  {resendCountdown > 0 
-    ? `Resend in ${resendCountdown}s` 
-    : loading 
-    ? 'Sending...' 
-    : 'Resend Email'
-  }
-</button>
+          <button
+            onClick={() => {
+              if (email.trim()) {
+                handleForgotPassword(new Event('submit') as any)
+              } else {
+                setMessage('Please enter your email address')
+              }
+            }}
+            disabled={loading || resendCountdown > 0}
+            className={`w-full text-sm font-medium ${
+              resendCountdown > 0 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-indigo-600 hover:text-indigo-500'
+            }`}
+          >
+            {resendCountdown > 0 
+              ? `Resend in ${resendCountdown}s` 
+              : loading 
+              ? 'Sending...' 
+              : 'Resend Email'
+            }
+          </button>
         </div>
       </div>
     </div>
