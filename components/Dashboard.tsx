@@ -476,7 +476,8 @@ Which of these resonates most with your experience? Let's discuss! 👇
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid gap-8" style={{ gridTemplateColumns: showPreview && showGenerated ? '1fr 400px' : '2fr 1fr' }}>
               <div className="space-y-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-700/5 to-teal-600/5 rounded-full -mr-10 -mt-10"></div>
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Generate Your Next Post</h2>
                     <p className="text-gray-600">Create engaging finance content that builds your authority</p>
@@ -594,7 +595,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     <button
                       onClick={handleGenerate}
                       disabled={isGenerating || !formData.topic.trim() || (profile?.posts_remaining || 0) <= 0}
-                      className="gradient-bg text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-gradient-to-r from-slate-700 via-slate-600 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                     >
                       {isGenerating ? (
                         <>
@@ -932,12 +933,17 @@ Which of these resonates most with your experience? Let's discuss! 👇
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CM</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">CyberMinds</span>
-              </div>
+             <div className="flex items-center space-x-3">
+  <div className="w-9 h-9 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12.5 2L22 7v10l-9.5 5L3 17V7l9.5-5z"/>
+    </svg>
+  </div>
+  <div>
+    <span className="text-xl font-bold bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">CyberMinds</span>
+    <div className="text-xs text-slate-500 -mt-1">Writer Suite</div>
+  </div>
+</div>
               {/* Main Navigation */}
               <div className="hidden md:flex items-center space-x-6">
                 {navigationItems.map((item) => {
@@ -947,15 +953,17 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       key={item.id}
                       onClick={() => setActivePage(item.id)}
                       className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        activePage === item.id
-                          ? 'bg-indigo-100 text-indigo-700'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
+  activePage === item.id
+    ? item.premium 
+      ? 'bg-gradient-to-r from-slate-50 to-teal-50 text-slate-700 border border-slate-200' 
+      : 'bg-indigo-100 text-indigo-700'
+    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+}`}
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.label}</span>
 {item.premium && (
-  <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+  <span className="bg-gradient-to-r from-slate-700 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">
     PRO
   </span>
 )}
@@ -979,7 +987,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                   </span>
                 </button>
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 backdrop-blur-sm">
                     <div className="py-1">
                       <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                         <Settings className="w-4 h-4 mr-3" />
