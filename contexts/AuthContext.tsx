@@ -30,30 +30,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🚀 AuthProvider: Starting initialization')
     let mounted = true
 
     const initializeAuth = async () => {
       try {
+        console.log('🔍 AuthProvider: Getting session...')
+        
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (!mounted) return
+        console.log('📊 AuthProvider: Session result:', { session: !!session, error })
+        
+        if (!mounted) {
+          console.log('❌ AuthProvider: Component unmounted, stopping')
+          return
+        }
 
         if (error) {
-          console.error('Session error:', error)
+          console.error('❌ AuthProvider: Session error:', error)
           setLoading(false)
           return
         }
 
         setUser(session?.user ?? null)
+        console.log('👤 AuthProvider: User set:', !!session?.user)
         
         if (session?.user) {
+          console.log('📝 AuthProvider: Loading profile...')
           await loadUserProfile(session.user.id)
         } else {
+          console.log('✅ AuthProvider: No user, loading complete')
           setLoading(false)
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('💥 AuthProvider: Initialization error:', error)
         if (mounted) {
           setUser(null)
           setProfile(null)
@@ -62,12 +73,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
+    // Add a timeout as fallback
+    const timeout = setTimeout(() => {
+      console.log('⏰ AuthProvider: Timeout reached, forcing loading to false')
+      if (mounted) {
+        setLoading(false)
+      }
+    }, 5000) // 5 second timeout
+
     // Initialize auth immediately
     initializeAuth()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 AuthProvider: Auth state changed:', event, !!session)
         if (!mounted) return
         
         setUser(session?.user ?? null)
@@ -81,24 +101,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     )
 
     return () => {
+      console.log('🧹 AuthProvider: Cleaning up')
       mounted = false
+      clearTimeout(timeout)
       subscription.unsubscribe()
     }
   }, [])
 
   const loadUserProfile = async (userId: string) => {
     try {
+      console.log('📂 AuthProvider: Loading user profile for:', userId)
       let userProfile = await getUserProfile(userId)
       
       // If no profile exists, create one
       if (!userProfile) {
+        console.log('➕ AuthProvider: Creating new profile')
         userProfile = await createUserProfile(userId)
       }
       
+      console.log('✅ AuthProvider: Profile loaded:', !!userProfile)
       setProfile(userProfile)
     } catch (error) {
-      console.error('Error loading user profile:', error)
+      console.error('❌ AuthProvider: Error loading user profile:', error)
     } finally {
+      console.log('🏁 AuthProvider: Setting loading to false')
       setLoading(false)
     }
   }
@@ -136,6 +162,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await loadUserProfile(user.id)
     }
   }
+
+  console.log('🎯 AuthProvider: Current state:', { user: !!user, profile: !!profile, loading })
 
   const value = {
     user,
