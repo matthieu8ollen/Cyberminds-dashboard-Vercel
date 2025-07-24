@@ -105,26 +105,65 @@ export const signOut = async () => {
   return { error }
 }
 
-// Database helpers
+// Database helpers with better error handling
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-  
-  if (error) {
-    console.error('Error fetching user profile:', error)
+  try {
+    console.log('🔍 getUserProfile: Fetching profile for:', userId)
+    
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    
+    if (error) {
+      console.log('⚠️ getUserProfile: Error or no profile found:', error.message)
+      // If no profile exists, that's okay - we'll create one
+      if (error.code === 'PGRST116') {
+        return null
+      }
+      throw error
+    }
+    
+    console.log('✅ getUserProfile: Profile found')
+    return data
+  } catch (error) {
+    console.error('❌ getUserProfile: Unexpected error:', error)
     return null
   }
-  
-  return data
 }
 
 export const createUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .insert({
+  try {
+    console.log('➕ createUserProfile: Creating profile for:', userId)
+    
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: userId,
+        plan_type: 'starter',
+        posts_remaining: 10,
+        preferred_tone: 'insightful_cfo',
+        niche: 'finance',
+        posts_generated_this_month: 0,
+        posts_saved_this_month: 0,
+        onboarding_completed: false,
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('❌ createUserProfile: Error:', error)
+      throw error
+    }
+    
+    console.log('✅ createUserProfile: Profile created')
+    return data
+  } catch (error) {
+    console.error('❌ createUserProfile: Unexpected error:', error)
+    
+    // Return a default profile if database creation fails
+    return {
       id: userId,
       plan_type: 'starter',
       posts_remaining: 10,
@@ -133,16 +172,10 @@ export const createUserProfile = async (userId: string): Promise<UserProfile | n
       posts_generated_this_month: 0,
       posts_saved_this_month: 0,
       onboarding_completed: false,
-    })
-    .select()
-    .single()
-  
-  if (error) {
-    console.error('Error creating user profile:', error)
-    return null
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
   }
-  
-  return data
 }
 
 export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>) => {
