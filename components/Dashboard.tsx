@@ -174,15 +174,39 @@ useEffect(() => {
       "Stop doing this immediately:"
     ]
     const intro = boldIntros[Math.floor(Math.random() * boldIntros.length)]
-    return `${intro} ${topic}\n\n${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:\n\n${Array.from({length: points}, (_, i) => 
+    return `${intro} ${topic}
+
+${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:
+
+${Array.from({length: points}, (_, i) => 
   `${i + 1}. ${getBoldPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `\n💡 Reality check: ${context}` : ''}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
+).join('\n\n')}
+
+${context ? `\n💡 Reality check: ${context}` : ''}
+
+Most finance leaders get this wrong. Don't be one of them.
+
+What's your take? Agree or disagree? 👇
+
+#Finance #CFO #Leadership #SaaS #RealTalk`
   }
 
   const generateInsightfulDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
-    return `📊 Deep dive: ${topic}\n\nAfter analyzing patterns across 100+ finance organizations, here are the key insights:\n\n${Array.from({length: points}, (_, i) => 
+    return `📊 Deep dive: ${topic}
+
+After analyzing patterns across 100+ finance organizations, here are the key insights:
+
+${Array.from({length: points}, (_, i) => 
   `${i + 1}️⃣ ${getInsightfulPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `\n📈 Key finding: ${context}` : ''}\n\nThe data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.\n\nWhat metrics are you tracking for ${topic}? Share your experience below.\n\n#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
+).join('\n\n')}
+
+${context ? `\n📈 Key finding: ${context}` : ''}
+
+The data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.
+
+What metrics are you tracking for ${topic}? Share your experience below.
+
+#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
   }
 
   const generateWildcardDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
@@ -194,10 +218,20 @@ useEffect(() => {
       `${topic} through the lens of a recovering perfectionist CFO:`
     ]
     const intro = creativeIntros[Math.floor(Math.random() * creativeIntros.length)]
-    return `${intro}\n\n${Array.from({length: points}, (_, i) => {
+    return `${intro}
+
+${Array.from({length: points}, (_, i) => {
   const emojis = ['🎯', '⚡', '🔥', '💎', '🚀', '⭐', '🌟', '💡']
   return `${emojis[i % emojis.length]} ${getWildcardPoint(topic, i)}`
-}).join('\n\n')}\n\n${context ? `\n🎭 Plot twist: ${context}` : ''}\n\nBeen there, done that, bought the t-shirt (and learned the hard way).\n\nWhich of these resonates most with your experience? Let's discuss! 👇\n\n#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
+}).join('\n\n')}
+
+${context ? `\n🎭 Plot twist: ${context}` : ''}
+
+Been there, done that, bought the t-shirt (and learned the hard way).
+
+Which of these resonates most with your experience? Let's discuss! 👇
+
+#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
   }
 
   const getBoldPoint = (topic: string, index: number): string => {
@@ -402,7 +436,7 @@ useEffect(() => {
                   className={`px-4 py-2 rounded-lg font-medium transition ${
                     isLinkedInConnected
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                      : 'bg-slate-700 text-white hover:bg-slate-800'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
                   {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
@@ -585,10 +619,9 @@ useEffect(() => {
                       <div className="flex items-center space-x-3">
                         <button 
                           onClick={() => setShowPreview(!showPreview)}
-                          className={`flex items-center space-
-                                                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                             showPreview 
-                              ? 'bg-slate-100 text-slate-700' 
+                              ? 'bg-indigo-100 text-indigo-700' 
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
@@ -597,7 +630,7 @@ useEffect(() => {
                         </button>
                         <button 
                           onClick={handleGenerate}
-                          className="text-sm text-slate-600 hover:text-slate-700 font-medium"
+                          className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                         >
                           Regenerate
                         </button>
@@ -613,7 +646,7 @@ useEffect(() => {
                               onClick={() => setSelectedDraft(draft.type)}
                               className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
                                 selectedDraft === draft.type
-                                  ? 'bg-white text-slate-700 shadow-sm'
+                                  ? 'bg-white text-indigo-700 shadow-sm'
                                   : 'text-gray-600 hover:text-gray-800'
                               }`}
                             >
@@ -624,21 +657,21 @@ useEffect(() => {
                               <div className="flex justify-center space-x-1 mt-2">
                                 <button
                                   onClick={() => improveDraftWithAI(draft.type, 'bold')}
-                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
                                   title="Make bolder"
                                 >
                                   🔥
                                 </button>
                                 <button
                                   onClick={() => improveDraftWithAI(draft.type, 'improve')}
-                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
                                   title="Improve clarity"
                                 >
                                   ✨
                                 </button>
                                 <button
                                   onClick={() => improveDraftWithAI(draft.type, 'expand')}
-                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  className="p-1 text-xs text-gray-500 hover:text-indigo-600 transition"
                                   title="Expand content"
                                 >
                                   📝
@@ -650,7 +683,7 @@ useEffect(() => {
                       })}
                     </div>
                     {/* Draft Content Display (Editable) */}
-                    <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-slate-500">
+                    <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-indigo-500">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">
@@ -663,7 +696,7 @@ useEffect(() => {
                         <div className="flex space-x-2">
                           <button 
                             onClick={handleSaveDraft}
-                            className="text-sm bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800 font-medium transition"
+                            className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium transition"
                           >
                             💾 Save This Draft
                           </button>
@@ -779,7 +812,7 @@ useEffect(() => {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Plan</span>
-                        <span className="font-semibold text-slate-700 capitalize">
+                        <span className="font-semibold text-indigo-600 capitalize">
                           {profile?.plan_type || 'Starter'}
                         </span>
                       </div>
@@ -800,7 +833,7 @@ useEffect(() => {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Recent Saves</h3>
-                      <button className="text-sm text-slate-600 hover:text-slate-700 font-medium">
+                      <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                         View All
                       </button>
                     </div>
@@ -809,7 +842,7 @@ useEffect(() => {
                         savedContent.map((content) => (
                           <div 
                             key={content.id}
-                            className="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition border-l-4 border-slate-500"
+                            className="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition border-l-4 border-indigo-500"
                           >
                             <div className="text-sm font-medium text-gray-900 mb-1 truncate">
                               {content.content_text.substring(0, 50)}...
@@ -847,7 +880,7 @@ useEffect(() => {
                     </div>
                     <button 
                       onClick={() => setActivePage('ideas')}
-                      className="w-full mt-4 text-sm text-slate-600 hover:text-slate-700 font-medium"
+                      className="w-full mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                     >
                       Get Content Ideas →
                     </button>
@@ -868,7 +901,7 @@ useEffect(() => {
                       {!isLinkedInConnected && (
                         <button
                           onClick={connectLinkedIn}
-                          className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition"
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition"
                         >
                           Connect LinkedIn
                         </button>
@@ -920,26 +953,27 @@ useEffect(() => {
                       key={item.id}
                       onClick={() => setActivePage(item.id)}
                       className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        activePage === item.id
-                          ? item.premium 
-                            ? 'bg-gradient-to-r from-slate-50 to-teal-50 text-slate-700 border border-slate-200' 
-                            : 'bg-slate-100 text-slate-700'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
+  activePage === item.id
+    ? item.premium 
+      ? 'bg-gradient-to-r from-slate-50 to-teal-50 text-slate-700 border border-slate-200' 
+      : 'bg-indigo-100 text-indigo-700'
+    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+}`}
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.label}</span>
-                      {item.premium && (
-                        <span className="bg-gradient-to-r from-slate-700 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">
-                          PRO
-                        </span>
-                      )}
+{item.premium && (
+  <span className="bg-gradient-to-r from-slate-700 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">
+    PRO
+  </span>
+)}
                     </button>
                   )
                 })}
               </div>
             </div>
             <div className="flex items-center space-x-4">
+      
               <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
