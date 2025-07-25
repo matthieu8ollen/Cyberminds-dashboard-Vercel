@@ -67,7 +67,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
       case 'personal':
         return 'from-purple-500 to-pink-600'
       case 'data':
-        return 'from-blue-500 to-indigo-600'
+        return 'from-blue-500 to-teal-600'
       case 'contrarian':
         return 'from-orange-500 to-red-600'
     }
@@ -84,7 +84,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-teal-600 rounded-full mb-4">
           <Target className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">🎣 Hook & Angle Selection</h1>
@@ -92,10 +92,10 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
       </div>
 
       {/* Topic Display */}
-      <div className="bg-indigo-50 rounded-lg p-4 mb-8 border-l-4 border-indigo-500">
+      <div className="bg-teal-50 rounded-lg p-4 mb-8 border-l-4 border-teal-500">
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-indigo-800">Topic:</span>
-          <span className="text-sm text-indigo-700">"{topic}"</span>
+          <span className="text-sm font-medium text-teal-800">Topic:</span>
+          <span className="text-sm text-teal-700">"{topic}"</span>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
               key={angle.id}
               className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all ${
                 selectedAngle === angle.id
-                  ? 'border-indigo-500 bg-indigo-50'
+                  ? 'border-teal-500 bg-teal-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
               onClick={() => setSelectedAngle(angle.id)}
@@ -118,7 +118,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
               <div className="absolute top-4 left-4">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                   selectedAngle === angle.id
-                    ? 'border-indigo-500 bg-indigo-500'
+                    ? 'border-teal-500 bg-teal-500'
                     : 'border-gray-300'
                 }`}>
                   {selectedAngle === angle.id && (
@@ -138,7 +138,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
                       <h4 className="font-semibold text-gray-900 capitalize">
                         {angle.type === 'data' ? 'Data-Driven' : angle.type} Angle
                         {angle.selected && (
-                          <span className="ml-2 text-sm text-indigo-600 font-medium">(Selected)</span>
+                          <span className="ml-2 text-sm text-teal-600 font-medium">(Selected)</span>
                         )}
                       </h4>
                     </div>
@@ -147,7 +147,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
                   {/* Audience Fit Score */}
                   <div className="text-right">
                     <div className="text-sm text-gray-600">Audience fit:</div>
-                    <div className="text-lg font-bold text-indigo-600">{angle.audienceFit}/10</div>
+                    <div className="text-lg font-bold text-teal-600">{angle.audienceFit}/10</div>
                   </div>
                 </div>
 
@@ -190,7 +190,7 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
           <button
             onClick={handleContinue}
             disabled={!selectedAngle}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-8 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
           >
             <span>Continue with Selected Angle</span>
             <span>→</span>
@@ -201,8 +201,8 @@ export default function WriterSuiteStep2({ topic, onContinue, onBack }: WriterSu
       {/* Progress Indicator */}
       <div className="mt-8 flex justify-center">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
