@@ -123,7 +123,7 @@ export default function WriterSuiteStep4({
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-teal-600 rounded-full mb-4">
           <Edit3 className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -140,7 +140,7 @@ export default function WriterSuiteStep4({
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+            className="bg-teal-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -172,14 +172,14 @@ export default function WriterSuiteStep4({
               </h3>
               
               {/* AI Instructions */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-4 border-l-4 border-blue-500">
+              <div className="bg-slate-50 rounded-lg p-4 mb-4 border-l-4 border-slate-500">
                 <div className="flex items-start space-x-2">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">AI</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-blue-900 mb-1">AI Instructions:</p>
-                    <p className="text-sm text-blue-800">{currentSectionData.instruction}</p>
+                    <p className="text-sm font-medium text-slate-800 mb-1">AI Instructions:</p>
+                    <p className="text-sm text-slate-700">{currentSectionData.instruction}</p>
                   </div>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function WriterSuiteStep4({
                 value={sectionContent[currentSectionData.id] || ''}
                 onChange={(e) => handleContentChange(e.target.value)}
                 placeholder={currentSectionData.placeholder}
-                className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
               />
               
@@ -199,7 +199,7 @@ export default function WriterSuiteStep4({
                   <button
                     onClick={handleAISuggestions}
                     disabled={isGeneratingAI}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium transition disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition disabled:opacity-50 flex items-center space-x-2"
                   >
                     {isGeneratingAI ? (
                       <>
@@ -228,7 +228,7 @@ export default function WriterSuiteStep4({
           {/* Psychology Insight */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-3">
-              <Target className="w-5 h-5 text-purple-600" />
+              <Target className="w-5 h-5 text-teal-600" />
               <h4 className="font-semibold text-gray-900">💡 Psychology Insight:</h4>
             </div>
             <p className="text-sm text-gray-700">{currentSectionData.psychologyInsight}</p>
@@ -237,7 +237,7 @@ export default function WriterSuiteStep4({
           {/* Audience Connection */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-3">
-              <Users className="w-5 h-5 text-indigo-600" />
+              <Users className="w-5 h-5 text-slate-600" />
               <h4 className="font-semibold text-gray-900">🎯 Audience Connection:</h4>
             </div>
             <p className="text-sm text-gray-700">{currentSectionData.audienceConnection}</p>
@@ -252,7 +252,7 @@ export default function WriterSuiteStep4({
                   key={section.id}
                   className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer transition ${
                     index === currentSection
-                      ? 'bg-indigo-50 text-indigo-700'
+                      ? 'bg-teal-50 text-teal-700'
                       : index < currentSection
                       ? 'bg-green-50 text-green-700'
                       : 'text-gray-600 hover:bg-gray-50'
@@ -261,7 +261,7 @@ export default function WriterSuiteStep4({
                 >
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                     index === currentSection
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-teal-600 text-white'
                       : index < currentSection
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-200 text-gray-600'
@@ -307,7 +307,7 @@ export default function WriterSuiteStep4({
             <button
               onClick={nextSection}
               disabled={!canContinue}
-              className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-8 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <span>Next Section</span>
               <ChevronRight className="w-4 h-4" />
@@ -319,10 +319,10 @@ export default function WriterSuiteStep4({
       {/* Progress Indicator */}
       <div className="mt-8 flex justify-center">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
         </div>
         <span className="ml-4 text-sm text-gray-600">Step 4 of 5</span>
