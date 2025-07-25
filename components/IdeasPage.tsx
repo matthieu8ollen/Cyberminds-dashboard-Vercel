@@ -217,7 +217,7 @@ export default function IdeasPage({ onWritePost }: IdeasPageProps) {
       case 'leadership': return 'bg-purple-100 text-purple-800'
       case 'saas_metrics': return 'bg-orange-100 text-orange-800'
       case 'market_insights': return 'bg-red-100 text-red-800'
-      case 'tools_tech': return 'bg-indigo-100 text-indigo-800'
+      case 'tools_tech': return 'bg-slate-100 text-slate-800'
       case 'personal_stories': return 'bg-pink-100 text-pink-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -238,7 +238,7 @@ export default function IdeasPage({ onWritePost }: IdeasPageProps) {
           <button
             onClick={generateMoreIdeas}
             disabled={generatingIdeas}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+            className="bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
           >
             {generatingIdeas ? (
               <>
@@ -266,7 +266,7 @@ export default function IdeasPage({ onWritePost }: IdeasPageProps) {
             <select
               value={topicFilter}
               onChange={(e) => setTopicFilter(e.target.value as FilterType)}
-              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             >
               {CONTENT_PILLARS.map(pillar => (
                 <option key={pillar.value} value={pillar.value}>
@@ -281,7 +281,7 @@ export default function IdeasPage({ onWritePost }: IdeasPageProps) {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value as CategoryType)}
-              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             >
               {CATEGORIES.map(category => (
                 <option key={category.value} value={category.value}>
@@ -376,7 +376,7 @@ export default function IdeasPage({ onWritePost }: IdeasPageProps) {
                 
                 <button
                   onClick={() => onWritePost(idea)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+                  className="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition"
                 >
                   Write this post
                 </button>
