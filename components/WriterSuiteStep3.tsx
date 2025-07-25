@@ -87,7 +87,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
 
   const getMatchColor = (match: number) => {
     if (match >= 9) return 'text-green-600 bg-green-100'
-    if (match >= 8) return 'text-blue-600 bg-blue-100'
+    if (match >= 8) return 'text-teal-600 bg-teal-100'
     return 'text-orange-600 bg-orange-100'
   }
 
@@ -95,7 +95,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-teal-600 rounded-full mb-4">
           <FileText className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">📝 Choose Your Content Structure</h1>
@@ -133,7 +133,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
                 key={formula.id}
                 className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-indigo-500 bg-indigo-50'
+                    ? 'border-teal-500 bg-teal-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => setSelectedFormula(formula.id)}
@@ -142,7 +142,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
                 <div className="absolute top-4 left-4">
                   <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                     isSelected
-                      ? 'border-indigo-500 bg-indigo-500'
+                      ? 'border-teal-500 bg-teal-500'
                       : 'border-gray-300'
                   }`}>
                     {isSelected && (
@@ -155,7 +155,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
                   {/* Formula Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-r from-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -197,10 +197,10 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
 
         {/* Additional Options */}
         <div className="mt-6 flex justify-center space-x-4">
-          <button className="px-4 py-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm transition">
+          <button className="px-4 py-2 text-slate-600 hover:text-slate-700 font-medium text-sm transition">
             Preview More
           </button>
-          <button className="px-4 py-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm transition">
+          <button className="px-4 py-2 text-slate-600 hover:text-slate-700 font-medium text-sm transition">
             Browse All (12)
           </button>
         </div>
@@ -216,7 +216,7 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
           
           <button
             onClick={handleContinue}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition flex items-center space-x-2"
+            className="px-8 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-medium transition flex items-center space-x-2"
           >
             <span>Use This Formula</span>
             <span>→</span>
@@ -227,9 +227,9 @@ export default function WriterSuiteStep3({ topic, selectedAngle, onContinue, onB
       {/* Progress Indicator */}
       <div className="mt-8 flex justify-center">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
         </div>
