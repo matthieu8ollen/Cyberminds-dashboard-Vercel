@@ -16,13 +16,11 @@ import IdeasPage from './IdeasPage'
 import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
-// === Calendar, Rich Text Editor & AI Tools Integration START ===
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
-// === Calendar, Rich Text Editor & AI Tools Integration END ===
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -39,14 +37,12 @@ interface GeneratedDraft {
 
 export default function Dashboard() {
   const { user, profile, signOut, refreshProfile } = useAuth()
-  // === Calendar, LinkedIn, Rich Text, AI Tools State ===
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
   const [useRichEditor, setUseRichEditor] = useState(true)
   const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
-  // === End Calendar, LinkedIn, Rich Text, AI Tools State ===
 
-  const [activePage, setActivePage] = useState<ActivePage>('generator')
+  const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -258,7 +254,6 @@ useEffect(() => {
     await refreshProfile()
   }
 
-  // === AI IMPROVEMENT & SCHEDULING FUNCTIONS ===
   const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
     try {
       return await aiImprovementService.improveText(text, type)
@@ -303,9 +298,7 @@ useEffect(() => {
       console.error('Error scheduling content:', error)
     }
   }
-  // === END AI IMPROVEMENT & SCHEDULING FUNCTIONS ===
 
-  // === KEYBOARD SHORTCUTS HELP COMPONENT ===
   const KeyboardShortcutsHelp = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null
     return (
@@ -336,7 +329,6 @@ useEffect(() => {
       </div>
     )
   }
-  // === END KEYBOARD SHORTCUTS HELP COMPONENT ===
 
   const contentTypes = [
     { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
@@ -354,9 +346,9 @@ useEffect(() => {
   ]
 
   const navigationItems = [
-  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-  { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
   { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+  { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
+  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
   { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
   { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
   { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
@@ -364,7 +356,12 @@ useEffect(() => {
 ]
 
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
-  const getProfileDisplayName = () => (user?.email ? user.email.split('@')[0] : 'Finance Professional')
+  const getProfileDisplayName = () => {
+    if (!user?.email) return 'Finance Professional'
+    const email = user.email
+    const firstName = email.split('@')[0].split('.')[0]
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1)
+  }
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
   const renderPageContent = () => {
@@ -374,7 +371,6 @@ useEffect(() => {
         case 'writer-suite':
   return <WriterSuite onComplete={(data) => {
     console.log('Writer Suite completed:', data)
-    // Here you could save the final content, navigate to production, etc.
   }} />
     case 'production':
   return <ProductionPipeline />
@@ -519,7 +515,6 @@ useEffect(() => {
                         </select>
                       </div>
                     </div>
-                    {/* Rich Text Editor Context Section */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="block text-sm font-medium text-gray-700">
@@ -577,7 +572,6 @@ useEffect(() => {
                     </button>
                   </div>
                 </div>
-                {/* Generated Content - Multi-Draft Interface */}
                 {showGenerated && generatedDrafts.length > 0 && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 fade-in">
                     <div className="flex justify-between items-center mb-6">
@@ -602,7 +596,6 @@ useEffect(() => {
                         </button>
                       </div>
                     </div>
-                    {/* Enhanced Draft Tabs With AI Tools */}
                     <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
                       {generatedDrafts.map((draft) => {
                         const Icon = draft.icon
@@ -648,7 +641,6 @@ useEffect(() => {
                         )
                       })}
                     </div>
-                    {/* Draft Content Display (Editable) */}
                     <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-slate-500">
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -675,7 +667,6 @@ useEffect(() => {
                           >
                             📋 Copy
                           </button>
-                          {/* Add Schedule Button */}
                           <button 
                             onClick={() => handleQuickSchedule(
                               generatedDrafts.find(d => d.type === selectedDraft)?.content || '',
@@ -733,7 +724,6 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-              {/* LinkedIn Preview Sidebar */}
               {showPreview && showGenerated && (
                 <div className="space-y-6">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -757,10 +747,8 @@ useEffect(() => {
                   </div>
                 </div>
               )}
-              {/* Sidebar */}
               {(!showPreview || !showGenerated) && (
                 <div className="space-y-6">
-                  {/* Stats */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
                     <div className="space-y-4">
@@ -795,7 +783,6 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-                  {/* Recent Saves */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Recent Saves</h3>
@@ -833,7 +820,6 @@ useEffect(() => {
                       )}
                     </div>
                   </div>
-                  {/* Trending Topics */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 Trending in Finance</h3>
                     <div className="space-y-3">
@@ -851,7 +837,6 @@ useEffect(() => {
                       Get Content Ideas →
                     </button>
                   </div>
-                  {/* LinkedIn Status to Sidebar */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Publishing</h3>
                     <div className="space-y-4">
@@ -882,7 +867,6 @@ useEffect(() => {
                 </div>
               )}
             </div>
-            {/* Add Help Modal to Render */}
             <KeyboardShortcutsHelp 
               isOpen={showShortcutsHelp} 
               onClose={() => setShowShortcutsHelp(false)} 
@@ -893,50 +877,67 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-8">
-             <div className="flex items-center space-x-3">
-  <div className="w-10 h-10 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-    <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-6 h-6" />
-  </div>
-  <div>
-    <span className="text-xl font-bold bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">Writer Suite</span>
-    <div className="text-xs text-slate-500 -mt-1">Professional Content Creation</div>
-  </div>
-</div>
-              {/* Main Navigation */}
-              <div className="hidden md:flex items-center space-x-6">
-                {navigationItems.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActivePage(item.id)}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        activePage === item.id
-                          ? item.premium 
-                            ? 'bg-gradient-to-r from-slate-50 to-teal-50 text-slate-700 border border-slate-200' 
-                            : 'bg-slate-100 text-slate-700'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                      {item.premium && (
-                        <span className="bg-gradient-to-r from-slate-700 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">
-                          PRO
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Premium Left Sidebar */}
+      <nav className="w-60 bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col">
+        {/* Logo Section */}
+        <div className="p-6 border-b border-slate-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200">
+              <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-6 h-6" />
             </div>
-            <div className="flex items-center space-x-4">
+            <div>
+              <span className="text-xl font-bold text-white">Writer Suite</span>
+              <div className="text-xs text-slate-400 -mt-1">Professional Content Creation</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <div className="flex-1 px-4 py-6">
+          <div className="space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              const isActive = activePage === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActivePage(item.id)}
+                  className={`group w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
+                    isActive
+                      ? 'bg-slate-700 text-white shadow-lg'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  {/* Active indicator */}
+                  {isActive && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
+                  )}
+                  
+                  <Icon className={`w-5 h-5 transition-transform duration-200 ${
+                    isActive ? 'text-teal-400' : 'group-hover:scale-110'
+                  }`} />
+                  
+                  <span className="flex-1 text-left">{item.label}</span>
+                  
+                  {item.premium && (
+                    <span className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm animate-pulse">
+                      PRO
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-60">
+        {/* Top Header with Profile */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex justify-end items-center">
               <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -974,9 +975,13 @@ useEffect(() => {
               </div>
             </div>
           </div>
-        </div>
-      </nav>
-      {renderPageContent()}
+        </header>
+
+        {/* Page Content */}
+        <main>
+          {renderPageContent()}
+        </main>
+      </div>
     </div>
   )
 }
