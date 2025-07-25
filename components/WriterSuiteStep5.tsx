@@ -117,7 +117,7 @@ export default function WriterSuiteStep5({
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-teal-600 rounded-full mb-4">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">✨ AI Enhancement Suggestions</h1>
@@ -127,7 +127,7 @@ export default function WriterSuiteStep5({
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-indigo-600">{Object.keys(sections).length}</div>
+          <div className="text-2xl font-bold text-slate-700">{Object.keys(sections).length}</div>
           <div className="text-sm text-gray-600">Sections Complete</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
@@ -141,7 +141,7 @@ export default function WriterSuiteStep5({
           <div className="text-sm text-gray-600">Engagement Score</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">Top {performancePrediction.ranking}</div>
+          <div className="text-2xl font-bold text-teal-600">Top {performancePrediction.ranking}</div>
           <div className="text-sm text-gray-600">Predicted Performance</div>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function WriterSuiteStep5({
                         className={`px-3 py-1 rounded text-sm font-medium transition ${
                           enhancement.applied
                             ? 'bg-green-100 text-green-800'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                            : 'bg-slate-700 text-white hover:bg-slate-800'
                         }`}
                       >
                         {enhancement.applied ? 'Applied' : 'Apply'}
@@ -203,12 +203,12 @@ export default function WriterSuiteStep5({
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <Smartphone className="w-5 h-5 text-blue-600" />
+                <Smartphone className="w-5 h-5 text-slate-600" />
                 <h3 className="text-lg font-semibold text-gray-900">📱 Mobile Optimization:</h3>
               </div>
               <button
                 onClick={applyAllMobileFixes}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition"
+                className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition"
               >
                 Apply All Mobile Fixes
               </button>
@@ -217,7 +217,7 @@ export default function WriterSuiteStep5({
             <ul className="space-y-2">
               {mobileOptimizations.map((optimization, index) => (
                 <li key={index} className="flex items-center space-x-2 text-sm text-gray-700">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-600 rounded-full"></div>
                   <span>{optimization}</span>
                 </li>
               ))}
@@ -227,13 +227,13 @@ export default function WriterSuiteStep5({
           {/* 🔍 Voice Consistency */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-4">
-              <MessageSquare className="w-5 h-5 text-purple-600" />
+              <MessageSquare className="w-5 h-5 text-slate-600" />
               <h3 className="text-lg font-semibold text-gray-900">🔍 Voice Consistency:</h3>
             </div>
             
-            <div className="bg-purple-50 rounded-lg p-4">
-              <p className="text-sm text-purple-800 mb-2">{voiceConsistency.suggestion}</p>
-              <button className="text-sm text-purple-600 hover:text-purple-700 font-medium">
+            <div className="bg-slate-50 rounded-lg p-4">
+              <p className="text-sm text-slate-700 mb-2">{voiceConsistency.suggestion}</p>
+              <button className="text-sm text-slate-600 hover:text-slate-700 font-medium">
                 View Details →
               </button>
             </div>
@@ -277,7 +277,7 @@ export default function WriterSuiteStep5({
             <div className="space-y-3">
               <button
                 onClick={applyAllSuggestions}
-                className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition flex items-center justify-center space-x-2"
+                className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-medium transition flex items-center justify-center space-x-2"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Apply All Suggestions</span>
@@ -352,11 +352,11 @@ export default function WriterSuiteStep5({
       {/* Progress Indicator - Complete! */}
       <div className="mt-8 flex justify-center">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
         </div>
         <span className="ml-4 text-sm text-green-600 font-medium">✓ Complete!</span>
       </div>
