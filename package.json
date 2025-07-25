@@ -1,7 +1,7 @@
 {
-  "name": "cyberminds-dashboard",
+  "name": "writer-suite-dashboard",
   "version": "1.0.0",
-  "description": "CyberMinds AI Content Generator Dashboard",
+  "description": "Writer Suite Professional Content Creation Dashboard",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
