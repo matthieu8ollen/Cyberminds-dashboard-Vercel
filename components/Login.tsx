@@ -315,7 +315,7 @@ export default function Login() {
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Welcome to CyberMinds</span>
+            <span className="bg-white px-2 text-gray-500">Welcome to Writer Suite</span>
           </div>
         </div>
       </div>
@@ -325,11 +325,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">CM</span>
-          </div>
-        </div>
+       <div className="flex justify-center">
+  <div className="w-16 h-16 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg>
+  </div>
+</div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           {view === 'forgot-password' ? 'Reset Password' : 
            view === 'reset-sent' ? 'Email Sent' :
