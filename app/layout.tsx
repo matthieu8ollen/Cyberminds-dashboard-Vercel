@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'CyberMinds - AI Content Generator',
+  title: 'Writer Suite - Professional Content Creation',
   description: 'Create authentic LinkedIn content for finance professionals',
 }
 
