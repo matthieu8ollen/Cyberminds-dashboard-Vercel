@@ -585,8 +585,7 @@ useEffect(() => {
                       <div className="flex items-center space-x-3">
                         <button 
                           onClick={() => setShowPreview(!showPreview)}
-                          className={`flex items-center space-
-                                                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                             showPreview 
                               ? 'bg-slate-100 text-slate-700' 
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
