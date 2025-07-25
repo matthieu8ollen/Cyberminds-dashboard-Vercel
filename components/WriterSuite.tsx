@@ -200,7 +200,7 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">WS</span>
               </div>
               <div>
