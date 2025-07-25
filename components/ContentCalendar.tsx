@@ -328,7 +328,7 @@ export default function ContentCalendar() {
                         {content.content_type} • {content.tone_used}
                       </p>
                     </div>
-                    <button className="ml-3 px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700">
+                    <button className="ml-3 px-3 py-1 bg-slate-700 text-white text-xs rounded hover:bg-slate-800">
                       Schedule
                     </button>
                   </div>
@@ -338,7 +338,7 @@ export default function ContentCalendar() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                   {TIME_SLOTS.map(time => (
                     <option key={time} value={time}>{time}</option>
                   ))}
@@ -346,7 +346,7 @@ export default function ContentCalendar() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Recurring</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                   <option value="">One-time</option>
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -363,7 +363,7 @@ export default function ContentCalendar() {
               >
                 Cancel
               </button>
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800">
                 Schedule Content
               </button>
             </div>
@@ -391,7 +391,7 @@ export default function ContentCalendar() {
                   onClick={() => setView(viewType)}
                   className={`px-4 py-2 text-sm font-medium capitalize ${
                     view === viewType
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-slate-700 text-white'
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
@@ -404,7 +404,7 @@ export default function ContentCalendar() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as ContentFilter)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="all">All Content</option>
                 <option value="scheduled">Scheduled</option>
@@ -413,7 +413,7 @@ export default function ContentCalendar() {
                 <option value="draft">Drafts</option>
               </select>
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <button className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800">
               <Plus className="w-4 h-4" />
               <span>Schedule Content</span>
             </button>
@@ -496,7 +496,7 @@ export default function ContentCalendar() {
             </div>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-3 py-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              className="px-3 py-2 text-sm text-slate-600 hover:text-slate-700 font-medium"
             >
               Today
             </button>
@@ -520,7 +520,7 @@ export default function ContentCalendar() {
                 className={`
                   min-h-[100px] border-r border-b border-gray-200 p-2 relative
                   ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-                  ${isToday ? 'bg-indigo-50' : ''}
+                  ${isToday ? 'bg-teal-50' : ''}
                   hover:bg-gray-50 cursor-pointer transition-colors
                 `}
                 onClick={() => handleDateClick(date)}
@@ -531,12 +531,12 @@ export default function ContentCalendar() {
                   <span className={`
                     text-sm font-medium
                     ${isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-                    ${isToday ? 'text-indigo-600 font-bold' : ''}
+                    ${isToday ? 'text-teal-600 font-bold' : ''}
                   `}>
                     {date.getDate()}
                   </span>
                   {dayContent.length > 0 && (
-                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
                       {dayContent.length}
                     </span>
                   )}
@@ -611,7 +611,7 @@ export default function ContentCalendar() {
                     </button>
                   )}
                   {selectedContent.status === 'failed' && (
-                    <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2">
+                    <button className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center space-x-2">
                       <RepeatIcon className="w-4 h-4" />
                       <span>Retry</span>
                     </button>
