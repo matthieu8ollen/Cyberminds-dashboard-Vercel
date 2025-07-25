@@ -47,7 +47,7 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-teal-600 rounded-full mb-4">
           <Target className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">What do you want to write about?</h1>
@@ -62,13 +62,13 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
           <div 
             className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
               selectedOption === 'ai' 
-                ? 'border-indigo-500 bg-indigo-50' 
+                ? 'border-teal-500 bg-teal-50' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
             onClick={() => setSelectedOption('ai')}
           >
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -82,7 +82,7 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
               disabled={loading}
               className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2 ${
                 selectedOption === 'ai'
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  ? 'bg-slate-700 text-white hover:bg-slate-800'
                   : 'bg-gray-100 text-gray-600'
               } disabled:opacity-50`}
             >
@@ -116,7 +116,7 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
           <div 
             className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
               selectedOption === 'user' 
-                ? 'border-indigo-500 bg-indigo-50' 
+                ? 'border-teal-500 bg-teal-50' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
             onClick={() => setSelectedOption('user')}
@@ -139,7 +139,7 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
                   setSelectedOption('user')
                 }}
                 placeholder="Enter your topic or idea..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 rows={3}
               />
               
@@ -162,19 +162,19 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
         {/* Recent Trending Topics */}
         <div className="mt-8 p-6 bg-gray-50 rounded-lg">
           <div className="flex items-center space-x-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-indigo-600" />
+            <TrendingUp className="w-5 h-5 text-teal-600" />
             <h4 className="font-semibold text-gray-900">Recent trending topics:</h4>
           </div>
           <ul className="space-y-2">
             {trendingTopics.map((topic, index) => (
               <li key={index} className="flex items-center space-x-2">
-                <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-teal-600 rounded-full"></div>
                 <button
                   onClick={() => {
                     setUserTopic(topic)
                     setSelectedOption('user')
                   }}
-                  className="text-gray-700 hover:text-indigo-600 transition text-left"
+                  className="text-gray-700 hover:text-teal-600 transition text-left"
                 >
                   "{topic}"
                 </button>
@@ -187,7 +187,7 @@ export default function WriterSuiteStep1({ onContinue }: WriterSuiteStep1Props) 
       {/* Progress Indicator */}
       <div className="mt-8 flex justify-center">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-2 bg-indigo-600 rounded-full"></div>
+          <div className="w-8 h-2 bg-teal-600 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
           <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
