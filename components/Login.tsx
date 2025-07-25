@@ -110,7 +110,7 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500"
               placeholder="Enter your email"
             />
           </div>
@@ -126,7 +126,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full justify-center rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+            className="flex w-full justify-center rounded-md bg-gradient-to-r from-slate-700 to-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 disabled:opacity-50"
           >
             {loading ? (
               <div className="loading-spinner"></div>
@@ -140,7 +140,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setView('login')}
-            className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+            className="text-sm text-slate-600 hover:text-teal-600 font-medium"
           >
             ← Back to Sign In
           </button>
@@ -165,51 +165,51 @@ export default function Login() {
         <div className="space-y-3">
           <button
             onClick={() => setView('login')}
-            className="w-full rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+            className="w-full rounded-md bg-gradient-to-r from-slate-700 to-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200"
           >
             Back to Sign In
           </button>
-       <button
-  onClick={async () => {
-    if (!email.trim()) {
-      setMessage('Please enter your email address')
-      return
-    }
+          <button
+            onClick={async () => {
+              if (!email.trim()) {
+                setMessage('Please enter your email address')
+                return
+              }
 
-    setLoading(true)
-    setMessage('')
+              setLoading(true)
+              setMessage('')
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
-      
-      if (error) {
-        setMessage(error.message)
-      } else {
-        setMessage('Reset link sent again!')
-        setResendCountdown(30)
-      }
-    } catch (error) {
-      setMessage('An unexpected error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }}
-  disabled={loading || resendCountdown > 0}
-  className={`w-full text-sm font-medium ${
-    resendCountdown > 0 
-      ? 'text-gray-400 cursor-not-allowed' 
-      : 'text-indigo-600 hover:text-indigo-500'
-  }`}
->
-  {resendCountdown > 0 
-    ? `Resend in ${resendCountdown}s` 
-    : loading 
-    ? 'Sending...' 
-    : 'Resend Email'
-  }
-</button>
+              try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                })
+                
+                if (error) {
+                  setMessage(error.message)
+                } else {
+                  setMessage('Reset link sent again!')
+                  setResendCountdown(30)
+                }
+              } catch (error) {
+                setMessage('An unexpected error occurred')
+              } finally {
+                setLoading(false)
+              }
+            }}
+            disabled={loading || resendCountdown > 0}
+            className={`w-full text-sm font-medium ${
+              resendCountdown > 0 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-slate-600 hover:text-teal-600'
+            }`}
+          >
+            {resendCountdown > 0 
+              ? `Resend in ${resendCountdown}s` 
+              : loading 
+              ? 'Sending...' 
+              : 'Resend Email'
+            }
+          </button>
         </div>
       </div>
     </div>
@@ -231,7 +231,7 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500"
             />
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function Login() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500"
             />
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function Login() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500"
               />
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setView('forgot-password')}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-medium text-slate-600 hover:text-teal-600"
               >
                 Forgot your password?
               </button>
@@ -298,7 +298,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full justify-center rounded-md gradient-bg py-2 px-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+            className="flex w-full justify-center rounded-md bg-gradient-to-r from-slate-700 to-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 disabled:opacity-50"
           >
             {loading ? (
               <div className="loading-spinner"></div>
@@ -325,13 +325,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-       <div className="flex justify-center">
-  <div className="w-16 h-16 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-    </svg>
-  </div>
-</div>
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+          </div>
+        </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           {view === 'forgot-password' ? 'Reset Password' : 
            view === 'reset-sent' ? 'Email Sent' :
@@ -342,7 +342,7 @@ export default function Login() {
             {view === 'login' ? "Don't have an account? " : 'Already have an account? '}
             <button
               onClick={() => setView(view === 'login' ? 'signup' : 'login')}
-              className="font-medium text-indigo-600 hover:text-indigo-500"
+              className="font-medium text-slate-600 hover:text-teal-600"
             >
               {view === 'login' ? 'Sign up' : 'Sign in'}
             </button>
