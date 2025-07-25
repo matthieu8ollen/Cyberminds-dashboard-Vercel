@@ -14,7 +14,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'cyberminds-app'
+      'X-Client-Info': 'writer-suite-app'
     }
   }
 })
