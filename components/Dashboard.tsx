@@ -482,8 +482,8 @@ Which of these resonates most with your experience? Let's discuss! 👇
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Generate Your Next Post</h2>
                     <p className="text-gray-600">Create engaging finance content that builds your authority</p>
                     {selectedIdea && (
-                      <div className="mt-3 p-3 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
-                        <p className="text-sm text-indigo-800">
+                      <div className="mt-3 p-3 bg-slate-50 rounded-lg border-l-4 border-slate-500">
+                        <p className="text-sm text-slate-800">
                           💡 <strong>Generating from idea:</strong> {selectedIdea.title}
                         </p>
                       </div>
@@ -564,7 +564,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                           <button
                             type="button"
                             onClick={() => setUseRichEditor(!useRichEditor)}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useRichEditor ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useRichEditor ? 'bg-gradient-to-r from-slate-600 to-teal-600' : 'bg-gray-200'}`}
                           >
                             <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useRichEditor ? 'translate-x-5' : 'translate-x-1'}`} />
                           </button>
