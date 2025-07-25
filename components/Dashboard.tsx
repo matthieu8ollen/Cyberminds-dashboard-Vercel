@@ -496,7 +496,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         onClick={() => setActiveTab(type.id)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
                           activeTab === type.id
-                            ? 'bg-indigo-600 text-white'
+                            ? 'bg-gradient-to-r from-slate-700 to-teal-600 text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
@@ -517,7 +517,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                           setSelectedIdea(null)
                         }}
                         placeholder="e.g., SaaS metrics every CFO should track"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -528,7 +528,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         <select
                           value={formData.points}
                           onChange={(e) => setFormData({ ...formData, points: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         >
                           <option value="3">3 points</option>
                           <option value="5">5 points</option>
@@ -543,7 +543,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                         <select
                           value={formData.tone}
                           onChange={(e) => setFormData({ ...formData, tone: e.target.value as ToneType })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         >
                           {toneOptions.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -582,7 +582,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                           value={formData.context}
                           onChange={(e) => setFormData({ ...formData, context: e.target.value })}
                           placeholder="Any specific details, examples, or angle you want to include..."
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                           rows={3}
                         />
                       )}
@@ -818,7 +818,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
                         <div 
-                          className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                          className="bg-gradient-to-r from-slate-600 to-teal-600 h-2 rounded-full transition-all duration-300" 
                           style={{ 
                             width: `${Math.max(0, Math.min(100, ((profile?.posts_generated_this_month || 0) / 50) * 100))}%` 
                           }}
@@ -934,14 +934,14 @@ Which of these resonates most with your experience? Let's discuss! 👇
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
              <div className="flex items-center space-x-3">
-  <div className="w-9 h-9 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12.5 2L22 7v10l-9.5 5L3 17V7l9.5-5z"/>
+  <div className="w-10 h-10 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
     </svg>
   </div>
   <div>
-    <span className="text-xl font-bold bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">CyberMinds</span>
-    <div className="text-xs text-slate-500 -mt-1">Writer Suite</div>
+    <span className="text-xl font-bold bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">Writer Suite</span>
+    <div className="text-xs text-slate-500 -mt-1">Professional Content Creation</div>
   </div>
 </div>
               {/* Main Navigation */}
@@ -979,7 +979,7 @@ Which of these resonates most with your experience? Let's discuss! 👇
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition"
                 >
-                  <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
                     <User className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">
