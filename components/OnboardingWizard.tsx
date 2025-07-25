@@ -17,7 +17,7 @@ interface OnboardingData {
 }
 
 const ONBOARDING_STEPS = [
-  { id: 'welcome', title: 'Welcome to CyberMinds', duration: '30 sec' },
+  { id: 'welcome', title: 'Welcome to Writer Suite', duration: '30 sec' },
   { id: 'role', title: 'Define your role', duration: '1 min' },
   { id: 'goals', title: 'Set your goals', duration: '1 min' },
   { id: 'challenges', title: 'Identify challenges', duration: '1 min' },
@@ -155,7 +155,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
               {isCompleted ? (
                 <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               ) : (
-                <Circle className={`w-5 h-5 flex-shrink-0 ${isCurrent ? 'text-indigo-600' : 'text-gray-300'}`} />
+                <Circle className={`w-5 h-5 flex-shrink-0 ${isCurrent ? 'text-teal-600' : 'text-gray-300'}`} />
               )}
               <div className="flex-1">
                 <div className={`text-sm font-medium ${isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -175,7 +175,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-slate-600 to-teal-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${(currentStep / (totalSteps - 1)) * 100}%` }}
           />
         </div>
@@ -185,16 +185,16 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
 
   const renderWelcomeStep = () => (
     <div className="text-center">
-      <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <span className="text-white font-bold text-2xl">CM</span>
+      <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <span className="text-white font-bold text-2xl">WS</span>
       </div>
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to CyberMinds</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Writer Suite</h1>
       <p className="text-xl text-gray-600 mb-8 max-w-2xl">
         We'll help you create authentic LinkedIn content that builds your authority as a finance professional. 
         Let's personalize your AI assistant in just a few steps.
       </p>
-      <div className="bg-indigo-50 rounded-lg p-4 max-w-md mx-auto">
-        <p className="text-sm text-indigo-700">
+      <div className="bg-teal-50 rounded-lg p-4 max-w-md mx-auto">
+        <p className="text-sm text-teal-700">
           💡 <strong>Tip:</strong> The more information you provide, the better your AI will understand your unique voice and expertise.
         </p>
       </div>
@@ -213,7 +213,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             onClick={() => setData(prev => ({ ...prev, role: role.value }))}
             className={`p-4 rounded-lg border-2 text-left transition-all ${
               data.role === role.value
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-teal-500 bg-teal-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
@@ -239,12 +239,12 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             onClick={() => handleArraySelection('contentGoals', goal.value)}
             className={`p-4 rounded-lg border-2 text-left transition-all ${
               data.contentGoals.includes(goal.value)
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-teal-500 bg-teal-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center gap-3">
-              <div className="text-indigo-600">{goal.icon}</div>
+              <div className="text-teal-600">{goal.icon}</div>
               <span className="font-medium text-gray-900">{goal.label}</span>
             </div>
           </button>
@@ -265,14 +265,14 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             onClick={() => handleArraySelection('contentChallenges', challenge.value)}
             className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
               data.contentChallenges.includes(challenge.value)
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-teal-500 bg-teal-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                 data.contentChallenges.includes(challenge.value)
-                  ? 'border-indigo-500 bg-indigo-500'
+                  ? 'border-teal-500 bg-teal-500'
                   : 'border-gray-300'
               }`}>
                 {data.contentChallenges.includes(challenge.value) && (
@@ -299,14 +299,14 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             onClick={() => handleArraySelection('contentPillars', pillar.value)}
             className={`p-4 rounded-lg border-2 text-left transition-all ${
               data.contentPillars.includes(pillar.value)
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-teal-500 bg-teal-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
                 data.contentPillars.includes(pillar.value)
-                  ? 'border-indigo-500 bg-indigo-500'
+                  ? 'border-teal-500 bg-teal-500'
                   : 'border-gray-300'
               }`}>
                 {data.contentPillars.includes(pillar.value) && (
@@ -329,7 +329,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         <input
           type="text"
           placeholder="e.g., Startup Finance, International Taxation"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               const value = (e.target as HTMLInputElement).value.trim()
@@ -348,7 +348,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             {data.customPillars.map((pillar, index) => (
               <span
                 key={index}
-                className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
               >
                 {pillar}
                 <button
@@ -356,7 +356,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
                     ...prev,
                     customPillars: prev.customPillars.filter((_, i) => i !== index)
                   }))}
-                  className="text-indigo-600 hover:text-indigo-800"
+                  className="text-teal-600 hover:text-teal-800"
                 >
                   ×
                 </button>
@@ -381,7 +381,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
           <select
             value={data.targetAudience}
             onChange={(e) => setData(prev => ({ ...prev, targetAudience: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           >
             <option value="">Select your audience</option>
             <option value="fellow_cfos">Fellow CFOs and Finance Leaders</option>
@@ -400,7 +400,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
           <select
             value={data.postingFrequency}
             onChange={(e) => setData(prev => ({ ...prev, postingFrequency: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           >
             <option value="">Select frequency</option>
             <option value="daily">Daily (7 posts/week)</option>
@@ -419,7 +419,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
           <select
             value={data.currentExperience}
             onChange={(e) => setData(prev => ({ ...prev, currentExperience: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           >
             <option value="">Select experience level</option>
             <option value="beginner">Beginner - New to LinkedIn content</option>
@@ -434,7 +434,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
 
   const renderAnalysisStep = () => (
     <div className="text-center">
-      <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
         <Zap className="w-8 h-8 text-white" />
       </div>
       <h2 className="text-3xl font-bold text-gray-900 mb-4">Analyzing your profile...</h2>
@@ -443,12 +443,12 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         This will help create content that truly reflects your expertise.
       </p>
       
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full h-2 w-64 mx-auto mb-6 overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-600 to-teal-600 rounded-full h-2 w-64 mx-auto mb-6 overflow-hidden">
         <div className="bg-white/30 h-full rounded-full animate-pulse"></div>
       </div>
       
-      <div className="bg-indigo-50 rounded-lg p-4 max-w-md mx-auto">
-        <p className="text-sm text-indigo-700">
+      <div className="bg-teal-50 rounded-lg p-4 max-w-md mx-auto">
+        <p className="text-sm text-teal-700">
           💡 <strong>Tip:</strong> Quality content focuses on solving your audience's biggest challenges. 
           Think about the questions you get asked most often.
         </p>
@@ -467,7 +467,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         Ready to start creating authentic LinkedIn content?
       </p>
       
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 max-w-md mx-auto mb-8">
+      <div className="bg-gradient-to-br from-teal-50 to-slate-50 rounded-xl p-6 max-w-md mx-auto mb-8">
         <h3 className="font-semibold text-gray-900 mb-3">Your Profile Summary:</h3>
         <div className="text-sm text-gray-600 space-y-2 text-left">
           <div><strong>Role:</strong> {ROLES.find(r => r.value === data.role)?.label}</div>
@@ -545,7 +545,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
                   <button
                     onClick={handleComplete}
                     disabled={isLoading}
-                    className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 bg-gradient-to-r from-slate-700 to-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
@@ -563,7 +563,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
                   <button
                     onClick={handleNext}
                     disabled={!canProceed() || currentStepData.id === 'analysis'}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4" />
