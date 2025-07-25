@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [useRichEditor, setUseRichEditor] = useState(true)
   const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
@@ -879,53 +880,81 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Premium Left Sidebar */}
-      <nav className="w-60 bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col">
+      <nav 
+        className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
+          sidebarExpanded ? 'w-60' : 'w-16'
+        }`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
         {/* Logo Section */}
-        <div className="p-6 border-b border-slate-700">
+        <div className="p-4 border-b border-slate-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200">
-              <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-6 h-6" />
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200 flex-shrink-0">
+              <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-5 h-5" />
             </div>
-            <div>
-              <span className="text-xl font-bold text-white">Writer Suite</span>
-              <div className="text-xs text-slate-400 -mt-1">Professional Content Creation</div>
-            </div>
+            {sidebarExpanded && (
+              <div className="transition-opacity duration-300 ease-in-out">
+                <span className="text-lg font-bold text-white whitespace-nowrap">Writer Suite</span>
+                <div className="text-xs text-slate-400 -mt-1 whitespace-nowrap">Professional Content Creation</div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Navigation Items */}
-        <div className="flex-1 px-4 py-6">
+        <div className="flex-1 px-2 py-6">
           <div className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon
               const isActive = activePage === item.id
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setActivePage(item.id)}
-                  className={`group w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
-                    isActive
-                      ? 'bg-slate-700 text-white shadow-lg'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                  }`}
-                >
-                  {/* Active indicator */}
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => setActivePage(item.id)}
+                    className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
+                      sidebarExpanded ? 'space-x-3' : 'justify-center'
+                    } ${
+                      isActive
+                        ? 'bg-slate-700 text-white shadow-lg'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    }`}
+                  >
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
+                    )}
+                    
+                    <Icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
+                      isActive ? 'text-teal-400' : 'group-hover:scale-110'
+                    }`} />
+                    
+                    {sidebarExpanded && (
+                      <>
+                        <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>
+                        
+                        {item.premium && (
+                          <span className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm animate-pulse whitespace-nowrap">
+                            PRO
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                  
+                  {/* Tooltip for collapsed state */}
+                  {!sidebarExpanded && (
+                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                      {item.label}
+                      {item.premium && (
+                        <span className="ml-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                          PRO
+                        </span>
+                      )}
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
+                    </div>
                   )}
-                  
-                  <Icon className={`w-5 h-5 transition-transform duration-200 ${
-                    isActive ? 'text-teal-400' : 'group-hover:scale-110'
-                  }`} />
-                  
-                  <span className="flex-1 text-left">{item.label}</span>
-                  
-                  {item.premium && (
-                    <span className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm animate-pulse">
-                      PRO
-                    </span>
-                  )}
-                </button>
+                </div>
               )
             })}
           </div>
@@ -933,7 +962,7 @@ useEffect(() => {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-60">
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
         {/* Top Header with Profile */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-6 py-4">
