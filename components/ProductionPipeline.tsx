@@ -230,7 +230,7 @@ export default function ProductionPipeline() {
                 {selectedContent.status === 'draft' && (
                   <button 
                     onClick={() => updateContentStatus(selectedContent.id, 'scheduled')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
                   >
                     Schedule
                   </button>
@@ -255,7 +255,7 @@ export default function ProductionPipeline() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
-          <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your content...</p>
         </div>
       </div>
@@ -276,7 +276,7 @@ export default function ProductionPipeline() {
           
           <button 
             onClick={loadContent}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
           >
             <RefreshCw className="w-4 h-4" />
             <span>Refresh</span>
@@ -356,7 +356,7 @@ export default function ProductionPipeline() {
                 onClick={() => setFilter(filterOption)}
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
                   filter === filterOption
-                    ? 'bg-indigo-100 text-indigo-700'
+                    ? 'bg-slate-100 text-slate-700'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                 }`}
               >
@@ -443,7 +443,7 @@ export default function ProductionPipeline() {
                 {item.status === 'draft' && (
                   <button 
                     onClick={() => updateContentStatus(item.id, 'scheduled')}
-                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    className="px-3 py-1 bg-slate-700 text-white text-xs rounded hover:bg-slate-800"
                   >
                     Schedule
                   </button>
