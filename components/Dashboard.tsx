@@ -901,9 +901,7 @@ useEffect(() => {
             <div className="flex items-center space-x-8">
              <div className="flex items-center space-x-3">
   <div className="w-10 h-10 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-    </svg>
+    <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-6 h-6" />
   </div>
   <div>
     <span className="text-xl font-bold bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">Writer Suite</span>
