@@ -18,10 +18,10 @@ import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
-import SettingsPage from './SettingsPage'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
+import SettingsPage from './SettingsPage'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -36,14 +36,32 @@ interface GeneratedDraft {
   icon: any
 }
 
+interface UserProfile {
+  content_pillars?: string[]
+  preferred_tone?: string
+  role?: string
+  plan_type?: string
+  posts_generated_this_month?: number
+  posts_remaining?: number
+  posts_saved_this_month?: number
+  target_audience?: string
+  posting_frequency?: string
+}
+
 export default function Dashboard() {
+  // State Management
   const { user, profile, signOut, refreshProfile } = useAuth()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
+  
+  // UI States
   const [useRichEditor, setUseRichEditor] = useState(true)
   const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
 
+  // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -53,12 +71,9 @@ export default function Dashboard() {
   const [showPreview, setShowPreview] = useState(false)
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
-  const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const profileMenuRef = useRef<HTMLDivElement>(null)
-
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
 
-  // Form data
+  // Form Data
   const [formData, setFormData] = useState({
     topic: '',
     points: '5',
@@ -66,6 +81,7 @@ export default function Dashboard() {
     context: ''
   })
 
+  // Effects
   useEffect(() => {
     loadTrendingTopics()
     loadSavedContent()
@@ -77,6 +93,7 @@ export default function Dashboard() {
     }
   }, [profile])
 
+  // Data Loading Functions
   const loadTrendingTopics = async () => {
     const { data } = await getTrendingTopics()
     if (data) setTrendingTopics(data)
@@ -89,6 +106,7 @@ export default function Dashboard() {
     }
   }
 
+  // Content Generation Functions
   const handleWriteFromIdea = (idea: ContentIdea) => {
     setActivePage('generator')
     setFormData(prev => ({
@@ -217,7 +235,7 @@ export default function Dashboard() {
     ]
     return points[index % points.length]
   }
-
+  // Content Management Functions
   const handleSaveDraft = async () => {
     if (!user || !generatedDrafts.length) return
     const selectedDraftContent = generatedDrafts.find(d => d.type === selectedDraft)
@@ -243,6 +261,7 @@ export default function Dashboard() {
     await refreshProfile()
   }
 
+  // AI Improvement Functions
   const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
     try {
       return await aiImprovementService.improveText(text, type)
@@ -267,6 +286,7 @@ export default function Dashboard() {
     }
   }
 
+  // Scheduling Functions
   const handleQuickSchedule = async (content: string, contentType: ContentType, toneUsed: string) => {
     try {
       const tomorrow = new Date()
@@ -274,7 +294,7 @@ export default function Dashboard() {
       const scheduledContent = await schedulingService.scheduleContent({
         user_id: user?.id || '',
         content_text: content,
-        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        content_type: contentType,
         tone_used: toneUsed,
         prompt_input: formData.topic,
         is_saved: false,
@@ -288,6 +308,7 @@ export default function Dashboard() {
     }
   }
 
+  // UI Components
   const KeyboardShortcutsHelp = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null
     return (
@@ -319,19 +340,13 @@ export default function Dashboard() {
     )
   }
 
+  // Navigation Configuration
   const contentTypes = [
     { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
     { id: 'story' as ContentType, label: '💡 Story', icon: '💡' },
     { id: 'trend' as ContentType, label: '📈 Trend Take', icon: '📈' },
     { id: 'mistake' as ContentType, label: '⚠️ Mistake Story', icon: '⚠️' },
     { id: 'metrics' as ContentType, label: '📊 Metrics', icon: '📊' }
-  ]
-
-  const toneOptions = [
-    { value: 'insightful_cfo' as ToneType, label: 'Insightful CFO' },
-    { value: 'bold_operator' as ToneType, label: 'Bold Operator' },
-    { value: 'strategic_advisor' as ToneType, label: 'Strategic Advisor' },
-    { value: 'data_driven_expert' as ToneType, label: 'Data-Driven Expert' }
   ]
 
   const navigationItems = [
@@ -344,15 +359,19 @@ export default function Dashboard() {
     { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
   ]
 
+  // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
+  
   const getProfileDisplayName = () => {
     if (!user?.email) return 'Finance Professional'
     const email = user.email
     const firstName = email.split('@')[0].split('.')[0]
     return firstName.charAt(0).toUpperCase() + firstName.slice(1)
   }
+  
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
+  // Page Content Rendering
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
@@ -428,6 +447,7 @@ export default function Dashboard() {
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid gap-8" style={{ gridTemplateColumns: showPreview && showGenerated ? '1fr 400px' : '2fr 1fr' }}>
+              {/* Generator Form Section */}
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-700/5 to-teal-600/5 rounded-full -mr-10 -mt-10"></div>
@@ -442,6 +462,8 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
+
+                  {/* Content Type Selection */}
                   <div className="flex space-x-2 mb-6 overflow-x-auto">
                     {contentTypes.map((type) => (
                       <button
@@ -457,6 +479,8 @@ export default function Dashboard() {
                       </button>
                     ))}
                   </div>
+
+                  {/* Form Fields */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -473,6 +497,7 @@ export default function Dashboard() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       />
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -489,6 +514,7 @@ export default function Dashboard() {
                           <option value="10">10 points</option>
                         </select>
                       </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Base Tone
@@ -498,14 +524,14 @@ export default function Dashboard() {
                           onChange={(e) => setFormData({ ...formData, tone: e.target.value as ToneType })}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         >
-                          {toneOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
+                          <option value="insightful_cfo">Insightful CFO</option>
+                          <option value="bold_operator">Bold Operator</option>
+                          <option value="strategic_advisor">Strategic Advisor</option>
+                          <option value="data_driven_expert">Data-Driven Expert</option>
                         </select>
                       </div>
                     </div>
+
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="block text-sm font-medium text-gray-700">
@@ -522,6 +548,7 @@ export default function Dashboard() {
                           </button>
                         </div>
                       </div>
+                      
                       {useRichEditor ? (
                         <RichTextEditor
                           content={formData.context}
@@ -540,6 +567,8 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
+
+                  {/* Generate Button */}
                   <div className="mt-6 flex justify-between items-center">
                     <div className="text-sm text-gray-500">
                       💡 Tip: We'll create 3 different variations for you to choose from
@@ -563,6 +592,8 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
+
+                {/* Generated Content Section */}
                 {showGenerated && generatedDrafts.length > 0 && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 fade-in">
                     <div className="flex justify-between items-center mb-6">
@@ -587,6 +618,8 @@ export default function Dashboard() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Draft Selection Tabs */}
                     <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
                       {generatedDrafts.map((draft) => {
                         const Icon = draft.icon
@@ -632,6 +665,8 @@ export default function Dashboard() {
                         )
                       })}
                     </div>
+
+                    {/* Selected Draft Content */}
                     <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-slate-500">
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -677,6 +712,7 @@ export default function Dashboard() {
                           </button>
                         </div>
                       </div>
+
                       {editingDraft === selectedDraft ? (
                         <div className="mb-4">
                           <RichTextEditor
@@ -715,6 +751,8 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+
+              {/* Preview Section */}
               {showPreview && showGenerated && (
                 <div className="space-y-6">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -738,8 +776,11 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
+
+              {/* Sidebar Content */}
               {(!showPreview || !showGenerated) && (
                 <div className="space-y-6">
+                  {/* Monthly Stats */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
                     <div className="space-y-4">
@@ -774,6 +815,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Recent Saves */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Recent Saves</h3>
@@ -811,245 +854,7 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
+
+                  {/* Trending Topics */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 Trending in Finance</h3>
-                    <div className="space-y-3">
-                      {trendingTopics.map((topic) => (
-                        <div key={topic.id} className="text-sm">
-                          <div className="font-medium text-gray-900 mb-1">{topic.topic_title}</div>
-                          <div className="text-gray-600 text-xs">{topic.description}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <button 
-                      onClick={() => setActivePage('ideas')}
-                      className="w-full mt-4 text-sm text-slate-600 hover:text-slate-700 font-medium"
-                    >
-                      Get Content Ideas →
-                    </button>
-                  </div>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Publishing</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                          <span className="text-sm text-gray-600">LinkedIn</span>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">
-                          {isLinkedInConnected ? 'Connected' : 'Not Connected'}
-                        </span>
-                      </div>
-                      {!isLinkedInConnected && (
-                        <button
-                          onClick={connectLinkedIn}
-                          className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition"
-                        >
-                          Connect LinkedIn
-                        </button>
-                      )}
-                      {isLinkedInConnected && (
-                        <div className="text-xs text-green-600 bg-green-50 rounded-lg p-2">
-                          ✅ Auto-publishing enabled
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <KeyboardShortcutsHelp 
-              isOpen={showShortcutsHelp} 
-              onClose={() => setShowShortcutsHelp(false)} 
-            />
-          </div>
-        )
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Premium Left Sidebar */}
-      <nav 
-        className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
-          sidebarExpanded ? 'w-60' : 'w-16'
-        }`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-      >
-        {/* Logo Section */}
-        <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200 flex-shrink-0">
-              <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-5 h-5" />
-            </div>
-            {sidebarExpanded && (
-              <div className="transition-opacity duration-300 ease-in-out">
-                <span className="text-lg font-bold text-white whitespace-nowrap">Writer Suite</span>
-                <div className="text-xs text-slate-400 -mt-1 whitespace-nowrap">Professional Content Creation</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation Items */}
-        <div className="flex-1 px-2 py-6">
-          <div className="space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activePage === item.id
-              return (
-                <div key={item.id} className="relative group">
-                  <button
-                    onClick={() => setActivePage(item.id)}
-                    className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
-                      sidebarExpanded ? 'space-x-3' : 'justify-center'
-                    } ${
-                      isActive
-                        ? 'bg-slate-700 text-white shadow-lg'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
-                    )}
-                    
-                    <Icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
-                      isActive ? 'text-teal-400' : 'group-hover:scale-110'
-                    }`} />
-                    
-                    {sidebarExpanded && (
-                      <>
-                        <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>
-                        
-                        {item.premium && (
-                          <span className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm animate-pulse whitespace-nowrap">
-                            PRO
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </button>
-                  
-                  {/* Tooltip for collapsed state */}
-                  {!sidebarExpanded && (
-                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                      {item.label}
-                      {item.premium && (
-                        <span className="ml-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
-                          PRO
-                        </span>
-                      )}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Profile Section at Bottom */}
-        <div className="mt-auto border-t border-slate-700 p-4">
-          <div 
-            className="relative" 
-            ref={profileMenuRef}
-            onMouseEnter={() => setShowProfileMenu(true)}
-            onMouseLeave={() => setShowProfileMenu(false)}
-          >
-            <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
-  sidebarExpanded ? 'space-x-3' : 'justify-center'
-} ${showProfileMenu ? 'bg-slate-700/50 text-white' : ''}`}
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              
-              {sidebarExpanded && (
-                <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-white">
-                    {getProfileDisplayName()}
-                  </div>
-                  <div className="text-xs text-slate-400 capitalize">
-                    {getProfileTitle()}
-                  </div>
-                </div>
-              )}
-              
-              {sidebarExpanded && (
-                <div className={`text-slate-400 transition-transform duration-200 ${
-  showProfileMenu ? 'rotate-180' : ''
-}`}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-            </button>
-            
-            {/* Profile Dropdown Menu */}
-            {showProfileMenu && sidebarExpanded && (
-              <div 
-                className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden transition-all duration-200 ease-out transform origin-bottom"
-                onMouseEnter={() => setShowProfileMenu(true)}
-                onMouseLeave={() => setShowProfileMenu(false)}
-              >
-                <div className="py-1">
-                  <button 
-                    onClick={() => setActivePage('settings')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                  >
-                    <Settings className="w-4 h-4 mr-3" />
-                    Settings
-                  </button>
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
-                    <BarChart3 className="w-4 h-4 mr-3" />
-                    Usage & Analytics
-                  </button>
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
-                    <User className="w-4 h-4 mr-3" />
-                    Account Settings
-                  </button>
-                  <hr className="my-1 border-slate-600" />
-                  <button 
-                    onClick={signOut}
-                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-red-600/20"
-                  >
-                    <LogOut className="w-4 h-4 mr-3" />
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Tooltip for collapsed state */}
-            {!sidebarExpanded && (
-              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                {getProfileDisplayName()}
-                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content Area */}
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-        {/* Top Header - Now Empty or Minimal */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-6 py-4">
-            {/* Header can be empty or contain breadcrumbs/page title if needed */}
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main>
-          {renderPageContent()}
-        </main>
-      </div>
-    </div>
-  )
-}
+                    <h3 className="text-lg font-semibold text
