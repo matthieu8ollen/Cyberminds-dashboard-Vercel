@@ -959,76 +959,52 @@ useEffect(() => {
             })}
           </div>
         </div>
-
-{/* Profile Section - Bottom of Sidebar */}
-<div className="border-t border-slate-700 p-4">
-  <div className="relative" ref={profileMenuRef}>
-    <button 
-      onClick={() => setShowProfileMenu(!showProfileMenu)}
-      className={`group w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
-        sidebarExpanded ? 'space-x-3' : 'justify-center'
-      }`}
-    >
-      <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <User className="w-4 h-4 text-white" />
-      </div>
-      
-      {sidebarExpanded && (
-        <div className="flex-1 text-left">
-          <div className="font-medium text-white text-sm">
-            {getProfileDisplayName()}
-          </div>
-          <div className="text-xs text-slate-400 capitalize">
-            {getProfileTitle()}
-          </div>
-        </div>
-      )}
-    </button>
-    
-    {/* Tooltip for collapsed state */}
-    {!sidebarExpanded && (
-      <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-        {getProfileDisplayName()}
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
-      </div>
-    )}
-    
-    {/* Profile Menu Dropdown */}
-    {showProfileMenu && (
-      <div className={`absolute ${sidebarExpanded ? 'left-0' : 'left-full ml-2'} bottom-full mb-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 z-50`}>
-        <div className="py-1">
-          <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-            <Settings className="w-4 h-4 mr-3" />
-            Settings
-          </button>
-          <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-            <BarChart3 className="w-4 h-4 mr-3" />
-            Usage
-          </button>
-          <hr className="my-1" />
-          <button 
-            onClick={signOut}
-            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-          >
-            <LogOut className="w-4 h-4 mr-3" />
-            Sign Out
-          </button>
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-</nav>
+      </nav>
 
       {/* Main Content Area */}
-      {/* Main Content Area */}
-<div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-  {/* Page Content - No header needed now */}
-  <main>
-    {renderPageContent()}
-  </main>
-</div>
-        
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
+        {/* Top Header with Profile */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex justify-end items-center">
+              <div className="relative" ref={profileMenuRef}>
+                <button 
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition"
+                >
+                  <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
+                    <User className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {getProfileDisplayName()}
+                  </span>
+                </button>
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 backdrop-blur-sm">
+                    <div className="py-1">
+                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <Settings className="w-4 h-4 mr-3" />
+                        Settings
+                      </button>
+                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <BarChart3 className="w-4 h-4 mr-3" />
+                        Usage
+                      </button>
+                      <hr className="my-1" />
+                      <button 
+                        onClick={signOut}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Page Content */}
         <main>
