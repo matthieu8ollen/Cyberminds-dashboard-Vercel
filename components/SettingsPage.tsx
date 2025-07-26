@@ -1,578 +1,1052 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { updateUserProfile } from '../lib/supabase'
-import { useLinkedInAuth } from '../lib/linkedInAPI'
 import { 
-  Settings, 
-  User, 
-  Bell, 
-  CreditCard, 
-  Shield, 
-  Linkedin, 
-  Globe, 
-  Sparkles,
-  Save,
-  Check,
-  X,
-  ExternalLink,
-  Download,
-  Trash2
-} from 'lucide-react'
+  getTrendingTopics, 
+  saveGeneratedContent, 
+  getSavedContent,
+  updateUserProfile,
+  TrendingTopic,
+  GeneratedContent,
+  ContentIdea
+} from '../lib/supabase'
+import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
+import IdeasPage from './IdeasPage'
+import WriterSuite from './WriterSuite'
+import LinkedInPreview from './LinkedInPreview'
+import ProductionPipeline from './ProductionPipeline'
+import ContentCalendar from './ContentCalendar'
+import RichTextEditor from './RichTextEditor'
+import SettingsPage from './SettingsPage'
+import { aiImprovementService } from '../lib/aiImprovementService'
+import { schedulingService } from '../lib/schedulingService'
+import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 
-type SettingsTab = 'account' | 'content' | 'notifications' | 'billing' | 'privacy'
+type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
+type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
+type ActivePage = 'generator' | 'ideas' | 'writer-suite' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type DraftType = 'bold' | 'insightful' | 'wildcard'
 
-interface ContentPillar {
-  id: string
-  name: string
-  type: 'predefined' | 'custom'
-  selected: boolean
+interface GeneratedDraft {
+  type: DraftType
+  content: string
+  label: string
+  description: string
+  icon: any
 }
 
-const PREDEFINED_PILLARS = [
-  { id: 'industry_trends', name: 'Industry Trends & Analysis', type: 'predefined' as const },
-  { id: 'case_studies', name: 'Case Studies & Best Practices', type: 'predefined' as const },
-  { id: 'saas_metrics', name: 'SaaS Metrics & KPIs', type: 'predefined' as const },
-  { id: 'leadership', name: 'Finance Leadership', type: 'predefined' as const },
-  { id: 'career_advice', name: 'Career Development', type: 'predefined' as const },
-  { id: 'market_insights', name: 'Market Analysis', type: 'predefined' as const },
-  { id: 'tools_tech', name: 'Finance Tools & Technology', type: 'predefined' as const },
-  { id: 'personal_stories', name: 'Personal Stories & Lessons', type: 'predefined' as const }
-]
-
-const ROLES = [
-  { value: 'cfo', label: 'Chief Financial Officer (CFO)' },
-  { value: 'finance_director', label: 'Finance Director' },
-  { value: 'controller', label: 'Controller' },
-  { value: 'fractional_cfo', label: 'Fractional CFO' },
-  { value: 'fp_a_manager', label: 'FP&A Manager' },
-  { value: 'finance_consultant', label: 'Finance Consultant' },
-  { value: 'startup_founder', label: 'Startup Founder' },
-  { value: 'other', label: 'Other Finance Role' }
-]
-
-const TONE_OPTIONS = [
-  { value: 'insightful_cfo', label: 'Insightful CFO', description: 'Data-driven and analytical' },
-  { value: 'bold_operator', label: 'Bold Operator', description: 'Direct and action-oriented' },
-  { value: 'strategic_advisor', label: 'Strategic Advisor', description: 'Thoughtful and advisory' },
-  { value: 'data_driven_expert', label: 'Data-Driven Expert', description: 'Numbers and metrics focused' }
-]
-
-export default function SettingsPage() {
-  const { user, profile, refreshProfile } = useAuth()
+export default function Dashboard() {
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
-  
-  const [activeTab, setActiveTab] = useState<SettingsTab>('account')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [newCustomPillar, setNewCustomPillar] = useState('')
-  
-  // Form states
-  const [accountData, setAccountData] = useState({
-    firstName: '',
-    lastName: '',
-    email: user?.email || '',
-    role: profile?.role || 'cfo',
-    company: '',
-    bio: ''
+  const [useRichEditor, setUseRichEditor] = useState(true)
+  const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+
+  const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
+  const [activeTab, setActiveTab] = useState<ContentType>('framework')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
+  const [selectedDraft, setSelectedDraft] = useState<DraftType>('bold')
+  const [showGenerated, setShowGenerated] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
+  const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+  const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
+
+  // Form data
+  const [formData, setFormData] = useState({
+    topic: '',
+    points: '5',
+    tone: (profile?.preferred_tone || 'insightful_cfo') as ToneType,
+    context: ''
   })
-  
-  const [contentData, setContentData] = useState({
-    preferred_tone: profile?.preferred_tone || 'insightful_cfo',
-    content_pillars: profile?.content_pillars || [],
-    target_audience: profile?.target_audience || '',
-    posting_frequency: profile?.posting_frequency || 'weekly'
-  })
-  
-  const [notificationData, setNotificationData] = useState({
-    post_published: true,
-    queue_empty: true,
-    new_suggestions: false,
-    weekly_analytics: true,
-    draft_reminders: false
-  })
-  
-  const [contentPillars, setContentPillars] = useState<ContentPillar[]>([])
 
   useEffect(() => {
-    // Initialize content pillars
-    const userPillars = profile?.content_pillars || []
-    const initialPillars = PREDEFINED_PILLARS.map(pillar => ({
-      ...pillar,
-      selected: userPillars.includes(pillar.id)
-    }))
-    
-    // Add custom pillars
-    const customPillars = userPillars
-      .filter(pillar => !PREDEFINED_PILLARS.find(p => p.id === pillar))
-      .map(pillar => ({
-        id: pillar,
-        name: pillar,
-        type: 'custom' as const,
-        selected: true
-      }))
-    
-    setContentPillars([...initialPillars, ...customPillars])
+    loadTrendingTopics()
+    loadSavedContent()
+  }, [])
+
+  useEffect(() => {
+    if (profile?.preferred_tone) {
+      setFormData(prev => ({ ...prev, tone: profile.preferred_tone as ToneType }))
+    }
   }, [profile])
 
-  useEffect(() => {
-    if (user?.email) {
-      const emailParts = user.email.split('@')[0].split('.')
-      setAccountData(prev => ({
-        ...prev,
-        firstName: emailParts[0]?.charAt(0).toUpperCase() + emailParts[0]?.slice(1) || '',
-        lastName: emailParts[1]?.charAt(0).toUpperCase() + emailParts[1]?.slice(1) || ''
-      }))
-    }
-  }, [user])
+  const loadTrendingTopics = async () => {
+    const { data } = await getTrendingTopics()
+    if (data) setTrendingTopics(data)
+  }
 
-  const handleSave = async () => {
-    if (!user) return
-    
-    setSaving(true)
-    try {
-      const selectedPillars = contentPillars
-        .filter(pillar => pillar.selected)
-        .map(pillar => pillar.id)
-      
-      await updateUserProfile(user.id, {
-        role: accountData.role,
-        preferred_tone: contentData.preferred_tone as any,
-        content_pillars: selectedPillars,
-        target_audience: contentData.target_audience,
-        posting_frequency: contentData.posting_frequency
-      })
-      
-      await refreshProfile()
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
-    } catch (error) {
-      console.error('Error saving settings:', error)
-    } finally {
-      setSaving(false)
+  const loadSavedContent = async () => {
+    if (user) {
+      const { data } = await getSavedContent(user.id)
+      if (data) setSavedContent(data)
     }
   }
 
-  const addCustomPillar = () => {
-    if (newCustomPillar.trim() && !contentPillars.find(p => p.name === newCustomPillar.trim())) {
-      const customPillar: ContentPillar = {
-        id: newCustomPillar.trim().toLowerCase().replace(/\s+/g, '_'),
-        name: newCustomPillar.trim(),
-        type: 'custom',
-        selected: true
+  const handleWriteFromIdea = (idea: ContentIdea) => {
+    setActivePage('generator')
+    setFormData(prev => ({
+      ...prev,
+      topic: idea.title,
+      context: idea.description || ''
+    }))
+    setSelectedIdea(idea)
+    setTimeout(() => { handleGenerate() }, 100)
+  }
+
+  const handleGenerate = async () => {
+    if (!formData.topic.trim()) return
+
+    setIsGenerating(true)
+    setTimeout(() => {
+      const drafts = generateMultipleDrafts(formData)
+      setGeneratedDrafts(drafts)
+      setSelectedDraft('bold')
+      setShowGenerated(true)
+      setShowPreview(true)
+      setIsGenerating(false)
+      if (profile && user) {
+        updateUserProfile(user.id, {
+          posts_generated_this_month: (profile.posts_generated_this_month || 0) + 1,
+          posts_remaining: Math.max(0, (profile.posts_remaining || 0) - 1)
+        }).then(() => refreshProfile())
       }
-      setContentPillars(prev => [...prev, customPillar])
-      setNewCustomPillar('')
+    }, 3000)
+  }
+
+  const generateMultipleDrafts = (data: typeof formData): GeneratedDraft[] => {
+    const topic = data.topic
+    const points = parseInt(data.points)
+    const context = data.context
+
+    return [
+      {
+        type: 'bold',
+        label: 'Bold',
+        description: 'Direct and confident approach',
+        icon: Target,
+        content: generateBoldDraft(topic, points, context, activeTab)
+      },
+      {
+        type: 'insightful',
+        label: 'Insightful',
+        description: 'Data-driven and analytical',
+        icon: BarChart3,
+        content: generateInsightfulDraft(topic, points, context, activeTab)
+      },
+      {
+        type: 'wildcard',
+        label: 'Wildcard',
+        description: 'Creative and engaging twist',
+        icon: Sparkles,
+        content: generateWildcardDraft(topic, points, context, activeTab)
+      }
+    ]
+  }
+
+  const generateBoldDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
+    const boldIntros = [
+      "I'm going to be direct:",
+      "Let me cut through the noise:",
+      "Here's what nobody talks about:",
+      "The uncomfortable truth about",
+      "Stop doing this immediately:"
+    ]
+    const intro = boldIntros[Math.floor(Math.random() * boldIntros.length)]
+    return `${intro} ${topic}\n\n${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:\n\n${Array.from({length: points}, (_, i) => 
+      `${i + 1}. ${getBoldPoint(topic, i)}`
+    ).join('\n\n')}\n\n${context ? `\n💡 Reality check: ${context}` : ''}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
+  }
+
+  const generateInsightfulDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
+    return `📊 Deep dive: ${topic}\n\nAfter analyzing patterns across 100+ finance organizations, here are the key insights:\n\n${Array.from({length: points}, (_, i) => 
+      `${i + 1}️⃣ ${getInsightfulPoint(topic, i)}`
+    ).join('\n\n')}\n\n${context ? `\n📈 Key finding: ${context}` : ''}\n\nThe data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.\n\nWhat metrics are you tracking for ${topic}? Share your experience below.\n\n#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
+  }
+
+  const generateWildcardDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
+    const creativeIntros = [
+      `If ${topic} were a recipe, most CFOs would be missing these ingredients:`,
+      `${topic} is like playing chess while everyone else plays checkers.`,
+      `The ${topic} playbook they don't teach in business school:`,
+      `Plot twist: Everything you know about ${topic} is backwards.`,
+      `${topic} through the lens of a recovering perfectionist CFO:`
+    ]
+    const intro = creativeIntros[Math.floor(Math.random() * creativeIntros.length)]
+    return `${intro}\n\n${Array.from({length: points}, (_, i) => {
+      const emojis = ['🎯', '⚡', '🔥', '💎', '🚀', '⭐', '🌟', '💡']
+      return `${emojis[i % emojis.length]} ${getWildcardPoint(topic, i)}`
+    }).join('\n\n')}\n\n${context ? `\n🎭 Plot twist: ${context}` : ''}\n\nBeen there, done that, bought the t-shirt (and learned the hard way).\n\nWhich of these resonates most with your experience? Let's discuss! 👇\n\n#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
+  }
+
+  const getBoldPoint = (topic: string, index: number): string => {
+    const points = [
+      `Stop overthinking ${topic} - action beats analysis paralysis every time`,
+      `If you're not uncomfortable, you're not pushing hard enough on ${topic}`,
+      `Your ${topic} strategy should scare your competition, not comfort them`,
+      `${topic} without clear accountability is just expensive theater`,
+      `Most teams fail at ${topic} because they won't make the hard decisions`
+    ]
+    return points[index % points.length]
+  }
+
+  const getInsightfulPoint = (topic: string, index: number): string => {
+    const points = [
+      `Companies with structured ${topic} processes show 35% better financial performance`,
+      `The correlation between ${topic} maturity and company valuation is stronger than expected`,
+      `Leading organizations invest 2.3x more resources in ${topic} optimization`,
+      `${topic} effectiveness directly impacts employee retention rates (18% improvement)`,
+      `Our analysis shows ${topic} ROI compounds at 127% annually when done correctly`
+    ]
+    return points[index % points.length]
+  }
+
+  const getWildcardPoint = (topic: string, index: number): string => {
+    const points = [
+      `${topic} is 20% math, 80% psychology - and most CFOs get this backwards`,
+      `The best ${topic} strategies I've seen started as "terrible" ideas on a napkin`,
+      `Your team's resistance to ${topic} changes? That's actually valuable data`,
+      `I used to think ${topic} was about control. Turns out it's about trust`,
+      `${topic} done right feels like magic to your team, science to your board`
+    ]
+    return points[index % points.length]
+  }
+
+  const handleSaveDraft = async () => {
+    if (!user || !generatedDrafts.length) return
+    const selectedDraftContent = generatedDrafts.find(d => d.type === selectedDraft)
+    if (!selectedDraftContent) return
+    const content = {
+      user_id: user.id,
+      content_text: selectedDraftContent.content,
+      content_type: activeTab,
+      tone_used: selectedDraft,
+      prompt_input: formData.topic,
+      is_saved: true,
+      idea_id: selectedIdea?.id,
+      variations_data: {
+        all_drafts: generatedDrafts.map(d => ({
+          type: d.type,
+          content: d.content
+        })),
+        selected_draft: selectedDraft
+      }
+    }
+    await saveGeneratedContent(content)
+    await loadSavedContent()
+    await refreshProfile()
+  }
+
+  const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
+    try {
+      return await aiImprovementService.improveText(text, type)
+    } catch (error) {
+      console.error('AI improvement failed:', error)
+      return text
     }
   }
 
-  const removePillar = (pillarId: string) => {
-    setContentPillars(prev => prev.filter(p => p.id !== pillarId))
+  const improveDraftWithAI = async (draftType: DraftType, improvementType: 'bold' | 'improve' | 'expand') => {
+    const draft = generatedDrafts.find(d => d.type === draftType)
+    if (!draft) return
+    try {
+      const improvedContent = await aiImprovementService.improveText(draft.content, improvementType)
+      setGeneratedDrafts(prev => prev.map(d =>
+        d.type === draftType
+          ? { ...d, content: improvedContent }
+          : d
+      ))
+    } catch (error) {
+      console.error('Bulk AI improvement failed:', error)
+    }
   }
 
-  const togglePillar = (pillarId: string) => {
-    setContentPillars(prev => prev.map(p => 
-      p.id === pillarId ? { ...p, selected: !p.selected } : p
-    ))
+  const handleQuickSchedule = async (content: string, contentType: ContentType, toneUsed: string) => {
+    try {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const scheduledContent = await schedulingService.scheduleContent({
+        user_id: user?.id || '',
+        content_text: content,
+        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        tone_used: toneUsed,
+        prompt_input: formData.topic,
+        is_saved: false,
+        scheduled_date: tomorrow.toISOString().split('T')[0],
+        scheduled_time: '09:00'
+      })
+      console.log('Content scheduled successfully:', scheduledContent)
+      setActivePage('plan')
+    } catch (error) {
+      console.error('Error scheduling content:', error)
+    }
   }
 
-  const tabs = [
-    { id: 'account' as SettingsTab, label: 'Account', icon: User },
-    { id: 'content' as SettingsTab, label: 'Content & AI', icon: Sparkles },
-    { id: 'notifications' as SettingsTab, label: 'Notifications', icon: Bell },
-    { id: 'billing' as SettingsTab, label: 'Billing & Plan', icon: CreditCard },
-    { id: 'privacy' as SettingsTab, label: 'Privacy & Data', icon: Shield }
+  const KeyboardShortcutsHelp = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    if (!isOpen) return null
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Keyboard Shortcuts</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span>Make text bolder (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+B</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Improve clarity (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+I</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Expand content (AI)</span>
+              <kbd className="bg-gray-100 px-2 py-1 rounded">Cmd+E</kbd>
+            </div>
+          </div>
+          <div className="mt-4 text-xs text-gray-500">
+            Select text first to use AI improvements
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const contentTypes = [
+    { id: 'framework' as ContentType, label: '📊 Framework', icon: '📊' },
+    { id: 'story' as ContentType, label: '💡 Story', icon: '💡' },
+    { id: 'trend' as ContentType, label: '📈 Trend Take', icon: '📈' },
+    { id: 'mistake' as ContentType, label: '⚠️ Mistake Story', icon: '⚠️' },
+    { id: 'metrics' as ContentType, label: '📊 Metrics', icon: '📊' }
   ]
 
-  const renderAccountTab = () => (
-    <div className="space-y-6">
-      {/* Basic Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-            <input
-              type="text"
-              value={accountData.firstName}
-              onChange={(e) => setAccountData(prev => ({ ...prev, firstName: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-            <input
-              type="text"
-              value={accountData.lastName}
-              onChange={(e) => setAccountData(prev => ({ ...prev, lastName: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={accountData.email}
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-            <select
-              value={accountData.role}
-              onChange={(e) => setAccountData(prev => ({ ...prev, role: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            >
-              {ROLES.map(role => (
-                <option key={role.value} value={role.value}>{role.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-            <input
-              type="text"
-              value={accountData.company}
-              onChange={(e) => setAccountData(prev => ({ ...prev, company: e.target.value }))}
-              placeholder="Your company name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
+  const toneOptions = [
+    { value: 'insightful_cfo' as ToneType, label: 'Insightful CFO' },
+    { value: 'bold_operator' as ToneType, label: 'Bold Operator' },
+    { value: 'strategic_advisor' as ToneType, label: 'Strategic Advisor' },
+    { value: 'data_driven_expert' as ToneType, label: 'Data-Driven Expert' }
+  ]
 
-      {/* LinkedIn Integration */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">LinkedIn Integration</h3>
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-              isLinkedInConnected ? 'bg-blue-100' : 'bg-gray-100'
-            }`}>
-              <Linkedin className={`w-5 h-5 ${isLinkedInConnected ? 'text-blue-600' : 'text-gray-400'}`} />
-            </div>
-            <div>
-              <div className="font-medium text-gray-900">LinkedIn Account</div>
-              <div className={`text-sm ${isLinkedInConnected ? 'text-green-600' : 'text-gray-500'}`}>
-                {isLinkedInConnected ? 'Connected - Auto-publishing enabled' : 'Not connected'}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={isLinkedInConnected ? disconnectLinkedIn : connectLinkedIn}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              isLinkedInConnected
-                ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                : 'bg-slate-700 text-white hover:bg-slate-800'
-            }`}
-          >
-            {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
-          </button>
-        </div>
-        {isLinkedInConnected && (
-          <div className="mt-4 p-3 bg-green-50 rounded-lg">
-            <div className="text-sm text-green-700">
-              ✅ Your LinkedIn account is connected. Writer Suite can now automatically publish your content and track analytics.
-            </div>
-          </div>
-        )}
-      </div>
+  const navigationItems = [
+    { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+    { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
+    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+  ]
 
-      {/* Plan Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Plan</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-gray-900 capitalize">{profile?.plan_type || 'Starter'} Plan</div>
-            <div className="text-sm text-gray-600">{profile?.posts_remaining || 0} posts remaining this month</div>
-          </div>
-          <button className="px-4 py-2 bg-gradient-to-r from-slate-700 to-teal-600 text-white rounded-lg hover:opacity-90 transition">
-            Upgrade Plan
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+  const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
+  const getProfileDisplayName = () => {
+    if (!user?.email) return 'Finance Professional'
+    const email = user.email
+    const firstName = email.split('@')[0].split('.')[0]
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1)
+  }
+  const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
-  const renderContentTab = () => (
-    <div className="space-y-6">
-      {/* AI Persona Settings */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Writing Persona</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Tone</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {TONE_OPTIONS.map(tone => (
-                <div
-                  key={tone.value}
-                  onClick={() => setContentData(prev => ({ ...prev, preferred_tone: tone.value }))}
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition ${
-                    contentData.preferred_tone === tone.value
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-gray-200 hover:border-gray-300'
+  const renderPageContent = () => {
+    switch (activePage) {
+      case 'ideas':
+        return <IdeasPage onWritePost={handleWriteFromIdea} />
+      case 'writer-suite':
+        return <WriterSuite onComplete={(data) => {
+          console.log('Writer Suite completed:', data)
+        }} />
+      case 'production':
+        return <ProductionPipeline />
+      case 'plan':
+        return <ContentCalendar />
+      case 'settings':
+        return <SettingsPage />
+      case 'analytics':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">LinkedIn Integration</h3>
+                    <p className="text-sm text-gray-600">
+                      {isLinkedInConnected 
+                        ? 'Connected - Automated publishing enabled' 
+                        : 'Not connected - Manual publishing only'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={isLinkedInConnected ? disconnectLinkedIn : connectLinkedIn}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    isLinkedInConnected
+                      ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                      : 'bg-slate-700 text-white hover:bg-slate-800'
                   }`}
                 >
-                  <div className="font-medium text-gray-900">{tone.label}</div>
-                  <div className="text-sm text-gray-600">{tone.description}</div>
-                </div>
-              ))}
+                  {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
+                </button>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {isLinkedInConnected ? 'Analytics Coming Soon' : 'Connect LinkedIn for Analytics'}
+              </h3>
+              <p className="text-gray-600">
+                {isLinkedInConnected 
+                  ? 'Track your content performance and engagement metrics'
+                  : 'Connect your LinkedIn account to view detailed analytics'}
+              </p>
             </div>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</label>
-            <select
-              value={contentData.target_audience}
-              onChange={(e) => setContentData(prev => ({ ...prev, target_audience: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            >
-              <option value="">Select your audience</option>
-              <option value="fellow_cfos">Fellow CFOs and Finance Leaders</option>
-              <option value="startup_founders">Startup Founders & Entrepreneurs</option>
-              <option value="finance_professionals">Finance Professionals & Teams</option>
-              <option value="potential_clients">Potential Clients & Partners</option>
-              <option value="industry_peers">Industry Peers & Colleagues</option>
-              <option value="mixed_audience">Mixed Professional Audience</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</label>
-            <select
-              value={contentData.posting_frequency}
-              onChange={(e) => setContentData(prev => ({ ...prev, posting_frequency: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            >
-              <option value="daily">Daily (7 posts/week)</option>
-              <option value="weekdays">Weekdays only (5 posts/week)</option>
-              <option value="3x_week">3 times per week</option>
-              <option value="2x_week">2 times per week</option>
-              <option value="weekly">Weekly (1 post/week)</option>
-              <option value="flexible">Flexible - as needed</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Pillars */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Pillars</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Select the topics you want to create content about. This helps the AI generate more relevant ideas.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          {contentPillars.map(pillar => (
-            <div
-              key={pillar.id}
-              className={`flex items-center justify-between p-3 border rounded-lg ${
-                pillar.selected ? 'border-teal-500 bg-teal-50' : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  checked={pillar.selected}
-                  onChange={() => togglePillar(pillar.id)}
-                  className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                />
-                <span className="text-sm font-medium text-gray-900">{pillar.name}</span>
+        )
+      case 'feed':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Feed</h1>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Rss className="w-8 h-8 text-gray-400" />
               </div>
-              {pillar.type === 'custom' && (
-                <button
-                  onClick={() => removePillar(pillar.id)}
-                  className="text-gray-400 hover:text-red-600 transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Feed Coming Soon</h3>
+              <p className="text-gray-600">Discover trending content and inspiration</p>
+            </div>
+          </div>
+        )
+      default:
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid gap-8" style={{ gridTemplateColumns: showPreview && showGenerated ? '1fr 400px' : '2fr 1fr' }}>
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-700/5 to-teal-600/5 rounded-full -mr-10 -mt-10"></div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Generate Your Next Post</h2>
+                    <p className="text-gray-600">Create engaging finance content that builds your authority</p>
+                    {selectedIdea && (
+                      <div className="mt-3 p-3 bg-slate-50 rounded-lg border-l-4 border-slate-500">
+                        <p className="text-sm text-slate-800">
+                          💡 <strong>Generating from idea:</strong> {selectedIdea.title}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex space-x-2 mb-6 overflow-x-auto">
+                    {contentTypes.map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => setActiveTab(type.id)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
+                          activeTab === type.id
+                            ? 'bg-gradient-to-r from-slate-700 to-teal-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {activeTab === 'framework' ? 'Framework Topic' : 'Content Topic'}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.topic}
+                        onChange={(e) => {
+                          setFormData({ ...formData, topic: e.target.value })
+                          setSelectedIdea(null)
+                        }}
+                        placeholder="e.g., SaaS metrics every CFO should track"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Number of Points
+                        </label>
+                        <select
+                          value={formData.points}
+                          onChange={(e) => setFormData({ ...formData, points: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        >
+                          <option value="3">3 points</option>
+                          <option value="5">5 points</option>
+                          <option value="7">7 points</option>
+                          <option value="10">10 points</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Base Tone
+                        </label>
+                        <select
+                          value={formData.tone}
+                          onChange={(e) => setFormData({ ...formData, tone: e.target.value as ToneType })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        >
+                          {toneOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Additional Context (Optional)
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">Rich Editor</span>
+                          <button
+                            type="button"
+                            onClick={() => setUseRichEditor(!useRichEditor)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useRichEditor ? 'bg-gradient-to-r from-slate-600 to-teal-600' : 'bg-gray-200'}`}
+                          >
+                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useRichEditor ? 'translate-x-5' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+                      {useRichEditor ? (
+                        <RichTextEditor
+                          content={formData.context}
+                          onChange={(content) => setFormData({ ...formData, context: content })}
+                          placeholder="Any specific details, examples, or angle you want to include..."
+                          onAIImprove={handleAIImprovement}
+                        />
+                      ) : (
+                        <textarea
+                          value={formData.context}
+                          onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+                          placeholder="Any specific details, examples, or angle you want to include..."
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          rows={3}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-between items-center">
+                    <div className="text-sm text-gray-500">
+                      💡 Tip: We'll create 3 different variations for you to choose from
+                    </div>
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating || !formData.topic.trim() || (profile?.posts_remaining || 0) <= 0}
+                      className="bg-gradient-to-r from-slate-700 via-slate-600 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <div className="loading-spinner"></div>
+                          <span>Creating 3 Drafts...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-5 h-5" />
+                          <span>Generate 3 Drafts</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                {showGenerated && generatedDrafts.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 fade-in">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900">3 Post Drafts</h3>
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          onClick={() => setShowPreview(!showPreview)}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                            showPreview 
+                              ? 'bg-slate-100 text-slate-700' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                       >
+                          <Eye className="w-4 h-4" />
+                          <span>LinkedIn Preview</span>
+                        </button>
+                        <button 
+                          onClick={handleGenerate}
+                          className="text-sm text-slate-600 hover:text-slate-700 font-medium"
+                        >
+                          Regenerate
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
+                      {generatedDrafts.map((draft) => {
+                        const Icon = draft.icon
+                        return (
+                          <div key={draft.type} className="flex-1">
+                            <button
+                              onClick={() => setSelectedDraft(draft.type)}
+                              className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
+                                selectedDraft === draft.type
+                                  ? 'bg-white text-slate-700 shadow-sm'
+                                  : 'text-gray-600 hover:text-gray-800'
+                              }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{draft.label}</span>
+                            </button>
+                            {selectedDraft === draft.type && (
+                              <div className="flex justify-center space-x-1 mt-2">
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'bold')}
+                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  title="Make bolder"
+                                >
+                                  🔥
+                                </button>
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'improve')}
+                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  title="Improve clarity"
+                                >
+                                  ✨
+                                </button>
+                                <button
+                                  onClick={() => improveDraftWithAI(draft.type, 'expand')}
+                                  className="p-1 text-xs text-gray-500 hover:text-slate-600 transition"
+                                  title="Expand content"
+                                >
+                                  📝
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-slate-500">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">
+                            {generatedDrafts.find(d => d.type === selectedDraft)?.label} Style
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {generatedDrafts.find(d => d.type === selectedDraft)?.description}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={handleSaveDraft}
+                            className="text-sm bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800 font-medium transition"
+                          >
+                            💾 Save This Draft
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const content = generatedDrafts.find(d => d.type === selectedDraft)?.content
+                              if (content) navigator.clipboard.writeText(content)
+                            }}
+                            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
+                          >
+                            📋 Copy
+                          </button>
+                          <button 
+                            onClick={() => handleQuickSchedule(
+                              generatedDrafts.find(d => d.type === selectedDraft)?.content || '',
+                              activeTab,
+                              selectedDraft
+                            )}
+                            className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium transition flex items-center space-x-2"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            <span>Schedule</span>
+                          </button>
+                          <button 
+                            onClick={() => setEditingDraft(editingDraft === selectedDraft ? null : selectedDraft)}
+                            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
+                          >
+                            {editingDraft === selectedDraft ? '👁️ View' : '✏️ Edit'}
+                          </button>
+                        </div>
+                      </div>
+                      {editingDraft === selectedDraft ? (
+                        <div className="mb-4">
+                          <RichTextEditor
+                            content={generatedDrafts.find(d => d.type === selectedDraft)?.content || ''}
+                            onChange={(content) => {
+                              setGeneratedDrafts(prev => prev.map(draft =>
+                                draft.type === selectedDraft
+                                  ? { ...draft, content }
+                                  : draft
+                              ))
+                            }}
+                            onAIImprove={handleAIImprovement}
+                            placeholder="Edit your generated content..."
+                          />
+                          <div className="flex justify-end space-x-2 mt-3">
+                            <button
+                              onClick={() => setEditingDraft(null)}
+                              className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => setEditingDraft(null)}
+                              className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            >
+                              ✓ Done Editing
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-800 leading-relaxed whitespace-pre-line">
+                          {generatedDrafts.find(d => d.type === selectedDraft)?.content}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {showPreview && showGenerated && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">LinkedIn Preview</h3>
+                      <button 
+                        onClick={() => setShowPreview(false)}
+                        className="text-gray-400 hover:text-gray-600 text-sm"
+                      >
+                        Hide
+                      </button>
+                    </div>
+                    <LinkedInPreview 
+                      content={getCurrentDraftContent()}
+                      profileName={getProfileDisplayName()}
+                      profileTitle={getProfileTitle()}
+                    />
+                    <div className="mt-4 text-xs text-gray-500 text-center">
+                      Preview updates as you switch between drafts
+                    </div>
+                  </div>
+                </div>
+              )}
+              {(!showPreview || !showGenerated) && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">This Month</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Generated</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_generated_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Posts Saved</span>
+                        <span className="font-semibold text-gray-900">
+                          {profile?.posts_saved_this_month || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Plan</span>
+                        <span className="font-semibold text-slate-700 capitalize">
+                          {profile?.plan_type || 'Starter'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
+                        <div 
+                          className="bg-gradient-to-r from-slate-600 to-teal-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ 
+                            width: `${Math.max(0, Math.min(100, ((profile?.posts_generated_this_month || 0) / 50) * 100))}%` 
+                          }}
+                        ></div>
+                      </div>
+                      <div className="text-sm text-gray-500 text-center">
+                        {profile?.posts_remaining || 0} posts remaining ({profile?.plan_type} Plan)
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Recent Saves</h3>
+                      <button className="text-sm text-slate-600 hover:text-slate-700 font-medium">
+                        View All
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {savedContent.length > 0 ? (
+                        savedContent.map((content) => (
+                          <div 
+                            key={content.id}
+                            className="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition border-l-4 border-slate-500"
+                          >
+                            <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                              {content.content_text.substring(0, 50)}...
+                            </div>
+                            <div className="text-xs text-gray-500 capitalize flex items-center gap-2">
+                              <span>{content.content_type}</span>
+                              {content.tone_used && (
+                                <>
+                                  <span>•</span>
+                                  <span className="capitalize">{content.tone_used} style</span>
+                                </>
+                              )}
+                              <span>•</span>
+                              <span>{new Date(content.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-4">
+                          No saved content yet. Generate and save your first post!
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">🔥 Trending in Finance</h3>
+                    <div className="space-y-3">
+                      {trendingTopics.map((topic) => (
+                        <div key={topic.id} className="text-sm">
+                          <div className="font-medium text-gray-900 mb-1">{topic.topic_title}</div>
+                          <div className="text-gray-600 text-xs">{topic.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => setActivePage('ideas')}
+                      className="w-full mt-4 text-sm text-slate-600 hover:text-slate-700 font-medium"
+                    >
+                      Get Content Ideas →
+                    </button>
+                  </div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Publishing</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className="text-sm text-gray-600">LinkedIn</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {isLinkedInConnected ? 'Connected' : 'Not Connected'}
+                        </span>
+                      </div>
+                      {!isLinkedInConnected && (
+                        <button
+                          onClick={connectLinkedIn}
+                          className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition"
+                        >
+                          Connect LinkedIn
+                        </button>
+                      )}
+                      {isLinkedInConnected && (
+                        <div className="text-xs text-green-600 bg-green-50 rounded-lg p-2">
+                          ✅ Auto-publishing enabled
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={newCustomPillar}
-            onChange={(e) => setNewCustomPillar(e.target.value)}
-            placeholder="Add custom content pillar..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
-          />
-          <button
-            onClick={addCustomPillar}
-            disabled={!newCustomPillar.trim()}
-            className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 transition"
-          >
-            Add
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderNotificationsTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Notifications</h3>
-        <div className="space-y-4">
-          {Object.entries({
-            post_published: 'When a post is published',
-            queue_empty: 'When publishing queue is empty',
-            new_suggestions: 'New post suggestions available',
-            weekly_analytics: 'Weekly analytics report',
-            draft_reminders: 'Draft post reminders'
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-gray-900">{label}</div>
-                <div className="text-sm text-gray-600">Get notified via email</div>
-              </div>
-              <button
-                onClick={() => setNotificationData(prev => ({ 
-                  ...prev, 
-                  [key]: !prev[key as keyof typeof prev] 
-                }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  notificationData[key as keyof typeof notificationData]
-                    ? 'bg-gradient-to-r from-slate-600 to-teal-600'
-                    : 'bg-gray-200'
-                }`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  notificationData[key as keyof typeof notificationData] ? 'translate-x-6' : 'translate-x-1'
-                }`} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderBillingTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing & Subscription</h3>
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CreditCard className="w-8 h-8 text-gray-400" />
+            <KeyboardShortcutsHelp 
+              isOpen={showShortcutsHelp} 
+              onClose={() => setShowShortcutsHelp(false)} 
+            />
           </div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">Billing Management Coming Soon</h4>
-          <p className="text-gray-600">
-            Subscription management, payment methods, and billing history will be available soon.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderPrivacyTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Privacy & Data</h3>
-        <div className="space-y-4">
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-gray-900">Export Your Data</div>
-                <div className="text-sm text-gray-600">Download all your content and settings</div>
-              </div>
-              <button className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition flex items-center space-x-2">
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-red-900">Delete Account</div>
-                <div className="text-sm text-red-700">Permanently delete your account and all data</div>
-              </div>
-              <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center space-x-2">
-                <Trash2 className="w-4 h-4" />
-                <span>Delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+        )
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account preferences and Writer Suite configuration</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Premium Left Sidebar */}
+      <nav 
+        className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
+          sidebarExpanded ? 'w-60' : 'w-16'
+        }`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
+        {/* Logo Section */}
+        <div className="p-4 border-b border-slate-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200 flex-shrink-0">
+              <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-5 h-5" />
+            </div>
+            {sidebarExpanded && (
+              <div className="transition-opacity duration-300 ease-in-out">
+                <span className="text-lg font-bold text-white whitespace-nowrap">Writer Suite</span>
+                <div className="text-xs text-slate-400 -mt-1 whitespace-nowrap">Professional Content Creation</div>
+              </div>
+            )}
+          </div>
+        </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Settings Navigation */}
-        <div className="lg:w-64 flex-shrink-0">
-          <nav className="space-y-1">
-            {tabs.map(tab => {
-              const Icon = tab.icon
+        {/* Navigation Items */}
+        <div className="flex-1 px-2 py-6">
+          <div className="space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              const isActive = activePage === item.id
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition ${
-                    activeTab === tab.id
-                      ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-500'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{tab.label}</span>
-                </button>
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => setActivePage(item.id)}
+                    className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
+                      sidebarExpanded ? 'space-x-3' : 'justify-center'
+                    } ${
+                      isActive
+                        ? 'bg-slate-700 text-white shadow-lg'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    }`}
+                  >
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
+                    )}
+                    
+                    <Icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
+                      isActive ? 'text-teal-400' : 'group-hover:scale-110'
+                    }`} />
+                    
+                    {sidebarExpanded && (
+                      <>
+                        <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>
+                        
+                        {item.premium && (
+                          <span className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm animate-pulse whitespace-nowrap">
+                            PRO
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                  
+                  {/* Tooltip for collapsed state */}
+                  {!sidebarExpanded && (
+                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                      {item.label}
+                      {item.premium && (
+                        <span className="ml-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                          PRO
+                        </span>
+                      )}
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
+                    </div>
+                  )}
+                </div>
               )
             })}
-          </nav>
+          </div>
         </div>
 
-        {/* Settings Content */}
-        <div className="flex-1">
-          {activeTab === 'account' && renderAccountTab()}
-          {activeTab === 'content' && renderContentTab()}
-          {activeTab === 'notifications' && renderNotificationsTab()}
-          {activeTab === 'billing' && renderBillingTab()}
-          {activeTab === 'privacy' && renderPrivacyTab()}
-
-          {/* Save Button */}
-          {(activeTab === 'account' || activeTab === 'content' || activeTab === 'notifications') && (
-            <div className="mt-8 flex justify-end space-x-4">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-3 bg-gradient-to-r from-slate-700 to-teal-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2 disabled:opacity-50"
+        {/* Profile Section at Bottom */}
+        <div className="mt-auto border-t border-slate-700 p-4">
+          <div 
+            className="relative" 
+            ref={profileMenuRef}
+            onMouseEnter={() => setShowProfileMenu(true)}
+            onMouseLeave={() => setShowProfileMenu(false)}
+          >
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
+                sidebarExpanded ? 'space-x-3' : 'justify-center'
+              }`}
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              
+              {sidebarExpanded && (
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white">
+                    {getProfileDisplayName()}
+                  </div>
+                  <div className="text-xs text-slate-400 capitalize">
+                    {getProfileTitle()}
+                  </div>
+                </div>
+              )}
+              
+              {sidebarExpanded && (
+                <div className="text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              )}
+            </button>
+            
+            {/* Profile Dropdown Menu */}
+            {showProfileMenu && sidebarExpanded && (
+              <div 
+                className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden transition-all duration-200 ease-out transform origin-bottom"
+                onMouseEnter={() => setShowProfileMenu(true)}
+                onMouseLeave={() => setShowProfileMenu(false)}
               >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving...</span>
-                  </>
-                ) : saved ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Saved!</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span>Save Changes</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+                <div className="py-1">
+                  <button 
+                    onClick={() => setActivePage('settings')}
+                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 mr-3" />
+                    Settings
+                  </button>
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                    <BarChart3 className="w-4 h-4 mr-3" />
+                    Usage & Analytics
+                  </button>
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                    <User className="w-4 h-4 mr-3" />
+                    Account Settings
+                  </button>
+                  <hr className="my-1 border-slate-600" />
+                  <button 
+                    onClick={signOut}
+                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-red-600/20"
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {!sidebarExpanded && (
+              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                {getProfileDisplayName()}
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
+              </div>
+            )}
+          </div>
         </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
+        {/* Top Header - Now Empty or Minimal */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="px-6 py-4">
+            {/* Header can be empty or contain breadcrumbs/page title if needed */}
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main>
+          {renderPageContent()}
+        </main>
       </div>
     </div>
   )
