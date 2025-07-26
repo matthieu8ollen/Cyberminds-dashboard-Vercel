@@ -953,13 +953,13 @@ export default function Dashboard() {
         {/* Profile Section at Bottom */}
         <div className="mt-auto border-t border-slate-700 p-4">
           <div 
-            className="relative" 
+            className="relative group" 
             ref={profileMenuRef}
             onMouseEnter={() => setShowProfileMenu(true)}
             onMouseLeave={() => setShowProfileMenu(false)}
           >
             <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              onClick={() => {}}
               className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
                 sidebarExpanded ? 'space-x-3' : 'justify-center'
               }`}
