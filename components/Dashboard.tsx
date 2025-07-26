@@ -55,19 +55,7 @@ export default function Dashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowProfileMenu(false)
-    }
-
-    if (showProfileMenu) {
-      document.addEventListener('click', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showProfileMenu])
+  
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
 
   // Form data
@@ -962,12 +950,17 @@ export default function Dashboard() {
 
         {/* Profile Section at Bottom */}
         <div className="mt-auto border-t border-slate-700 p-4">
-          <div className="relative" ref={profileMenuRef}>
+          <div 
+  className="relative" 
+  ref={profileMenuRef}
+  onMouseEnter={() => setShowProfileMenu(true)}
+  onMouseLeave={() => setShowProfileMenu(false)}
+>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
-                sidebarExpanded ? 'space-x-3' : 'justify-center'
-              }`}
+  sidebarExpanded ? 'space-x-3' : 'justify-center'
+} ${showProfileMenu ? 'bg-slate-700/50 text-white' : ''}`}
             >
               <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-white" />
@@ -986,16 +979,24 @@ export default function Dashboard() {
               
               {sidebarExpanded && (
                 <div className="text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
+                  {sidebarExpanded && (
+  <div className={`text-slate-400 transition-transform duration-200 ${
+    showProfileMenu ? 'rotate-180' : ''
+  }`}>
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+)}
             </button>
             
             {/* Profile Dropdown Menu */}
             {showProfileMenu && sidebarExpanded && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden">
+              <div 
+  className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden transition-all duration-200 ease-out transform origin-bottom"
+  onMouseEnter={() => setShowProfileMenu(true)}
+  onMouseLeave={() => setShowProfileMenu(false)}
+>
                 <div className="py-1">
                   <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
                     <Settings className="w-4 h-4 mr-3" />
