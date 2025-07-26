@@ -978,8 +978,6 @@ export default function Dashboard() {
               )}
               
               {sidebarExpanded && (
-                <div className="text-slate-400">
-                  {sidebarExpanded && (
   <div className={`text-slate-400 transition-transform duration-200 ${
     showProfileMenu ? 'rotate-180' : ''
   }`}>
@@ -989,6 +987,7 @@ export default function Dashboard() {
   </div>
 )}
             </button>
+             </div>
             
             {/* Profile Dropdown Menu */}
             {showProfileMenu && sidebarExpanded && (
