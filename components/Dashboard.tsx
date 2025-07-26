@@ -62,7 +62,7 @@ export default function Dashboard() {
   const [formData, setFormData] = useState({
     topic: '',
     points: '5',
-    tone: 'insightful_cfo' as ToneType,
+    tone: (profile?.preferred_tone || 'insightful_cfo') as ToneType,
     context: ''
   })
 
