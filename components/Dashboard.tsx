@@ -18,13 +18,14 @@ import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
+import SettingsPage from './SettingsPage'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'generator' | 'ideas' | 'writer-suite' | 'production' | 'plan' | 'analytics' | 'feed'
+type ActivePage = 'generator' | 'ideas' | 'writer-suite' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
@@ -55,19 +56,6 @@ export default function Dashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowProfileMenu(false)
-    }
-
-    if (showProfileMenu) {
-      document.addEventListener('click', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showProfileMenu])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
 
   // Form data
@@ -377,6 +365,8 @@ export default function Dashboard() {
         return <ProductionPipeline />
       case 'plan':
         return <ContentCalendar />
+      case 'settings':
+        return <SettingsPage />
       case 'analytics':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -590,7 +580,7 @@ export default function Dashboard() {
                           <span>LinkedIn Preview</span>
                         </button>
                         <button 
-                                                    onClick={handleGenerate}
+                          onClick={handleGenerate}
                           className="text-sm text-slate-600 hover:text-slate-700 font-medium"
                         >
                           Regenerate
@@ -962,7 +952,12 @@ export default function Dashboard() {
 
         {/* Profile Section at Bottom */}
         <div className="mt-auto border-t border-slate-700 p-4">
-          <div className="relative" ref={profileMenuRef}>
+          <div 
+            className="relative" 
+            ref={profileMenuRef}
+            onMouseEnter={() => setShowProfileMenu(true)}
+            onMouseLeave={() => setShowProfileMenu(false)}
+          >
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
@@ -995,9 +990,16 @@ export default function Dashboard() {
             
             {/* Profile Dropdown Menu */}
             {showProfileMenu && sidebarExpanded && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden">
+              <div 
+                className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden transition-all duration-200 ease-out transform origin-bottom"
+                onMouseEnter={() => setShowProfileMenu(true)}
+                onMouseLeave={() => setShowProfileMenu(false)}
+              >
                 <div className="py-1">
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                  <button 
+                    onClick={() => setActivePage('settings')}
+                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
                     <Settings className="w-4 h-4 mr-3" />
                     Settings
                   </button>
