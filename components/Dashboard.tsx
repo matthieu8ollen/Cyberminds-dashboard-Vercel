@@ -55,19 +55,19 @@ export default function Dashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
-useEffect(() => {
-  const handleClickOutside = () => {
-    setShowProfileMenu(false)
-  }
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowProfileMenu(false)
+    }
 
-  if (showProfileMenu) {
-    document.addEventListener('click', handleClickOutside)
-  }
+    if (showProfileMenu) {
+      document.addEventListener('click', handleClickOutside)
+    }
 
-  return () => {
-    document.removeEventListener('click', handleClickOutside)
-  }
-}, [showProfileMenu])
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showProfileMenu])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
 
   // Form data
@@ -172,14 +172,14 @@ useEffect(() => {
     ]
     const intro = boldIntros[Math.floor(Math.random() * boldIntros.length)]
     return `${intro} ${topic}\n\n${contentType === 'framework' ? 'The framework' : 'The approach'} that actually works:\n\n${Array.from({length: points}, (_, i) => 
-  `${i + 1}. ${getBoldPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `\n💡 Reality check: ${context}` : ''}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
+      `${i + 1}. ${getBoldPoint(topic, i)}`
+    ).join('\n\n')}\n\n${context ? `\n💡 Reality check: ${context}` : ''}\n\nMost finance leaders get this wrong. Don't be one of them.\n\nWhat's your take? Agree or disagree? 👇\n\n#Finance #CFO #Leadership #SaaS #RealTalk`
   }
 
   const generateInsightfulDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
     return `📊 Deep dive: ${topic}\n\nAfter analyzing patterns across 100+ finance organizations, here are the key insights:\n\n${Array.from({length: points}, (_, i) => 
-  `${i + 1}️⃣ ${getInsightfulPoint(topic, i)}`
-).join('\n\n')}\n\n${context ? `\n📈 Key finding: ${context}` : ''}\n\nThe data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.\n\nWhat metrics are you tracking for ${topic}? Share your experience below.\n\n#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
+      `${i + 1}️⃣ ${getInsightfulPoint(topic, i)}`
+    ).join('\n\n')}\n\n${context ? `\n📈 Key finding: ${context}` : ''}\n\nThe data consistently shows that companies implementing these approaches see 25-40% improvement in financial efficiency.\n\nWhat metrics are you tracking for ${topic}? Share your experience below.\n\n#FinanceStrategy #DataDriven #CFOInsights #BusinessIntelligence #Metrics`
   }
 
   const generateWildcardDraft = (topic: string, points: number, context: string, contentType: ContentType): string => {
@@ -192,9 +192,9 @@ useEffect(() => {
     ]
     const intro = creativeIntros[Math.floor(Math.random() * creativeIntros.length)]
     return `${intro}\n\n${Array.from({length: points}, (_, i) => {
-  const emojis = ['🎯', '⚡', '🔥', '💎', '🚀', '⭐', '🌟', '💡']
-  return `${emojis[i % emojis.length]} ${getWildcardPoint(topic, i)}`
-}).join('\n\n')}\n\n${context ? `\n🎭 Plot twist: ${context}` : ''}\n\nBeen there, done that, bought the t-shirt (and learned the hard way).\n\nWhich of these resonates most with your experience? Let's discuss! 👇\n\n#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
+      const emojis = ['🎯', '⚡', '🔥', '💎', '🚀', '⭐', '🌟', '💡']
+      return `${emojis[i % emojis.length]} ${getWildcardPoint(topic, i)}`
+    }).join('\n\n')}\n\n${context ? `\n🎭 Plot twist: ${context}` : ''}\n\nBeen there, done that, bought the t-shirt (and learned the hard way).\n\nWhich of these resonates most with your experience? Let's discuss! 👇\n\n#FinanceLife #CFOStruggles #LessonsLearned #FinanceHumor #RealTalk`
   }
 
   const getBoldPoint = (topic: string, index: number): string => {
@@ -280,19 +280,19 @@ useEffect(() => {
   }
 
   const handleQuickSchedule = async (content: string, contentType: ContentType, toneUsed: string) => {
-  try {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const scheduledContent = await schedulingService.scheduleContent({
-      user_id: user?.id || '',
-      content_text: content,
-      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-      tone_used: toneUsed,
-      prompt_input: formData.topic,
-      is_saved: false,
-      scheduled_date: tomorrow.toISOString().split('T')[0],
-      scheduled_time: '09:00'
-    })
+    try {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const scheduledContent = await schedulingService.scheduleContent({
+        user_id: user?.id || '',
+        content_text: content,
+        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        tone_used: toneUsed,
+        prompt_input: formData.topic,
+        is_saved: false,
+        scheduled_date: tomorrow.toISOString().split('T')[0],
+        scheduled_time: '09:00'
+      })
       console.log('Content scheduled successfully:', scheduledContent)
       setActivePage('plan')
     } catch (error) {
@@ -347,14 +347,14 @@ useEffect(() => {
   ]
 
   const navigationItems = [
-  { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
-  { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
-  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-  { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
-  { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
-  { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
-  { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
-]
+    { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+    { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
+    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+  ]
 
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
   const getProfileDisplayName = () => {
@@ -369,12 +369,12 @@ useEffect(() => {
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
-        case 'writer-suite':
-  return <WriterSuite onComplete={(data) => {
-    console.log('Writer Suite completed:', data)
-  }} />
-    case 'production':
-  return <ProductionPipeline />
+      case 'writer-suite':
+        return <WriterSuite onComplete={(data) => {
+          console.log('Writer Suite completed:', data)
+        }} />
+      case 'production':
+        return <ProductionPipeline />
       case 'plan':
         return <ContentCalendar />
       case 'analytics':
@@ -440,7 +440,7 @@ useEffect(() => {
             <div className="grid gap-8" style={{ gridTemplateColumns: showPreview && showGenerated ? '1fr 400px' : '2fr 1fr' }}>
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-700/5 to-teal-600/5 rounded-full -mr-10 -mt-10"></div>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-700/5 to-teal-600/5 rounded-full -mr-10 -mt-10"></div>
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Generate Your Next Post</h2>
                     <p className="text-gray-600">Create engaging finance content that builds your authority</p>
@@ -590,7 +590,7 @@ useEffect(() => {
                           <span>LinkedIn Preview</span>
                         </button>
                         <button 
-                          onClick={handleGenerate}
+                                                    onClick={handleGenerate}
                           className="text-sm text-slate-600 hover:text-slate-700 font-medium"
                         >
                           Regenerate
@@ -959,50 +959,85 @@ useEffect(() => {
             })}
           </div>
         </div>
+
+        {/* Profile Section at Bottom */}
+        <div className="mt-auto border-t border-slate-700 p-4">
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
+                sidebarExpanded ? 'space-x-3' : 'justify-center'
+              }`}
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              
+              {sidebarExpanded && (
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white">
+                    {getProfileDisplayName()}
+                  </div>
+                  <div className="text-xs text-slate-400 capitalize">
+                    {getProfileTitle()}
+                  </div>
+                </div>
+              )}
+              
+              {sidebarExpanded && (
+                <div className="text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              )}
+            </button>
+            
+            {/* Profile Dropdown Menu */}
+            {showProfileMenu && sidebarExpanded && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden">
+                <div className="py-1">
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                    <Settings className="w-4 h-4 mr-3" />
+                    Settings
+                  </button>
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                    <BarChart3 className="w-4 h-4 mr-3" />
+                    Usage & Analytics
+                  </button>
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700">
+                    <User className="w-4 h-4 mr-3" />
+                    Account Settings
+                  </button>
+                  <hr className="my-1 border-slate-600" />
+                  <button 
+                    onClick={signOut}
+                    className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-red-600/20"
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {!sidebarExpanded && (
+              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                {getProfileDisplayName()}
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-900 rotate-45"></div>
+              </div>
+            )}
+          </div>
+        </div>
       </nav>
 
       {/* Main Content Area */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-        {/* Top Header with Profile */}
+        {/* Top Header - Now Empty or Minimal */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-6 py-4">
-            <div className="flex justify-end items-center">
-              <div className="relative" ref={profileMenuRef}>
-                <button 
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 hover:bg-gray-200 transition"
-                >
-                  <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
-                    <User className="w-3 h-3 text-white" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {getProfileDisplayName()}
-                  </span>
-                </button>
-                {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 backdrop-blur-sm">
-                    <div className="py-1">
-                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        <Settings className="w-4 h-4 mr-3" />
-                        Settings
-                      </button>
-                      <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        <BarChart3 className="w-4 h-4 mr-3" />
-                        Usage
-                      </button>
-                      <hr className="my-1" />
-                      <button 
-                        onClick={signOut}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <LogOut className="w-4 h-4 mr-3" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Header can be empty or contain breadcrumbs/page title if needed */}
           </div>
         </header>
 
