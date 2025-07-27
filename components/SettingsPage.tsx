@@ -308,7 +308,7 @@ export default function SettingsPage() {
               {TONE_OPTIONS.map(tone => (
                 <div
                   key={tone.value}
-                  onClick={() => setContentData(prev => ({ ...prev, preferred_tone: tone.value }))}
+                  onClick={() => setContentData(prev => ({ ...prev, preferred_tone: tone.value as any }))}
                   className={`p-3 border-2 rounded-lg cursor-pointer transition ${
                     contentData.preferred_tone === tone.value
                       ? 'border-teal-500 bg-teal-50'
