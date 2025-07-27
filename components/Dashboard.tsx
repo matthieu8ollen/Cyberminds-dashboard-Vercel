@@ -58,8 +58,10 @@ export default function Dashboard() {
   const [editingDraft, setEditingDraft] = useState<DraftType | null>(null)
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const [profileMenuHoverActive, setProfileMenuHoverActive] = useState(false)
+  const [profileMenuClickActive, setProfileMenuClickActive] = useState(false)
+  const showProfileMenu = profileMenuHoverActive || profileMenuClickActive
 
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
@@ -92,6 +94,21 @@ export default function Dashboard() {
       setFormData(prev => ({ ...prev, tone: profile.preferred_tone as ToneType }))
     }
   }, [profile])
+
+  // Click outside handler for profile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuClickActive(false)
+        setProfileMenuHoverActive(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   // Data Loading Functions
   const loadTrendingTopics = async () => {
@@ -576,7 +593,8 @@ export default function Dashboard() {
                     <button
                       onClick={handleGenerate}
                       disabled={isGenerating || !formData.topic.trim() || (profile?.posts_remaining || 0) <= 0}
-                      className="bg-gradient-to-r from-slate-700 via-slate-600 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                      className="bg-gradient-to-r from-slate-700 via-slate-600 to-teal-600 text-white
+                    px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                     >
                       {isGenerating ? (
                         <>
@@ -1003,17 +1021,18 @@ export default function Dashboard() {
             className="relative" 
             ref={profileMenuRef}
             onMouseEnter={() => {
-  setProfileMenuHoverActive(true)
-}}
-onMouseLeave={() => {
-  setProfileMenuHoverActive(false)
-}}
+              setProfileMenuHoverActive(true)
+              setProfileMenuClickActive(false)
+            }}
+            onMouseLeave={() => {
+              setProfileMenuHoverActive(false)
+            }}
           >
             <button
               onClick={() => {
-  setProfileMenuClickActive(!profileMenuClickActive)
-  setProfileMenuHoverActive(false)
-}}
+                setProfileMenuClickActive(!profileMenuClickActive)
+                setProfileMenuHoverActive(false)
+              }}
               className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
                 sidebarExpanded ? 'space-x-3' : 'justify-center'
               } ${showProfileMenu ? 'bg-slate-700/50 text-white' : ''}`}
@@ -1049,20 +1068,19 @@ onMouseLeave={() => {
               <div 
                 className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 rounded-lg shadow-2xl border border-slate-600 overflow-hidden transition-all duration-200 ease-out transform origin-bottom"
                 onMouseEnter={() => {
-  setProfileMenuHoverActive(true)
-  setProfileMenuClickActive(false)
-}}
-onMouseLeave={() => {
-  setProfileMenuHoverActive(false)
-}}
+                  setProfileMenuHoverActive(true)
+                }}
+                onMouseLeave={() => {
+                  setProfileMenuHoverActive(false)
+                }}
               >
                 <div className="py-1">
                   <button 
                     onClick={() => {
-  setActivePage('settings')
-  setProfileMenuClickActive(false)
-  setProfileMenuHoverActive(false)
-}}
+                      setActivePage('settings')
+                      setProfileMenuClickActive(false)
+                      setProfileMenuHoverActive(false)
+                    }}
                     className="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
                   >
                     <Settings className="w-4 h-4 mr-3" />
