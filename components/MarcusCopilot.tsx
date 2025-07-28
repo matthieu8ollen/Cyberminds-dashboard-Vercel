@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { User, ArrowRight, MessageCircle, FileText, Magnet, BookOpen } from 'lucide-react'
 import PathFormula from './marcus/PathFormula'
-import PathTopicAngle from './marcus/PathTopicAngle'
+import PathRepurpose from './marcus/PathRepurpose'
 
 type MarcusPath = 'welcome' | 'topic-angle' | 'repurpose' | 'lead-magnet' | 'formula'
 
@@ -170,28 +170,7 @@ export default function MarcusCopilot() {
   return <PathTopicAngle onBack={handleBackToWelcome} />
 
       case 'repurpose':
-        return (
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Repurpose Content Flow</h2>
-                <button
-                  onClick={handleBackToWelcome}
-                  className="text-gray-600 hover:text-gray-800 transition"
-                >
-                  ← Back to Marcus
-                </button>
-              </div>
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content Repurposing Coming Soon</h3>
-                <p className="text-gray-600">Transform existing content for LinkedIn</p>
-              </div>
-            </div>
-          </div>
-        )
+  return <PathRepurpose onBack={handleBackToWelcome} />
 
       case 'lead-magnet':
         return (
