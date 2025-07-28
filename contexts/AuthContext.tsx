@@ -14,6 +14,8 @@ interface AuthContextType {
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
   refreshSession: () => Promise<void>
+  stayLoggedIn: boolean
+  setStayLoggedInPreference: (shouldStayLoggedIn: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
@@ -32,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
   const [isSessionValid, setIsSessionValid] = useState(true)
   const [lastActivity, setLastActivity] = useState(Date.now())
+  const [stayLoggedIn, setStayLoggedIn] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -53,8 +56,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session.user)
           setIsSessionValid(true)
           setLastActivity(Date.now())
-          await loadUserProfile(session.user.id)
-        } else {
+          const savedStayLoggedIn = localStorage.getItem('writer-suite-stay-logged-in')
+  setStayLoggedIn(savedStayLoggedIn === 'true')
+  await loadUserProfile(session.user.id)
+} else {
           setIsSessionValid(false)
           setLoading(false)
         }
@@ -163,7 +168,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkInactivity = () => {
       const now = Date.now()
       const timeSinceActivity = now - lastActivity
-      const maxInactivity = 24 * 60 * 60 * 1000 // 24 hours
+      const maxInactivity = stayLoggedIn 
+  ? 30 * 24 * 60 * 60 * 1000  // 30 days if "stay logged in" is checked
+  : 24 * 60 * 60 * 1000        // 24 hours if not checked
 
       if (timeSinceActivity > maxInactivity) {
         console.log('⚠️ Auto-logout due to inactivity')
@@ -229,6 +236,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const setStayLoggedInPreference = (shouldStayLoggedIn: boolean) => {
+  setStayLoggedIn(shouldStayLoggedIn)
+  localStorage.setItem('writer-suite-stay-logged-in', shouldStayLoggedIn.toString())
+  
+  // Update session timeout immediately
+  if (shouldStayLoggedIn) {
+    console.log('✅ Stay logged in enabled - 30 day session')
+  } else {
+    console.log('⏰ Regular session - 24 hour timeout')
+  }
+}
+  
   const handleSignOut = async () => {
     setIsSessionValid(false)
     await supabase.auth.signOut()
@@ -265,6 +284,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut: handleSignOut,
     refreshProfile,
     refreshSession,
+    stayLoggedIn,
+  setStayLoggedInPreference,
   }
 
   return (
