@@ -18,6 +18,7 @@ import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
+import FloatingNewPostButton from './FloatingNewPostButton'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
@@ -1130,6 +1131,9 @@ export default function Dashboard() {
         <main>
           {renderPageContent()}
         </main>
+        
+        {/* Floating New Post Button */}
+        <FloatingNewPostButton />
       </div>
     </div>
   )
