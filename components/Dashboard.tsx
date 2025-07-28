@@ -19,6 +19,7 @@ import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
 import FloatingNewPostButton from './FloatingNewPostButton'
+import ModeSelection from './ModeSelection'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
@@ -66,6 +67,7 @@ export default function Dashboard() {
 
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
+  const [showModeSelection, setShowModeSelection] = useState(false)
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
