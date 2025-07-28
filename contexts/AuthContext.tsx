@@ -56,10 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session.user)
           setIsSessionValid(true)
           setLastActivity(Date.now())
+          
+          // Initialize stay logged in preference from localStorage
           const savedStayLoggedIn = localStorage.getItem('writer-suite-stay-logged-in')
-  setStayLoggedIn(savedStayLoggedIn === 'true')
-  await loadUserProfile(session.user.id)
-} else {
+          setStayLoggedIn(savedStayLoggedIn === 'true')
+          
+          await loadUserProfile(session.user.id)
+        } else {
           setIsSessionValid(false)
           setLoading(false)
         }
@@ -161,16 +164,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user])
 
-  // Auto-logout after 24 hours of inactivity
+  // Auto-logout after inactivity (24 hours or 30 days based on preference)
   useEffect(() => {
     if (!user) return
 
     const checkInactivity = () => {
       const now = Date.now()
       const timeSinceActivity = now - lastActivity
+      
+      // Use different timeout based on "stay logged in" preference
       const maxInactivity = stayLoggedIn 
-  ? 30 * 24 * 60 * 60 * 1000  // 30 days if "stay logged in" is checked
-  : 24 * 60 * 60 * 1000        // 24 hours if not checked
+        ? 30 * 24 * 60 * 60 * 1000  // 30 days if "stay logged in" is checked
+        : 24 * 60 * 60 * 1000        // 24 hours if not checked
 
       if (timeSinceActivity > maxInactivity) {
         console.log('⚠️ Auto-logout due to inactivity')
@@ -180,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const interval = setInterval(checkInactivity, 60 * 1000) // Check every minute
     return () => clearInterval(interval)
-  }, [user, lastActivity])
+  }, [user, lastActivity, stayLoggedIn])
 
   const loadUserProfile = async (userId: string) => {
     try {
@@ -236,20 +241,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const setStayLoggedInPreference = (shouldStayLoggedIn: boolean) => {
-  setStayLoggedIn(shouldStayLoggedIn)
-  localStorage.setItem('writer-suite-stay-logged-in', shouldStayLoggedIn.toString())
-  
-  // Update session timeout immediately
-  if (shouldStayLoggedIn) {
-    console.log('✅ Stay logged in enabled - 30 day session')
-  } else {
-    console.log('⏰ Regular session - 24 hour timeout')
-  }
-}
-  
   const handleSignOut = async () => {
     setIsSessionValid(false)
+    // Clear stay logged in preference on logout
+    localStorage.removeItem('writer-suite-stay-logged-in')
+    setStayLoggedIn(false)
     await supabase.auth.signOut()
   }
 
@@ -274,6 +270,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const setStayLoggedInPreference = (shouldStayLoggedIn: boolean) => {
+    setStayLoggedIn(shouldStayLoggedIn)
+    localStorage.setItem('writer-suite-stay-logged-in', shouldStayLoggedIn.toString())
+    
+    // Update session timeout immediately
+    if (shouldStayLoggedIn) {
+      console.log('✅ Stay logged in enabled - 30 day session')
+    } else {
+      console.log('⏰ Regular session - 24 hour timeout')
+    }
+  }
+
   const value = {
     user,
     profile,
@@ -285,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshProfile,
     refreshSession,
     stayLoggedIn,
-  setStayLoggedInPreference,
+    setStayLoggedInPreference,
   }
 
   return (
