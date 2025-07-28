@@ -8,6 +8,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'writer-suite-auth-token',
   },
   db: {
     schema: 'public'
