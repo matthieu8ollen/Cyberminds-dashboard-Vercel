@@ -418,7 +418,6 @@ const handleBackToModeSelection = () => {
 
   const navigationItems = [
     { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
-    { id: 'generator' as ActivePage, label: 'Generator', icon: Zap },
     { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
     { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
     { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
