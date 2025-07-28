@@ -145,9 +145,9 @@ export default function PathLeadMagnet({ onBack }: LeadMagnetProps) {
   }
 
   const generateLeadMagnetContent = (strategy: ConversionStrategy, magnet: LeadMagnetType, goal: string): string => {
-  const templates: Record<string, Record<string, string>> = {
-    'value-first': {
-      'checklist': `I've reviewed 47 pitch decks. Here's why 43 got rejected in the first 5 minutes.
+    const templates: Record<string, Record<string, string>> = {
+      'value-first': {
+        'checklist': `I've reviewed 47 pitch decks. Here's why 43 got rejected in the first 5 minutes.
 
 After helping 12 founders fix these issues and secure funding, I've identified the 3 most common deck killers:
 
@@ -176,7 +176,7 @@ Want the complete checklist? Drop a comment with "CHECKLIST" and I'll send it ov
 
 #Fundraising #Startups #PitchDeck #VentureCapital`,
 
-      'template': `The financial dashboard that helped 3 startups raise $8M+ in Series A.
+        'template': `The financial dashboard that helped 3 startups raise $8M+ in Series A.
 
 When investors ask for your metrics, most founders scramble to pull data from 5 different tools.
 
@@ -189,11 +189,11 @@ Here's what actually happened to me:
 That's when I built the template that changed everything.
 
 This dashboard includes:
-- LTV:CAC ratio with cohort breakdown
-- Monthly recurring revenue with growth rates
-- Customer acquisition cost by channel
-- Churn analysis with retention curves
-- Cash flow projections for 18 months
+• LTV:CAC ratio with cohort breakdown
+• Monthly recurring revenue with growth rates
+• Customer acquisition cost by channel
+• Churn analysis with retention curves
+• Cash flow projections for 18 months
 
 Result? Next 3 companies that used it all raised successfully.
 
@@ -202,9 +202,9 @@ One founder told me: "This saved me 20+ hours and made our metrics look incredib
 Want the exact template? Comment "TEMPLATE" below and I'll share the Google Sheets version.
 
 #SaaS #Fundraising #Metrics #Dashboard`
-    },
-    'problem-agitation': {
-      'checklist': `The fundraising mistake that's costing founders 6 months and their sanity.
+      },
+      'problem-agitation': {
+        'checklist': `The fundraising mistake that's costing founders 6 months and their sanity.
 
 I see it every week:
 
@@ -237,15 +237,10 @@ Ready to stop wasting time on preventable rejections?
 Comment "READY" and I'll send you the complete checklist.
 
 #Fundraising #StartupStruggles #VentureCapital`
+      }
     }
-  }
 
     return templates[strategy.id]?.[magnet.id] || templates['value-first']['checklist']
-  }
-    const strategyKey = strategy.id as keyof typeof templates
-    const magnetKey = magnet.id as keyof typeof templates[strategyKey]
-    
-    return templates[strategyKey]?.[magnetKey] || templates['value-first']['checklist']
   }
 
   const renderStrategySelection = () => {
