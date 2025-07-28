@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { User, ArrowRight, MessageCircle, FileText, Magnet, BookOpen } from 'lucide-react'
 import PathFormula from './marcus/PathFormula'
+import PathTopicAngle from './marcus/PathTopicAngle'
 import PathRepurpose from './marcus/PathRepurpose'
 
 type MarcusPath = 'welcome' | 'topic-angle' | 'repurpose' | 'lead-magnet' | 'formula'
