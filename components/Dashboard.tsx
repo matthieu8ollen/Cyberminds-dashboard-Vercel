@@ -410,7 +410,53 @@ const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' 
       case 'plan':
         return <ContentCalendar />
       case 'settings':
-        return <SettingsPage />
+  return <SettingsPage />
+case 'create':
+  // Handle Create tab with sub-navigation
+  if (createSubPage === 'express') {
+    return (
+      <ExpressGenerator
+        onSwitchMode={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setCreateSubPage('mode-selection')}
+      />
+    )
+  } else if (createSubPage === 'standard') {
+    return (
+      <StandardGenerator
+        onSwitchMode={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setCreateSubPage('mode-selection')}
+      />
+    )
+  } else {
+    // Default to mode selection
+    return (
+      <ModeSelection
+        onModeSelect={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setActivePage('writer-suite')}
+      />
+    )
+  }
+case 'analytics':
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       case 'analytics':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
