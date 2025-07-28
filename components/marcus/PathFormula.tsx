@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle } from 'lucide-react'
+import WritingInterface from './WritingInterface'
 
 interface FormulaTemplate {
   id: string
@@ -22,6 +23,14 @@ export default function PathFormula({ onBack }: PathFormulaProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
+  const handleWritingComplete = (content: string) => {
+    setGeneratedContent(content)
+    setCurrentStep('preview')
+  }
+
+  const handleBackToWriting = () => {
+    setCurrentStep('writing')
+  }
 
   const formulas: FormulaTemplate[] = [
     {
@@ -265,37 +274,71 @@ export default function PathFormula({ onBack }: PathFormulaProps) {
     )
   }
 
-  const renderWritingInterface = () => (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Writing Interface Coming Soon</h1>
-        <button
-          onClick={() => setCurrentStep('template')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Template</span>
-        </button>
+  const renderWritingInterface = () => {
+  if (!selectedFormula) return null
+  
+  return (
+    <WritingInterface
+      formula={selectedFormula}
+      onBack={() => setCurrentStep('template')}
+      onComplete={handleWritingComplete}
+    />
+  )
+}
+
+const renderFinalPreview = () => (
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">🎉 Content Created!</h1>
+        <p className="text-gray-600">Your content is ready to publish</p>
       </div>
-      
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-          <BookOpen className="w-8 h-8 text-white" />
+      <button
+        onClick={handleBackToWriting}
+        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to Edit</span>
+      </button>
+    </div>
+
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+      <div className="prose max-w-none">
+        <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+          {generatedContent}
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Guided Writing Coming Soon</h3>
-        <p className="text-gray-600">Step-by-step content creation with AI assistance</p>
       </div>
     </div>
-  )
+
+    <div className="flex justify-center space-x-4">
+      <button
+        onClick={handleBackToWriting}
+        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+      >
+        Edit Content
+      </button>
+      <button
+        onClick={() => {
+          // This could integrate with your existing save functionality
+          console.log('Content ready for publishing:', generatedContent)
+        }}
+        className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+      >
+        Save & Publish
+      </button>
+    </div>
+  </div>
+)
 
   switch (currentStep) {
-    case 'selection':
-      return renderFormulaSelection()
-    case 'template':
-      return renderTemplatePreview()
-    case 'writing':
-      return renderWritingInterface()
-    default:
-      return renderFormulaSelection()
-  }
+  case 'selection':
+    return renderFormulaSelection()
+  case 'template':
+    return renderTemplatePreview()
+  case 'writing':
+    return renderWritingInterface()
+  case 'preview':
+    return renderFinalPreview()
+  default:
+    return renderFormulaSelection()
 }
