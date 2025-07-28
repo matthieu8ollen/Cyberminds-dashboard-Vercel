@@ -82,7 +82,7 @@ export default function AIAssistant({ content, sectionType, formulaId, onApplySu
 
     // Context/setup suggestions
     if (section.toLowerCase().includes('context') || section.toLowerCase().includes('setup')) {
-      if (!hasRelatable elements(text)) {
+      if (!hasRelatableElements(text)) {
         suggestions.push({
           type: 'tip',
           icon: Lightbulb,
