@@ -307,23 +307,24 @@ export default function WritingInterface({ formula, onBack, onComplete }: Writin
                 </div>
               </div>
 
-              {/* AI Suggestions */}
-<div className="mb-6">
-  <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
-    <Zap className="w-4 h-4 text-teal-600" />
-    <span>Marcus's AI Suggestions</span>
-  </h4>
-  <AIAssistant
-    content={currentSection.content}
-    sectionType={currentSection.title}
-    formulaId={formula.id}
-    onApplySuggestion={(suggestion) => {
-      // Apply suggestion to content
-      const improvedContent = currentSection.content + '\n\n' + suggestion
-      handleSectionChange(improvedContent)
-    }}
-  />
-</div>
+             {/* AI Suggestions */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
+                  <Zap className="w-4 h-4 text-teal-600" />
+                  <span>Marcus's AI Suggestions</span>
+                </h4>
+                <AIAssistant
+                  content={currentSection.content}
+                  sectionType={currentSection.title}
+                  formulaId={formula.id}
+                  onApplySuggestion={(suggestion) => {
+                    // Apply suggestion to content
+                    const improvedContent = currentSection.content + '\n\n' + suggestion
+                    handleSectionChange(improvedContent)
+                  }}
+                />
+              </div>
+            </div>
 
             {/* Navigation Buttons */}
             <div className="flex justify-between">
