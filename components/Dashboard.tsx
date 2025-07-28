@@ -68,6 +68,25 @@ export default function Dashboard() {
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
   const [showModeSelection, setShowModeSelection] = useState(false)
+  const handleOpenModeSelection = () => {
+  setShowModeSelection(true)
+}
+
+const handleCloseModeSelection = () => {
+  setShowModeSelection(false)
+}
+
+const handleModeSelect = (mode: 'express' | 'standard' | 'power') => {
+  setShowModeSelection(false)
+  
+  if (mode === 'power') {
+    setActivePage('writer-suite')
+  } else {
+    // For express/standard, we'll set up the enhanced generator later
+    setActivePage('generator')
+    console.log('Selected mode:', mode)
+  }
+}
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -112,6 +131,18 @@ export default function Dashboard() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  useEffect(() => {
+  const handleModeSelectionEvent = () => {
+    handleOpenModeSelection()
+  }
+  
+  window.addEventListener('openModeSelection', handleModeSelectionEvent)
+  
+  return () => {
+    window.removeEventListener('openModeSelection', handleModeSelectionEvent)
+  }
+}, [])
 
   // Data Loading Functions
   const loadTrendingTopics = async () => {
@@ -1131,7 +1162,14 @@ export default function Dashboard() {
 
         {/* Page Content */}
         <main>
-          {renderPageContent()}
+          {showModeSelection ? (
+  <ModeSelection 
+    onModeSelect={handleModeSelect}
+    onBack={handleCloseModeSelection}
+  />
+) : (
+  renderPageContent()
+)}
         </main>
         
         {/* Floating New Post Button */}
