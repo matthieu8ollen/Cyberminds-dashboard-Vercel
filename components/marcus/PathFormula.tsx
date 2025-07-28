@@ -342,3 +342,4 @@ const renderFinalPreview = () => (
   default:
     return renderFormulaSelection()
 }
+}
