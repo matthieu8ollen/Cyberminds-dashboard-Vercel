@@ -70,7 +70,7 @@ export default function Dashboard() {
 
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
-const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' | 'standard'>('mode-selection')
+  const [createSubPage, setCreateSubPage] = useState<CreateSubPage>('mode-selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -116,7 +116,6 @@ const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' 
     }
   }, [])
 
-
   // Data Loading Functions
   const loadTrendingTopics = async () => {
     const { data } = await getTrendingTopics()
@@ -131,17 +130,17 @@ const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' 
   }
 
   // Content Generation Functions
- const handleWriteFromIdea = (idea: ContentIdea) => {
-  // Open Create tab with pre-filled topic
-  setFormData(prev => ({
-    ...prev,
-    topic: idea.title,
-    context: idea.description || ''
-  }))
-  setSelectedIdea(idea)
-  setActivePage('create')
-  setCreateSubPage('mode-selection')
-}
+  const handleWriteFromIdea = (idea: ContentIdea) => {
+    // Open Create tab with pre-filled topic
+    setFormData(prev => ({
+      ...prev,
+      topic: idea.title,
+      context: idea.description || ''
+    }))
+    setSelectedIdea(idea)
+    setActivePage('create')
+    setCreateSubPage('mode-selection')
+  }
 
   const handleGenerate = async () => {
     if (!formData.topic.trim()) return
@@ -260,6 +259,7 @@ const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' 
     ]
     return points[index % points.length]
   }
+
   // Content Management Functions
   const handleSaveDraft = async () => {
     if (!user || !generatedDrafts.length) return
@@ -401,146 +401,68 @@ const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' 
     switch (activePage) {
       case 'ideas':
         return <IdeasPage onWritePost={handleWriteFromIdea} />
+      
       case 'writer-suite':
         return <WriterSuite onComplete={(data) => {
           console.log('Writer Suite completed:', data)
         }} />
+      
       case 'production':
         return <ProductionPipeline />
+      
       case 'plan':
         return <ContentCalendar />
+      
       case 'settings':
-  return <SettingsPage />
-case 'create':
-  // Handle Create tab with sub-navigation
-  if (createSubPage === 'express') {
-    return (
-      <ExpressGenerator
-        onSwitchMode={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setCreateSubPage('mode-selection')}
-      />
-    )
-  } else if (createSubPage === 'standard') {
-    return (
-      <StandardGenerator
-        onSwitchMode={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setCreateSubPage('mode-selection')}
-      />
-    )
-  } else {
-    // Default to mode selection
-    return (
-      <ModeSelection
-        onModeSelect={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setActivePage('writer-suite')}
-      />
-    )
-  }
-        case 'create':
-  // Handle Create tab with sub-navigation
-  if (createSubPage === 'express') {
-    return (
-      <ExpressGenerator
-        onSwitchMode={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setCreateSubPage('mode-selection')}
-      />
-    )
-  } else if (createSubPage === 'standard') {
-    return (
-      <StandardGenerator
-        onSwitchMode={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setCreateSubPage('mode-selection')}
-      />
-    )
-  } else {
-    // Default to mode selection
-    return (
-      <ModeSelection
-        onModeSelect={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setActivePage('writer-suite')}
-      />
-    )
-  }
-case 'analytics':
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`w-3 h-3 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">LinkedIn Integration</h3>
-              <p className="text-sm text-gray-600">
-                {isLinkedInConnected 
-                  ? 'Connected - Automated publishing enabled' 
-                  : 'Not connected - Manual publishing only'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={isLinkedInConnected ? disconnectLinkedIn : connectLinkedIn}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              isLinkedInConnected
-                ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                : 'bg-slate-700 text-white hover:bg-slate-800'
-            }`}
-          >
-            {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
-          </button>
-        </div>
-      </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <BarChart className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {isLinkedInConnected ? 'Analytics Coming Soon' : 'Connect LinkedIn for Analytics'}
-        </h3>
-        <p className="text-gray-600">
-          {isLinkedInConnected 
-            ? 'Track your content performance and engagement metrics'
-            : 'Connect your LinkedIn account to view detailed analytics'}
-        </p>
-      </div>
-    </div>
-  )
+        return <SettingsPage />
+      
+      case 'create':
+        // Handle Create tab with sub-navigation
+        if (createSubPage === 'express') {
+          return (
+            <ExpressGenerator
+              onSwitchMode={(mode) => {
+                if (mode === 'power') {
+                  setActivePage('writer-suite')
+                } else {
+                  setCreateSubPage(mode)
+                }
+              }}
+              onBack={() => setCreateSubPage('mode-selection')}
+            />
+          )
+        } else if (createSubPage === 'standard') {
+          return (
+            <StandardGenerator
+              onSwitchMode={(mode) => {
+                if (mode === 'power') {
+                  setActivePage('writer-suite')
+                } else {
+                  setCreateSubPage(mode)
+                }
+              }}
+              onBack={() => setCreateSubPage('mode-selection')}
+            />
+          )
+        } else {
+          // Default to mode selection
+          return (
+            <ModeSelection
+              onModeSelect={(mode) => {
+                if (mode === 'power') {
+                  setActivePage('writer-suite')
+                } else {
+                  setCreateSubPage(mode)
+                }
+              }}
+              onBack={() => setActivePage('writer-suite')}
+            />
+          )
+        }
+      
+      case 'analytics':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
               <div className="flex items-center justify-between">
@@ -582,6 +504,7 @@ case 'analytics':
             </div>
           </div>
         )
+      
       case 'feed':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -595,15 +518,16 @@ case 'analytics':
             </div>
           </div>
         )
+      
       default:
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Page Not Found</h2>
-        <p className="text-gray-600">Use the floating "New Post" button to create content.</p>
-      </div>
-    </div>
-  )
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center py-12">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Page Not Found</h2>
+              <p className="text-gray-600">Use the floating "New Post" button to create content.</p>
+            </div>
+          </div>
+        )
     }
   }
 
@@ -709,7 +633,7 @@ case 'analytics':
                 setProfileMenuHoverActive(false)
               }}
               className={`w-full flex items-center rounded-lg p-3 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 ${
-                sidebarExpanded ? 'space-x-3' : 'justify-center'
+                sidebarExpanded ? 'space-x-3': 'justify-center'
               } ${showProfileMenu ? 'bg-slate-700/50 text-white' : ''}`}
             >
               <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -802,13 +726,19 @@ case 'analytics':
         </header>
 
         {/* Page Content */}
-    <main>
+        <main>
           {renderPageContent()}
         </main>
         
         {/* Floating New Post Button */}
         <FloatingNewPostButton />
       </div>
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsHelp 
+        isOpen={showShortcutsHelp} 
+        onClose={() => setShowShortcutsHelp(false)} 
+      />
     </div>
   )
 }
