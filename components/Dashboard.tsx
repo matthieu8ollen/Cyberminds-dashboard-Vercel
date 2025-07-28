@@ -454,12 +454,93 @@ case 'create':
       />
     )
   }
+        case 'create':
+  // Handle Create tab with sub-navigation
+  if (createSubPage === 'express') {
+    return (
+      <ExpressGenerator
+        onSwitchMode={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setCreateSubPage('mode-selection')}
+      />
+    )
+  } else if (createSubPage === 'standard') {
+    return (
+      <StandardGenerator
+        onSwitchMode={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setCreateSubPage('mode-selection')}
+      />
+    )
+  } else {
+    // Default to mode selection
+    return (
+      <ModeSelection
+        onModeSelect={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setActivePage('writer-suite')}
+      />
+    )
+  }
 case 'analytics':
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      case 'analytics':
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className={`w-3 h-3 rounded-full ${isLinkedInConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">LinkedIn Integration</h3>
+              <p className="text-sm text-gray-600">
+                {isLinkedInConnected 
+                  ? 'Connected - Automated publishing enabled' 
+                  : 'Not connected - Manual publishing only'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={isLinkedInConnected ? disconnectLinkedIn : connectLinkedIn}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              isLinkedInConnected
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-slate-700 text-white hover:bg-slate-800'
+            }`}
+          >
+            {isLinkedInConnected ? 'Disconnect' : 'Connect LinkedIn'}
+          </button>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <BarChart className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          {isLinkedInConnected ? 'Analytics Coming Soon' : 'Connect LinkedIn for Analytics'}
+        </h3>
+        <p className="text-gray-600">
+          {isLinkedInConnected 
+            ? 'Track your content performance and engagement metrics'
+            : 'Connect your LinkedIn account to view detailed analytics'}
+        </p>
+      </div>
+    </div>
+  )
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Performance</h1>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
               <div className="flex items-center justify-between">
