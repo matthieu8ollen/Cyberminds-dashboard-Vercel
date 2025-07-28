@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { User, ArrowRight, MessageCircle, FileText, Magnet, BookOpen } from 'lucide-react'
 import PathFormula from './marcus/PathFormula'
+import PathTopicAngle from './marcus/PathTopicAngle'
 
 type MarcusPath = 'welcome' | 'topic-angle' | 'repurpose' | 'lead-magnet' | 'formula'
 
@@ -166,28 +167,7 @@ export default function MarcusCopilot() {
   const renderPathContent = () => {
     switch (marcusState.currentPath) {
       case 'topic-angle':
-        return (
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Topic & Angle Flow</h2>
-                <button
-                  onClick={handleBackToWelcome}
-                  className="text-gray-600 hover:text-gray-800 transition"
-                >
-                  ← Back to Marcus
-                </button>
-              </div>
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Topic & Angle Coming Soon</h3>
-                <p className="text-gray-600">AI-guided topic discovery and angle development</p>
-              </div>
-            </div>
-          </div>
-        )
+  return <PathTopicAngle onBack={handleBackToWelcome} />
 
       case 'repurpose':
         return (
