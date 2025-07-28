@@ -29,7 +29,8 @@ import SettingsPage from './SettingsPage'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'ideas' | 'writer-suite' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type CreateSubPage = 'mode-selection' | 'express' | 'standard'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
@@ -69,8 +70,7 @@ export default function Dashboard() {
 
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
-  const [showModeSelection, setShowModeSelection] = useState(false)
-  const [selectedMode, setSelectedMode] = useState<'express' | 'standard' | 'power' | null>(null)
+const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' | 'standard'>('mode-selection')
   const handleOpenModeSelection = () => {
   setShowModeSelection(true)
 }
@@ -418,6 +418,7 @@ const handleBackToModeSelection = () => {
 
   const navigationItems = [
     { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+    { id: 'create' as ActivePage, label: 'Create', icon: Zap },
     { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
     { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
     { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
