@@ -14,7 +14,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [resendCountdown, setResendCountdown] = useState(0)
-  const { signIn, signUp } = useAuth()
+  const [stayLoggedInChecked, setStayLoggedInChecked] = useState(false)
+  const { signIn, signUp, setStayLoggedInPreference } = useAuth()
+
+  // Initialize stay logged in preference from storage
+  useEffect(() => {
+    const savedPreference = localStorage.getItem('writer-suite-stay-logged-in')
+    if (savedPreference === 'true') {
+      setStayLoggedInChecked(true)
+    }
+  }, [])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -49,6 +58,9 @@ export default function Login() {
         const { data, error } = await signIn(email, password)
         if (error) {
           setMessage(error.message)
+        } else {
+          // Save stay logged in preference
+          setStayLoggedInPreference(stayLoggedInChecked)
         }
       }
     } catch (error) {
@@ -270,6 +282,32 @@ export default function Login() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500"
               />
+            </div>
+          </div>
+        )}
+
+        {/* Stay Logged In Checkbox - Only for Login */}
+        {view === 'login' && (
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="stay-logged-in"
+                name="stay-logged-in"
+                type="checkbox"
+                checked={stayLoggedInChecked}
+                onChange={(e) => setStayLoggedInChecked(e.target.checked)}
+                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="ml-3">
+              <label htmlFor="stay-logged-in" className="text-sm text-gray-900">
+                Stay logged in for 30 days
+              </label>
+              {stayLoggedInChecked && (
+                <p className="text-xs text-gray-500 mt-1">
+                  You'll stay logged in on this device for 30 days
+                </p>
+              )}
             </div>
           </div>
         )}
