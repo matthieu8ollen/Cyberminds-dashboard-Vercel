@@ -26,10 +26,11 @@ import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 import SettingsPage from './SettingsPage'
+import MarcusCopilot from './MarcusCopilot'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'marcus' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
 type CreateSubPage = 'mode-selection' | 'express' | 'standard'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
@@ -377,6 +378,7 @@ export default function Dashboard() {
   const navigationItems = [
     { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
     { id: 'create' as ActivePage, label: 'Create', icon: Zap },
+    { id: 'marcus' as ActivePage, label: 'Marcus', icon: User, premium: true },
     { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
     { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
     { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
@@ -406,7 +408,10 @@ export default function Dashboard() {
         return <WriterSuite onComplete={(data) => {
           console.log('Writer Suite completed:', data)
         }} />
-      
+
+        case 'marcus':
+      return <MarcusCopilot />
+        
       case 'production':
         return <ProductionPipeline />
       
