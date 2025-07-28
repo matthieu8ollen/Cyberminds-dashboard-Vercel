@@ -18,7 +18,7 @@ interface AngleOption {
   whyItWorks: string[]
 }
 
-export default function PathTopicAngle({ onBack }: PathTopicAngleProps) {
+export default function PathTopicAngle({ onBack }: TopicAngleProps) {
   const [currentStep, setCurrentStep] = useState<'discovery' | 'research' | 'angles' | 'development'>('discovery')
   const [topic, setTopic] = useState('')
   const [topicSource, setTopicSource] = useState<'user' | 'ai'>('user')
