@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, ArrowRight, CheckCircle, Lightbulb, Zap, Eye, Save, Calendar } from 'lucide-react'
+import AIAssistant from './AIAssistant'
 
 interface FormulaTemplate {
   id: string
