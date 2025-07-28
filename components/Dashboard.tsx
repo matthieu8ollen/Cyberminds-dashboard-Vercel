@@ -71,38 +71,6 @@ export default function Dashboard() {
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
 const [createSubPage, setCreateSubPage] = useState<'mode-selection' | 'express' | 'standard'>('mode-selection')
-  const handleOpenModeSelection = () => {
-  setShowModeSelection(true)
-}
-
-const handleCloseModeSelection = () => {
-  setShowModeSelection(false)
-}
-
-const handleModeSelect = (mode: 'express' | 'standard' | 'power') => {
-  setShowModeSelection(false)
-  setSelectedMode(mode)
-  
-  if (mode === 'power') {
-    setActivePage('writer-suite')
-    setSelectedMode(null) // Clear mode when going to writer suite
-  }
-  // For express/standard, we'll handle them in the render logic
-}
-
-const handleSwitchMode = (newMode: 'express' | 'standard' | 'power') => {
-  if (newMode === 'power') {
-    setActivePage('writer-suite')
-    setSelectedMode(null)
-  } else {
-    setSelectedMode(newMode)
-  }
-}
-
-const handleBackToModeSelection = () => {
-  setSelectedMode(null)
-  setShowModeSelection(true)
-}
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -148,17 +116,6 @@ const handleBackToModeSelection = () => {
     }
   }, [])
 
-  useEffect(() => {
-  const handleModeSelectionEvent = () => {
-    handleOpenModeSelection()
-  }
-  
-  window.addEventListener('openModeSelection', handleModeSelectionEvent)
-  
-  return () => {
-    window.removeEventListener('openModeSelection', handleModeSelectionEvent)
-  }
-}, [])
 
   // Data Loading Functions
   const loadTrendingTopics = async () => {
@@ -174,15 +131,16 @@ const handleBackToModeSelection = () => {
   }
 
   // Content Generation Functions
-  const handleWriteFromIdea = (idea: ContentIdea) => {
-  // Open mode selection with pre-filled topic
+ const handleWriteFromIdea = (idea: ContentIdea) => {
+  // Open Create tab with pre-filled topic
   setFormData(prev => ({
     ...prev,
     topic: idea.title,
     context: idea.description || ''
   }))
   setSelectedIdea(idea)
-  setShowModeSelection(true)
+  setActivePage('create')
+  setCreateSubPage('mode-selection')
 }
 
   const handleGenerate = async () => {
@@ -718,24 +676,7 @@ const handleBackToModeSelection = () => {
 
         {/* Page Content */}
     <main>
-          {showModeSelection ? (
-            <ModeSelection 
-              onModeSelect={handleModeSelect}
-              onBack={handleCloseModeSelection}
-            />
-          ) : selectedMode === 'express' ? (
-            <ExpressGenerator
-              onSwitchMode={handleSwitchMode}
-              onBack={handleBackToModeSelection}
-            />
-          ) : selectedMode === 'standard' ? (
-            <StandardGenerator
-              onSwitchMode={handleSwitchMode}
-              onBack={handleBackToModeSelection}
-            />
-          ) : (
-            renderPageContent()
-          )}
+          {renderPageContent()}
         </main>
         
         {/* Floating New Post Button */}
