@@ -7,9 +7,8 @@ export default function FloatingNewPostButton() {
   const [isHovered, setIsHovered] = useState(false)
 
   const handleClick = () => {
-    // TODO: Navigate to mode selection page
-    console.log('Navigate to mode selection')
-  }
+  window.dispatchEvent(new CustomEvent('openModeSelection'))
+}
 
   return (
     <button
