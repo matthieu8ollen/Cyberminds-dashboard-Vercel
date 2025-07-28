@@ -20,6 +20,8 @@ import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
 import FloatingNewPostButton from './FloatingNewPostButton'
 import ModeSelection from './ModeSelection'
+import ExpressGenerator from './ExpressGenerator'
+import StandardGenerator from './StandardGenerator'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
@@ -68,6 +70,7 @@ export default function Dashboard() {
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
   const [showModeSelection, setShowModeSelection] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<'express' | 'standard' | 'power' | null>(null)
   const handleOpenModeSelection = () => {
   setShowModeSelection(true)
 }
@@ -78,14 +81,27 @@ const handleCloseModeSelection = () => {
 
 const handleModeSelect = (mode: 'express' | 'standard' | 'power') => {
   setShowModeSelection(false)
+  setSelectedMode(mode)
   
   if (mode === 'power') {
     setActivePage('writer-suite')
-  } else {
-    // For express/standard, we'll set up the enhanced generator later
-    setActivePage('generator')
-    console.log('Selected mode:', mode)
+    setSelectedMode(null) // Clear mode when going to writer suite
   }
+  // For express/standard, we'll handle them in the render logic
+}
+
+const handleSwitchMode = (newMode: 'express' | 'standard' | 'power') => {
+  if (newMode === 'power') {
+    setActivePage('writer-suite')
+    setSelectedMode(null)
+  } else {
+    setSelectedMode(newMode)
+  }
+}
+
+const handleBackToModeSelection = () => {
+  setSelectedMode(null)
+  setShowModeSelection(true)
 }
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -1161,15 +1177,25 @@ const handleModeSelect = (mode: 'express' | 'standard' | 'power') => {
         </header>
 
         {/* Page Content */}
-        <main>
+    <main>
           {showModeSelection ? (
-  <ModeSelection 
-    onModeSelect={handleModeSelect}
-    onBack={handleCloseModeSelection}
-  />
-) : (
-  renderPageContent()
-)}
+            <ModeSelection 
+              onModeSelect={handleModeSelect}
+              onBack={handleCloseModeSelection}
+            />
+          ) : selectedMode === 'express' ? (
+            <ExpressGenerator
+              onSwitchMode={handleSwitchMode}
+              onBack={handleBackToModeSelection}
+            />
+          ) : selectedMode === 'standard' ? (
+            <StandardGenerator
+              onSwitchMode={handleSwitchMode}
+              onBack={handleBackToModeSelection}
+            />
+          ) : (
+            renderPageContent()
+          )}
         </main>
         
         {/* Floating New Post Button */}
