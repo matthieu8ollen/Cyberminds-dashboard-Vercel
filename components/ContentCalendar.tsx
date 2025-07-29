@@ -124,22 +124,29 @@ export default function ContentCalendar() {
   }, [user, realScheduledContent, draftContent, publishedContent])
 
   const loadScheduledContent = async () => {
-    // Convert ContentContext data to calendar format
-    const calendarContent = [
-      ...realScheduledContent.map(content => ({
+    // Create calendar content with proper structure
+    const calendarContent: ScheduledContent[] = []
+    
+    // Add scheduled content (from ContentCalendar table eventually)
+    realScheduledContent.forEach((content, index) => {
+      calendarContent.push({
         ...content,
-        scheduled_date: content.scheduled_date || getTomorrowDate(),
-        scheduled_time: content.scheduled_time || '09:00',
-        status: content.status || 'scheduled' as const
-      })),
-      // Add published content with dates
-      ...publishedContent.map(content => ({
+        scheduled_date: getTomorrowDate(),
+        scheduled_time: index === 0 ? '09:00' : '14:00',
+        status: content.status || 'scheduled'
+      })
+    })
+    
+    // Add published content with dates from published_at
+    publishedContent.forEach((content, index) => {
+      calendarContent.push({
         ...content,
         scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
         scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
-        status: 'published' as const
-      }))
-    ]
+        status: 'published'
+      })
+    })
+    
     setScheduledContent(calendarContent)
   }
 
