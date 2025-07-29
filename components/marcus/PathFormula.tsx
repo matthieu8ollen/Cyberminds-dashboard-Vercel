@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle } from 'lucide-react'
 import WritingInterface from './WritingInterface'
+import { useContent } from '../../contexts/ContentContext'
+import { useToast } from '../ToastNotifications'
 
 interface FormulaTemplate {
   id: string
@@ -23,6 +25,8 @@ export default function PathFormula({ onBack }: PathFormulaProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
   const handleWritingComplete = (content: string) => {
     setGeneratedContent(content)
     setCurrentStep('preview')
@@ -318,10 +322,26 @@ const renderFinalPreview = () => (
         Edit Content
       </button>
       <button
-        onClick={() => {
-          // This could integrate with your existing save functionality
-          console.log('Content ready for publishing:', generatedContent)
-        }}
+        onClick={async () => {
+  try {
+    const saved = await saveDraft({
+      content_text: generatedContent,
+      content_type: 'framework',
+      tone_used: 'professional',
+      prompt_input: selectedFormula?.name || 'Content Formula',
+      is_saved: true,
+      title: selectedFormula?.name
+    })
+    
+    if (saved) {
+      showToast('success', 'Content saved as draft!')
+      setSelectedContent(saved)
+      setShowScheduleModal(true)
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}}
         className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
       >
         Save & Publish
