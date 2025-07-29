@@ -59,6 +59,8 @@ export interface GeneratedContent {
   word_count?: number
   linkedin_post_url?: string
   published_at?: string
+  scheduled_date?: string
+  scheduled_time?: string
   created_at: string
 }
 
