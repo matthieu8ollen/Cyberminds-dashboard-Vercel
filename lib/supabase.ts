@@ -54,8 +54,7 @@ export interface GeneratedContent {
   tone_used: string
   prompt_input: string | null
   is_saved: boolean
-  // CORRECTED STATUS: Added the types used by the Production Pipeline
-  status?: 'draft' | 'scheduled' | 'published' | 'failed'
+  status?: 'draft' | 'scheduled' | 'published' | 'failed'  // Make this optional with ?
   variations_data?: any
   word_count?: number
   linkedin_post_url?: string
