@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, ArrowRight, Search, TrendingUp, User, BarChart3, Zap, Target, Brain, CheckCircle, Eye, Lightbulb, MessageCircle } from 'lucide-react'
 import AIAssistant from './AIAssistant'
+import { useContent } from '../../contexts/ContentContext'
+import { useToast } from '../ToastNotifications'
 
 interface TopicAngleProps {
   onBack: () => void
@@ -38,6 +40,8 @@ export default function PathTopicAngle({ onBack }: TopicAngleProps) {
   const [finalContent, setFinalContent] = useState('')
   const [showPreview, setShowPreview] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
 
   // Initialize story sections when angle is selected
   useEffect(() => {
@@ -796,10 +800,27 @@ export default function PathTopicAngle({ onBack }: TopicAngleProps) {
           Edit Content
         </button>
         <button
-          onClick={() => {
-            console.log('Topic angle content ready:', finalContent)
-            // This could integrate with your existing save functionality
-          }}
+          onClick={async () => {
+  try {
+    const saved = await saveDraft({
+      content_text: finalContent,
+      content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                   selectedAngle?.type === 'data' ? 'metrics' : 'trend',
+      tone_used: selectedAngle?.type || 'professional',
+      prompt_input: topic,
+      is_saved: true,
+      title: `${selectedAngle?.title} - ${topic}`
+    })
+    
+    if (saved) {
+      showToast('success', 'Content saved successfully!')
+      setSelectedContent(saved)
+      setShowScheduleModal(true)
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <MessageCircle className="w-4 h-4" />
