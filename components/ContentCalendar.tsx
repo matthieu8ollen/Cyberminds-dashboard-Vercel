@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useContent } from '../contexts/ContentContext'
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -55,6 +56,14 @@ const TIME_SLOTS = [
 
 export default function ContentCalendar() {
   const { user } = useAuth()
+  const { 
+    scheduledContent: realScheduledContent, 
+    draftContent, 
+    loadingContent,
+    setSelectedContent,
+    setShowScheduleModal,
+    refreshContent
+  } = useContent()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('month')
   const [filter, setFilter] = useState<ContentFilter>('all')
@@ -73,66 +82,34 @@ export default function ContentCalendar() {
   }, [user])
 
   const loadScheduledContent = async () => {
-    const mockScheduledContent: ScheduledContent[] = [
-      {
-        id: 'scheduled-1',
-        user_id: user?.id || '',
-        content_text: `🎯 5 Key Financial Metrics Every SaaS CFO Must Track\n\n1️⃣ Monthly Recurring Revenue (MRR) growth rate\n2️⃣ Customer Acquisition Cost (CAC) vs Lifetime Value (LTV)\n3️⃣ Gross Revenue Retention (GRR) and Net Revenue Retention (NRR)\n4️⃣ Burn rate and runway calculation\n5️⃣ Unit economics and contribution margins\n\nThese aren't just numbers—they're the heartbeat of your business.\n\nWhich metric do you find most challenging to optimize? 👇\n\n#SaaS #CFO #Metrics #FinanceStrategy`,
-        content_type: 'framework',
-        tone_used: 'insightful',
-        prompt_input: 'SaaS financial metrics',
-        is_saved: true,
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        scheduled_date: getTomorrowDate(),
-        scheduled_time: '09:00',
-        status: 'scheduled'
-      },
-      {
-        id: 'scheduled-2',
-        user_id: user?.id || '',
-        content_text: `Stop doing this: Budget variance analysis\n\nThe old way: Spreadsheet gymnastics with 47 tabs\nThe smart way: Real-time dashboards with automated alerts\n\nYour time is worth more than cell formatting.\n\nWhat's your biggest budgeting time-waster? Let's solve it. 👇\n\n#CFO #Budgeting #Automation #Efficiency`,
-        content_type: 'mistake',
-        tone_used: 'bold',
-        prompt_input: 'Budget variance analysis mistakes',
-        is_saved: true,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        scheduled_date: getDateString(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
-        scheduled_time: '14:00',
-        status: 'scheduled',
-        recurring: {
-          frequency: 'weekly',
-          interval: 1
-        }
-      },
-      {
-        id: 'published-1',
-        user_id: user?.id || '',
-        content_text: `📊 Quarter-end close: 3 days → 3 hours\n\nHow we transformed our financial close process:\n\n✅ Automated journal entries\n✅ Real-time reconciliations\n✅ Integrated reporting dashboards\n\nResult: 90% time reduction, 100% accuracy improvement\n\nThe future of finance is automated. Are you ready?\n\n#FinanceTransformation #Automation #Efficiency`,
-        content_type: 'story',
-        tone_used: 'insightful',
-        prompt_input: 'Financial close automation success',
-        is_saved: true,
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        published_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        scheduled_date: getYesterdayDate(),
-        scheduled_time: '10:00',
-        status: 'published'
-      }
+    // Convert ContentContext data to calendar format
+    const calendarContent = [
+      ...realScheduledContent.map(content => ({
+        ...content,
+        scheduled_date: content.scheduled_date || getTomorrowDate(),
+        scheduled_time: content.scheduled_time || '09:00',
+        status: content.status || 'scheduled' as const
+      })),
+      // Add published content with dates
+      ...draftContent.filter(c => c.status === 'published').map(content => ({
+        ...content,
+        scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
+        scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
+        status: 'published' as const
+      }))
     ]
-    setScheduledContent(mockScheduledContent)
+    setScheduledContent(calendarContent)
   }
 
   const loadAvailableContent = async () => {
     if (!user) return
 
     try {
-      const { data } = await getSavedContent(user.id)
-      if (data) {
-        const unscheduledContent = data.filter(content => 
-          !scheduledContent.some(scheduled => scheduled.id === content.id)
-        )
-        setAvailableContent(unscheduledContent)
-      }
+      // Use draft content from ContentContext as available content
+      const unscheduledContent = draftContent.filter(content => 
+        !scheduledContent.some(scheduled => scheduled.id === content.id)
+      )
+      setAvailableContent(unscheduledContent)
     } catch (error) {
       console.error('Error loading available content:', error)
     }
