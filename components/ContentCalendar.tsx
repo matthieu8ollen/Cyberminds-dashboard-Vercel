@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useContent } from '../contexts/ContentContext'
+import { supabase } from '../lib/supabase'
 import { useToast } from './ToastNotifications'
 import {
   DndContext,
@@ -124,31 +125,49 @@ export default function ContentCalendar() {
   }, [user, realScheduledContent, draftContent, publishedContent])
 
   const loadScheduledContent = async () => {
-    // Create calendar content with proper structure
-    const calendarContent: ScheduledContent[] = []
+  if (!user) return
+  
+  try {
+    // Get scheduled content from content_calendar table
+    const { data: scheduledData } = await supabase
+      .from('content_calendar')
+      .select(`
+        *,
+        generated_content (*)
+      `)
+      .eq('user_id', user.id)
+      .eq('status', 'scheduled')
     
-    // Add scheduled content (from ContentCalendar table eventually)
-    realScheduledContent.forEach((content, index) => {
-      calendarContent.push({
-        ...content,
-        scheduled_date: getTomorrowDate(),
-        scheduled_time: index === 0 ? '09:00' : '14:00',
-        status: content.status || 'scheduled'
-      })
-    })
+    // Transform scheduled data
+    const scheduledItems: ScheduledContent[] = (scheduledData || []).map(item => ({
+      id: item.generated_content.id,
+      user_id: item.user_id,
+      content_text: item.generated_content.content_text,
+      content_type: item.generated_content.content_type,
+      tone_used: item.generated_content.tone_used,
+      prompt_input: item.generated_content.prompt_input,
+      is_saved: item.generated_content.is_saved,
+      scheduled_date: item.scheduled_date,
+      scheduled_time: item.scheduled_time || '09:00',
+      status: 'scheduled',
+      created_at: item.generated_content.created_at
+    }))
     
-    // Add published content with dates from published_at
-    publishedContent.forEach((content, index) => {
-      calendarContent.push({
-        ...content,
-        scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
-        scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
-        status: 'published'
-      })
-    })
+    // Add published content
+    const publishedItems: ScheduledContent[] = publishedContent.map(content => ({
+      ...content,
+      scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
+      scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
+      status: 'published'
+    }))
     
-    setScheduledContent(calendarContent)
+    setScheduledContent([...scheduledItems, ...publishedItems])
+  } catch (error) {
+    console.error('Error loading scheduled content:', error)
+    // Fallback to empty array
+    setScheduledContent([])
   }
+}
 
   const loadAvailableContent = async () => {
     if (!user) return
