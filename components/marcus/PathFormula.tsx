@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCirc
 import WritingInterface from './WritingInterface'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
+import { GeneratedContent } from '../../lib/supabase'
 
 interface FormulaTemplate {
   id: string
