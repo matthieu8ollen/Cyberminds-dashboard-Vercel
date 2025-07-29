@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Magnet, Gift, Target, Users, CheckCircle, TrendingUp, Eye, Calendar, Download } from 'lucide-react'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
+import { GeneratedContent } from '../../lib/supabase'
 
 interface LeadMagnetProps {
   onBack: () => void
