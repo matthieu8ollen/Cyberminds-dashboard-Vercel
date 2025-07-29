@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Upload, FileText, BarChart3, Target, Zap, Eye, CheckCircle, Link } from 'lucide-react'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
+import { GeneratedContent } from '../../lib/supabase'
 
 interface RepurposeProps {
   onBack: () => void
