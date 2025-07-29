@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Magnet, Gift, Target, Users, CheckCircle, TrendingUp, Eye, Calendar, Download } from 'lucide-react'
+import { useContent } from '../../contexts/ContentContext'
+import { useToast } from '../ToastNotifications'
 
 interface LeadMagnetProps {
   onBack: () => void
@@ -33,6 +35,8 @@ export default function PathLeadMagnet({ onBack }: LeadMagnetProps) {
   const [selectedMagnet, setSelectedMagnet] = useState<LeadMagnetType | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
   const [conversionGoal, setConversionGoal] = useState<'email' | 'discovery' | 'demo' | 'download'>('email')
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
 
   const getConversionStrategies = (): ConversionStrategy[] => {
     return [
@@ -530,10 +534,26 @@ Comment "READY" and I'll send you the complete checklist.
           Try Different Strategy
         </button>
         <button
-          onClick={() => {
-            console.log('Lead magnet content ready:', generatedContent)
-            // This could integrate with your existing save functionality
-          }}
+          onClick={async () => {
+  try {
+    const saved = await saveDraft({
+      content_text: generatedContent,
+      content_type: 'framework',
+      tone_used: selectedStrategy?.id || 'professional',
+      prompt_input: `Lead Magnet: ${selectedMagnet?.name}`,
+      is_saved: true,
+      title: `${selectedMagnet?.name} - ${selectedStrategy?.title}`
+    })
+    
+    if (saved) {
+      showToast('success', 'Lead magnet content saved!')
+      setSelectedContent(saved)
+      setShowScheduleModal(true)
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <Magnet className="w-4 h-4" />
