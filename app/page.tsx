@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { AuthProvider } from '../contexts/AuthContext'
+import { ContentProvider } from '../contexts/ContentContext'
 import Login from '../components/Login'
 import Dashboard from '../components/Dashboard'
 import OnboardingWizard from '../components/OnboardingWizard'
 import Loading from '../components/Loading'
+
 
 function MainApp() {
   const { user, profile, loading } = useAuth()
@@ -57,7 +59,9 @@ function MainApp() {
 export default function Home() {
   return (
     <AuthProvider>
-      <MainApp />
+      <ContentProvider>
+        <MainApp />
+      </ContentProvider>
     </AuthProvider>
   )
 }
