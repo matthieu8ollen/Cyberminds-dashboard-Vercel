@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Upload, FileText, BarChart3, Target, Zap, Eye, CheckCircle, Link } from 'lucide-react'
+import { useContent } from '../../contexts/ContentContext'
+import { useToast } from '../ToastNotifications'
 
 interface RepurposeProps {
   onBack: () => void
@@ -34,6 +36,8 @@ export default function PathRepurpose({ onBack }: RepurposeProps) {
   const [analysis, setAnalysis] = useState<ContentAnalysis | null>(null)
   const [selectedAngle, setSelectedAngle] = useState<LinkedInAngle | null>(null)
   const [adaptedContent, setAdaptedContent] = useState('')
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
 
   const handleAnalyze = () => {
     if (!contentInput.trim() && !contentUrl.trim()) return
@@ -514,10 +518,26 @@ What's your take? Is speed overrated in business?
           Try Different Angle
         </button>
         <button
-          onClick={() => {
-            console.log('Content ready for publishing:', adaptedContent)
-            // This could integrate with your existing save functionality
-          }}
+          onClick={async () => {
+  try {
+    const saved = await saveDraft({
+      content_text: adaptedContent,
+      content_type: 'framework',
+      tone_used: selectedAngle?.id || 'professional',
+      prompt_input: contentInput || contentUrl,
+      is_saved: true,
+      title: `Repurposed: ${selectedAngle?.title}`
+    })
+    
+    if (saved) {
+      showToast('success', 'Repurposed content saved!')
+      setSelectedContent(saved)
+      setShowScheduleModal(true)
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <CheckCircle className="w-4 h-4" />
