@@ -20,7 +20,7 @@ interface ContentContextType {
   loadingContent: boolean
   
   // Actions
-  saveDraft: (content: Omit<GeneratedContent, 'id' | 'created_at'>) => Promise<GeneratedContent | null>
+  saveDraft: (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>) => Promise<GeneratedContent | null>
   updateContent: (id: string, updates: Partial<GeneratedContent>) => Promise<boolean>
   scheduleContentItem: (contentId: string, date: string, time: string) => Promise<boolean>
   publishContent: (contentId: string) => Promise<boolean>
