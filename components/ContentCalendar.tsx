@@ -125,48 +125,42 @@ export default function ContentCalendar() {
   }, [user, realScheduledContent, draftContent, publishedContent])
 
   const loadScheduledContent = async () => {
-  if (!user) return
+  // Use content directly from ContentContext with mock scheduling data
+  const calendarContent: ScheduledContent[] = []
   
-  try {
-    // Get scheduled content from content_calendar table
-    const { data: scheduledData } = await supabase
-      .from('content_calendar')
-      .select(`
-        *,
-        generated_content (*)
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'scheduled')
-    
-    // Transform scheduled data
-    const scheduledItems: ScheduledContent[] = (scheduledData || []).map(item => ({
-      id: item.generated_content.id,
-      user_id: item.user_id,
-      content_text: item.generated_content.content_text,
-      content_type: item.generated_content.content_type,
-      tone_used: item.generated_content.tone_used,
-      prompt_input: item.generated_content.prompt_input,
-      is_saved: item.generated_content.is_saved,
-      scheduled_date: item.scheduled_date,
-      scheduled_time: item.scheduled_time || '09:00',
-      status: 'scheduled',
-      created_at: item.generated_content.created_at
-    }))
-    
-    // Add published content
-    const publishedItems: ScheduledContent[] = publishedContent.map(content => ({
+  // Add draft content as "unscheduled" (available to drag to dates)
+  draftContent.forEach((content, index) => {
+    if (content.scheduled_date) {
+      calendarContent.push({
+        ...content,
+        scheduled_date: content.scheduled_date,
+        scheduled_time: content.scheduled_time || '09:00',
+        status: content.status || 'scheduled'
+      })
+    }
+  })
+  
+  // Add some sample scheduled content for testing
+  draftContent.slice(0, 2).forEach((content, index) => {
+    calendarContent.push({
+      ...content,
+      scheduled_date: index === 0 ? getTomorrowDate() : getDateString(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
+      scheduled_time: index === 0 ? '09:00' : '14:00',
+      status: 'scheduled'
+    })
+  })
+  
+  // Add published content
+  publishedContent.forEach((content) => {
+    calendarContent.push({
       ...content,
       scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
       scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
       status: 'published'
-    }))
-    
-    setScheduledContent([...scheduledItems, ...publishedItems])
-  } catch (error) {
-    console.error('Error loading scheduled content:', error)
-    // Fallback to empty array
-    setScheduledContent([])
-  }
+    })
+  })
+  
+  setScheduledContent(calendarContent)
 }
 
   const loadAvailableContent = async () => {
