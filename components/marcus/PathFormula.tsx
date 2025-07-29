@@ -326,7 +326,7 @@ const renderFinalPreview = () => (
   try {
     const saved = await saveDraft({
       content_text: generatedContent,
-      content_type: 'framework' as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+      content_type: 'framework' as const,  // Use 'as const' for literal type
       tone_used: 'professional',
       prompt_input: selectedFormula?.name || 'Content Formula',
       is_saved: true,
