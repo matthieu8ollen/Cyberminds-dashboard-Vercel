@@ -27,6 +27,7 @@ import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
+import SchedulingModal from './SchedulingModal'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -744,6 +745,9 @@ export default function Dashboard() {
         isOpen={showShortcutsHelp} 
         onClose={() => setShowShortcutsHelp(false)} 
       />
+      
+      {/* Scheduling Modal */}
+      <SchedulingModal />
     </div>
   )
 }
