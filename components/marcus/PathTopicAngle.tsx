@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Search, TrendingUp, User, BarChart3, Zap, Target
 import AIAssistant from './AIAssistant'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
+import { GeneratedContent } from '../../lib/supabase'
 
 interface TopicAngleProps {
   onBack: () => void
