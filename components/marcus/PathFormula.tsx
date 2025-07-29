@@ -324,14 +324,17 @@ const renderFinalPreview = () => (
       <button
         onClick={async () => {
   try {
-    const saved = await saveDraft({
+    const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+      user_id: '', // This will be set by saveDraft
       content_text: generatedContent,
-      content_type: 'framework' as const,  // Use 'as const' for literal type
+      content_type: 'framework',
       tone_used: 'professional',
       prompt_input: selectedFormula?.name || 'Content Formula',
       is_saved: true,
       title: selectedFormula?.name
-    })
+    }
+    
+    const saved = await saveDraft(contentData)
     
     if (saved) {
       showToast('success', 'Content saved as draft!')
