@@ -54,7 +54,7 @@ export interface GeneratedContent {
   tone_used: string
   prompt_input: string | null
   is_saved: boolean
-  status?: 'draft' | 'scheduled' | 'published' | 'failed'  // Make this optional with ?
+  status?: 'draft' | 'scheduled' | 'published' | 'failed' | undefined
   variations_data?: any
   word_count?: number
   linkedin_post_url?: string
