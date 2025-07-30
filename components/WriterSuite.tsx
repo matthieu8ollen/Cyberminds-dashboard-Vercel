@@ -218,7 +218,7 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
 
   // If Marcus mode is selected, show Marcus
   if (selectedMode === 'marcus') {
-    return <MarcusCopilot />
+    return <MarcusCopilot onBackToChoice={() => setShowChoice(true)} />
   }
 
   // Otherwise, show the classic 5-step process
