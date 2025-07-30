@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { Clock, Sparkles, Eye, Edit3, Calendar, ArrowRight, Settings } from 'lucide-react'
 import RichTextEditor from './RichTextEditor'
 import LinkedInPreview from './LinkedInPreview'
+import { useContent } from '../contexts/ContentContext'
+import { useToast } from './ToastNotifications'
+import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
@@ -297,6 +300,8 @@ function StandardResults({
   const [selectedDraft, setSelectedDraft] = useState('bold')
   const [showPreview, setShowPreview] = useState(true)
   const [editingDraft, setEditingDraft] = useState<string | null>(null)
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
 
   // Mock generated drafts
   const drafts = [
@@ -404,7 +409,29 @@ function StandardResults({
                   <Edit3 className="w-4 h-4" />
                   <span>{editingDraft === selectedDraft ? 'View' : 'Edit'}</span>
                 </button>
-                <button className="px-3 py-2 text-sm bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition">
+               <button 
+                  onClick={async () => {
+                    try {
+                      const currentDraft = drafts.find(d => d.type === selectedDraft)
+                      const saved = await saveDraft({
+                        content_text: currentDraft?.content || '',
+                        content_type: contentType,
+                        tone_used: tone,
+                        prompt_input: topic,
+                        is_saved: true,
+                        title: `Standard Mode - ${topic}`,
+                        status: 'draft'
+                      }, 'standard')
+                      
+                      if (saved) {
+                        showToast('success', 'Content saved as draft!')
+                      }
+                    } catch (error) {
+                      showToast('error', 'Failed to save draft')
+                    }
+                  }}
+                  className="px-3 py-2 text-sm bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+                >
                   💾 Save Draft
                 </button>
               </div>
@@ -461,10 +488,55 @@ function StandardResults({
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
             
             <div className="space-y-3">
-              <button className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition">
+              <button 
+                onClick={async () => {
+                  try {
+                    const currentDraft = drafts.find(d => d.type === selectedDraft)
+                    const saved = await saveDraft({
+                      content_text: currentDraft?.content || '',
+                      content_type: contentType,
+                      tone_used: tone,
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Standard Mode - ${topic}`
+                    }, 'standard')
+                    
+                    if (saved) {
+                      showToast('success', 'Content saved successfully!')
+                      setSelectedContent(saved)
+                      setShowScheduleModal(true)
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save content')
+                  }
+                }}
+                className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
+              >
                 Schedule Post
               </button>
-              <button className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition">
+              <button 
+                onClick={async () => {
+                  try {
+                    const currentDraft = drafts.find(d => d.type === selectedDraft)
+                    const saved = await saveDraft({
+                      content_text: currentDraft?.content || '',
+                      content_type: contentType,
+                      tone_used: tone,
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Standard Mode - ${topic}`,
+                      status: 'draft'
+                    }, 'standard')
+                    
+                    if (saved) {
+                      showToast('success', 'Content saved as draft!')
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save draft')
+                  }
+                }}
+                className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
+              >
                 Save as Draft
               </button>
               <button 
