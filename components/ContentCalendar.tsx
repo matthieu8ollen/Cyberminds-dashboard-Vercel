@@ -1010,7 +1010,7 @@ return (
     )
   }
 
-  if (loadingContent) {
+ if (loadingContent && scheduledContent.length === 0) {
     return (
       <div className="flex h-screen">
         <div className="flex-1 flex items-center justify-center">
