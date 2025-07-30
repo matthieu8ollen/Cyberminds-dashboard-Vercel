@@ -118,7 +118,7 @@ export default function ContentCalendar() {
   )
 
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState<CalendarView>('month')
+  const [view, setView] = useState<CalendarView>('week')
   const [filter, setFilter] = useState<ContentFilter>('all')
   const [scheduledContent, setScheduledContent] = useState<ScheduledContent[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
@@ -585,6 +585,23 @@ export default function ContentCalendar() {
               </button>
             </div>
 
+            {/* View Controls - MOVED HERE */}
+   <div className="flex rounded-lg border border-gray-300 overflow-hidden mb-4">
+     {(['month', 'week', 'day'] as CalendarView[]).map(viewType => (
+       <button
+         key={viewType}
+         onClick={() => setView(viewType)}
+         className={`flex-1 px-3 py-2 text-xs font-medium capitalize ${
+           view === viewType
+             ? 'bg-slate-700 text-white'
+             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+         } transition-colors`}
+       >
+         {viewType}
+       </button>
+     ))}
+   </div>
+
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {DAYS_OF_WEEK.map(day => (
@@ -626,41 +643,25 @@ export default function ContentCalendar() {
             </div>
           </div>
 
-          {/* View Controls */}
-          <div className="space-y-3">
-            <button
-              onClick={() => setCurrentDate(new Date())}
-              className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Today
-            </button>
-            
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-              {(['month', 'week', 'day'] as CalendarView[]).map(viewType => (
-                <button
-                  key={viewType}
-                  onClick={() => setView(viewType)}
-                  className={`flex-1 px-3 py-2 text-xs font-medium capitalize ${
-                    view === viewType
-                      ? 'bg-slate-700 text-white'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                  } transition-colors`}
-                >
-                  {viewType}
-                </button>
-              ))}
-            </div>
+          {/* Bottom Controls */}
+<div className="space-y-3">
+  <button
+    onClick={() => setCurrentDate(new Date())}
+    className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+  >
+    Today
+  </button>
 
-            <button
-              onClick={() => {
-                setShowScheduleModalLocal(true)
-              }}
-              className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-sm">Schedule Content</span>
-            </button>
-          </div>
+  <button
+    onClick={() => {
+      setShowScheduleModalLocal(true)
+    }}
+    className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+  >
+    <Plus className="w-4 h-4" />
+    <span className="text-sm">Schedule Content</span>
+  </button>
+</div>
         </div>
       </div>
     )
