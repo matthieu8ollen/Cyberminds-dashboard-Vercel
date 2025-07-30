@@ -415,7 +415,7 @@ function StandardResults({
                       const currentDraft = drafts.find(d => d.type === selectedDraft)
                       const saved = await saveDraft({
                         content_text: currentDraft?.content || '',
-                        content_type: contentType,
+                        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
                         tone_used: tone,
                         prompt_input: topic,
                         is_saved: true,
@@ -494,7 +494,7 @@ function StandardResults({
                     const currentDraft = drafts.find(d => d.type === selectedDraft)
                     const saved = await saveDraft({
                       content_text: currentDraft?.content || '',
-                      content_type: contentType,
+                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
                       tone_used: tone,
                       prompt_input: topic,
                       is_saved: true,
@@ -520,7 +520,7 @@ function StandardResults({
                     const currentDraft = drafts.find(d => d.type === selectedDraft)
                     const saved = await saveDraft({
                       content_text: currentDraft?.content || '',
-                      content_type: contentType,
+                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
                       tone_used: tone,
                       prompt_input: topic,
                       is_saved: true,
