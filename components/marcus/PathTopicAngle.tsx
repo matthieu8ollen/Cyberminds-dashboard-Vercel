@@ -802,26 +802,51 @@ export default function PathTopicAngle({ onBack }: TopicAngleProps) {
         </button>
         <button
           onClick={async () => {
-  try {
-    const saved = await saveDraft({
-      content_text: finalContent,
-      content_type: selectedAngle?.type === 'personal' ? 'story' : 
-                   selectedAngle?.type === 'data' ? 'metrics' : 'trend',
-      tone_used: selectedAngle?.type || 'professional',
-      prompt_input: topic,
-      is_saved: true,
-      title: `${selectedAngle?.title} - ${topic}`
-    })
-    
-    if (saved) {
-      showToast('success', 'Content saved successfully!')
-      setSelectedContent(saved)
-      setShowScheduleModal(true)
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save content')
-  }
-}}
+            try {
+              const saved = await saveDraft({
+                content_text: finalContent,
+                content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                             selectedAngle?.type === 'data' ? 'metrics' : 'trend',
+                tone_used: selectedAngle?.type || 'professional',
+                prompt_input: topic,
+                is_saved: true,
+                title: `${selectedAngle?.title} - ${topic}`,
+                status: 'draft'
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Content saved as draft!')
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save draft')
+            }
+          }}
+          className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+        >
+          Save Draft
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              const saved = await saveDraft({
+                content_text: finalContent,
+                content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                             selectedAngle?.type === 'data' ? 'metrics' : 'trend',
+                tone_used: selectedAngle?.type || 'professional',
+                prompt_input: topic,
+                is_saved: true,
+                title: `${selectedAngle?.title} - ${topic}`
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Content saved successfully!')
+                setSelectedContent(saved)
+                setShowScheduleModal(true)
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save content')
+            }
+          }}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <MessageCircle className="w-4 h-4" />
