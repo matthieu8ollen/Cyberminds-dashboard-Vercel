@@ -46,7 +46,7 @@ import {
   ExternalLink,
   X,
   ChevronDown,
-  List,
+  List
 } from 'lucide-react'
 
 interface ScheduledContent {
