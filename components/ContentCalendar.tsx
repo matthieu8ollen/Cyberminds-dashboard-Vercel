@@ -536,103 +536,84 @@ export default function ContentCalendar() {
     )
   }
 
-  // Left Panel - Compact Calendar
-  function LeftPanel() {
-    return (
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Content Calendar</h1>
-          <p className="text-sm text-gray-600">Schedule and manage your content</p>
-        </div>
+// Left Panel - Compact Calendar
+function LeftPanel() {
+  return (
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Content Calendar</h1>
+        <p className="text-sm text-gray-600">Schedule and manage your content</p>
+      </div>
 
-        {/* Stats */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {scheduledContent.filter(c => c.status === 'scheduled').length}
-              </div>
-              <div className="text-xs text-gray-600">Scheduled</div>
+      {/* Stats */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {scheduledContent.filter(c => c.status === 'scheduled').length}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {scheduledContent.filter(c => c.status === 'published').length}
-              </div>
-              <div className="text-xs text-gray-600">Published</div>
+            <div className="text-xs text-gray-600">Scheduled</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {scheduledContent.filter(c => c.status === 'published').length}
             </div>
+            <div className="text-xs text-gray-600">Published</div>
           </div>
         </div>
+      </div>
 
-        {/* Mini Calendar */}
-        <div className="flex-1 p-6 flex flex-col">
-          <div className="flex-1 mb-4 flex flex-col">
+      {/* Mini Calendar */}
+      <div className="flex-1 p-6 flex flex-col">
+        <div className="flex-1 mb-4 flex flex-col">
+          {/* View Controls */}
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
+            {(['week', 'day'] as CalendarView[]).map(viewType => (
+              <button
+                key={viewType}
+                onClick={() => setView(viewType)}
+                className={`px-6 py-2 text-sm font-medium capitalize text-center ${
+                  view === viewType
+                    ? 'bg-slate-700 text-white'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                } transition-colors`}
+              >
+                {viewType}
+              </button>
+            ))}
+          </div>
 
-{/* View Controls - MOVE HERE */}
-            <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
-              {(['week', 'day'] as CalendarView[]).map(viewType => (
-                <button
-                  key={viewType}
-                  onClick={() => setView(viewType)}
-                  className={`px-6 py-2 text-sm font-medium capitalize text-center ${
-                    view === viewType
-                      ? 'bg-slate-700 text-white'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                  } transition-colors`}
-                >
-                  {viewType}
-                </button>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigateMonth('prev')}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h3>
+            <button
+              onClick={() => navigateMonth('next')}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex-shrink-0 max-h-80 overflow-visible">
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {DAYS_OF_WEEK.map(day => (
+                <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+                  {day}
+                </div>
               ))}
             </div>
-
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => navigateMonth('prev')}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h3>
-              <button
-                onClick={() => navigateMonth('next')}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
             
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => navigateMonth('prev')}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h3>
-              <button
-                onClick={() => navigateMonth('next')}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-shrink-0 max-h-80 overflow-visible">
-  {/* Calendar Grid */}
-  <div className="grid grid-cols-7 gap-1 mb-2">
-    {DAYS_OF_WEEK.map(day => (
-      <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-        {day}
-      </div>
-    ))}
-  </div>
-  
-  <div className="grid grid-cols-7 gap-1">
-    {getDaysInMonth(currentDate).map((date, index) => {
+            <div className="grid grid-cols-7 gap-1">
+              {getDaysInMonth(currentDate).map((date, index) => {
                 const isCurrentMonth = date.getMonth() === currentDate.getMonth()
                 const isToday = date.toDateString() === new Date().toDateString()
                 const isSelected = date.toDateString() === selectedDate.toDateString()
@@ -662,30 +643,31 @@ export default function ContentCalendar() {
               })}
             </div>
           </div>
+        </div>
 
-          {/* Bottom Controls */}
-<div className="space-y-3">
-  <button
-    onClick={() => setCurrentDate(new Date())}
-    className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-  >
-    Today
-  </button>
+        {/* Bottom Controls */}
+        <div className="space-y-3">
+          <button
+            onClick={() => setCurrentDate(new Date())}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Today
+          </button>
 
-  <button
-    onClick={() => {
-      setShowScheduleModalLocal(true)
-    }}
-    className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-  >
-    <Plus className="w-4 h-4" />
-    <span className="text-sm">Schedule Content</span>
-  </button>
-</div>
+          <button
+            onClick={() => {
+              setShowScheduleModalLocal(true)
+            }}
+            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-sm">Schedule Content</span>
+          </button>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   // Right Panel - Content Details
   function RightPanel() {
