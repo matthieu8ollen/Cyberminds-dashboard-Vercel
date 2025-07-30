@@ -602,7 +602,7 @@ function LeftPanel() {
             </button>
           </div>
 
-          <div className="flex-shrink-0 max-h-80 overflow-visible">
+<div className="flex-shrink-0 max-h-64 overflow-visible">
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {DAYS_OF_WEEK.map(day => (
