@@ -130,16 +130,6 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
     setCurrentStep(4)
   }
 
-  // Emergency exit handler
-  const handleExit = () => {
-    if (onExit) {
-      onExit()
-    } else {
-      // Default behavior - could navigate back to regular generator
-      console.log('Exiting Writer Suite...')
-    }
-  }
-
   // Render the appropriate step
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -243,14 +233,6 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
                 <p className="text-sm text-gray-600">Step-by-step Content Creation</p>
               </div>
             </div>
-            
-            {/* Exit Button */}
-            <button
-              onClick={handleExit}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              Exit Suite
-            </button>
           </div>
         </div>
       </div>
