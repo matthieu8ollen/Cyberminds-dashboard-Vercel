@@ -254,6 +254,9 @@ export default function ContentCalendar() {
     const { active, over } = event
     setActiveId(null)
     
+    // Prevent default browser behavior
+    event.preventDefault?.()
+    
     if (!over) return
     
     const activeContent = scheduledContent.find(c => c.id === active.id)
@@ -270,21 +273,20 @@ export default function ContentCalendar() {
           : content
       ))
       
-      // Update in ContentContext/database
+      // Show immediate feedback
+      showToast('success', `Content moved to ${new Date(newDate).toLocaleDateString()}`)
+      
+      // Update in database (simplified for now)
       updateContent(activeContent.id, { scheduled_date: newDate })
-        .then(success => {
-          if (success) {
-            showToast('success', `Content moved to ${newDate}`)
-            refreshContent()
-          } else {
-            showToast('error', 'Failed to move content')
-            // Revert local state
-            setScheduledContent(prev => prev.map(content =>
-              content.id === activeContent.id
-                ? { ...content, scheduled_date: activeContent.scheduled_date }
-                : content
-            ))
-          }
+        .catch(error => {
+          console.error('Failed to update content:', error)
+          // Revert local state on error
+          setScheduledContent(prev => prev.map(content =>
+            content.id === activeContent.id
+              ? { ...content, scheduled_date: activeContent.scheduled_date }
+              : content
+          ))
+          showToast('error', 'Failed to save changes')
         })
     }
   }
@@ -382,9 +384,10 @@ export default function ContentCalendar() {
         {...attributes}
         {...listeners}
         onClick={(e) => {
-          e.stopPropagation()
-          handleContentClick(content)
-        }}
+  e.stopPropagation()
+  e.preventDefault()
+  handleContentClick(content)
+}}
         className={`
           bg-white border rounded-lg p-2 cursor-grab hover:shadow-md transition-all duration-200
           ${getStatusColor(content.status)} border
