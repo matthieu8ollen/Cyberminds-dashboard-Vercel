@@ -20,7 +20,7 @@ interface ContentContextType {
   loadingContent: boolean
   
   // Actions
-  saveDraft: (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>) => Promise<GeneratedContent | null>
+  saveDraft: (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>, mode?: 'marcus' | 'classic') => Promise<GeneratedContent | null>
   updateContent: (id: string, updates: Partial<GeneratedContent>) => Promise<boolean>
   scheduleContentItem: (contentId: string, date: string, time: string) => Promise<boolean>
   publishContent: (contentId: string) => Promise<boolean>
@@ -81,7 +81,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user])
 
-  const saveDraft = async (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>) => {
+  const saveDraft = async (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>, mode?: 'marcus' | 'classic') => {
     if (!user) return null
     
     try {
@@ -89,7 +89,12 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         ...content,
         user_id: user.id,
         status: 'draft' as const,
-        is_saved: true
+        is_saved: true,
+        variations_data: {
+          ...content.variations_data,
+          creation_mode: mode || 'unknown',
+          created_at: new Date().toISOString()
+        }
       }
       
       const { data, error } = await saveGeneratedContent(contentWithStatus)
