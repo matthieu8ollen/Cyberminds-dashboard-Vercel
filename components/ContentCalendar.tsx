@@ -570,11 +570,11 @@ export default function ContentCalendar() {
        <button
          key={viewType}
          onClick={() => setView(viewType)}
-         className={`flex-1 px-3 py-2 text-xs font-medium capitalize ${
-           view === viewType
-             ? 'bg-slate-700 text-white'
-             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-         } transition-colors`}
+        className={`flex-1 px-4 py-2 text-sm font-medium capitalize ${
+  view === viewType
+    ? 'bg-slate-700 text-white'
+    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+} transition-colors`}
        >
          {viewType}
        </button>
