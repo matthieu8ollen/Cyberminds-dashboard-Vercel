@@ -47,7 +47,6 @@ import {
   X,
   ChevronDown,
   List,
-  Grid3x3
 } from 'lucide-react'
 
 interface ScheduledContent {
