@@ -565,7 +565,7 @@ function LeftPanel() {
       </div>
 
       {/* Mini Calendar */}
-      <div className="flex-1 p-6 flex flex-col">
+      <div className="flex-1 p-6 pb-4 flex flex-col">
         <div className="flex-1 mb-4 flex flex-col">
           {/* View Controls */}
           <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
@@ -645,8 +645,8 @@ function LeftPanel() {
           </div>
         </div>
 
-    {/* Bottom Controls */}
-        <div>
+   {/* Bottom Controls */}
+        <div className="mb-4">
           <button
             onClick={() => {
               setShowScheduleModalLocal(true)
