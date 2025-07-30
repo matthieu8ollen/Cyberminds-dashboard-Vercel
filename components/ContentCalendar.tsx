@@ -645,15 +645,8 @@ function LeftPanel() {
           </div>
         </div>
 
-        {/* Bottom Controls */}
-        <div className="space-y-3">
-          <button
-            onClick={() => setCurrentDate(new Date())}
-            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Today
-          </button>
-
+    {/* Bottom Controls */}
+        <div>
           <button
             onClick={() => {
               setShowScheduleModalLocal(true)
