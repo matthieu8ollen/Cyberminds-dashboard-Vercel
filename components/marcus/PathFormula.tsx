@@ -315,42 +315,50 @@ const renderFinalPreview = () => (
       </div>
     </div>
 
-    <div className="flex justify-center space-x-4">
-      <button
-        onClick={handleBackToWriting}
-        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-      >
-        Edit Content
-      </button>
-      <button
-        onClick={async () => {
-  try {
-    const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
-      user_id: '', // This will be set by saveDraft
-      content_text: generatedContent,
-      content_type: 'framework',
-      tone_used: 'professional',
-      prompt_input: selectedFormula?.name || 'Content Formula',
-      is_saved: true,
-      title: selectedFormula?.name
-    }
-    
-    const saved = await saveDraft(contentData)
-    
-    if (saved) {
-      showToast('success', 'Content saved as draft!')
-      setSelectedContent(saved)
-      setShowScheduleModal(true)
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save content')
-  }
-}}
-        className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
-      >
-        Save & Publish
-      </button>
-    </div>
+<div className="flex justify-center space-x-4">
+        <button
+          onClick={handleBackToWriting}
+          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+        >
+          Edit Content
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+                user_id: '', // This will be set by saveDraft
+                content_text: generatedContent,
+                content_type: 'framework',
+                tone_used: 'professional',
+                prompt_input: selectedFormula?.name || 'Content Formula',
+                is_saved: true,
+                title: selectedFormula?.name,
+                status: 'draft'
+              }
+              
+              const saved = await saveDraft(contentData, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Content saved as draft!')
+                // Navigate back to Production Pipeline or stay on page
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save draft')
+            }
+          }}
+          className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+        >
+          Save Draft
+        </button>
+        <button
+          onClick={async () => {
+            // ... existing Save & Publish code stays the same
+          }}
+          className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+        >
+          Save & Publish
+        </button>
+      </div>
   </div>
 )
 
