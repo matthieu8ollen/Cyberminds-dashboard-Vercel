@@ -6,6 +6,8 @@ import WriterSuiteStep2 from './WriterSuiteStep2'
 import WriterSuiteStep3 from './WriterSuiteStep3'
 import WriterSuiteStep4 from './WriterSuiteStep4'
 import WriterSuiteStep5 from './WriterSuiteStep5'
+import WriterSuiteChoice from './WriterSuiteChoice'
+import MarcusCopilot from './MarcusCopilot'
 
 type WriterSuiteStep = 1 | 2 | 3 | 4 | 5
 
@@ -48,6 +50,8 @@ interface WriterSuiteProps {
 }
 
 export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
+  const [showChoice, setShowChoice] = useState(true)
+  const [selectedMode, setSelectedMode] = useState<'marcus' | 'classic' | null>(null)
   const [currentStep, setCurrentStep] = useState<WriterSuiteStep>(1)
   const [suiteData, setSuiteData] = useState<WriterSuiteData>({
     topic: '',
@@ -193,19 +197,50 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
     }
   }
 
+  // If showing choice screen, render that
+  if (showChoice) {
+    return (
+      <WriterSuiteChoice 
+        onModeSelect={(mode) => {
+          setSelectedMode(mode)
+          setShowChoice(false)
+          if (mode === 'marcus') {
+            // Marcus mode doesn't need the step system
+            // It will handle its own flow
+          } else {
+            // Classic mode starts with step 1
+            setCurrentStep(1)
+          }
+        }}
+      />
+    )
+  }
+
+  // If Marcus mode is selected, show Marcus
+  if (selectedMode === 'marcus') {
+    return <MarcusCopilot />
+  }
+
+  // Otherwise, show the classic 5-step process
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with Exit Option */}
+      {/* Header with Back to Choice Option */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowChoice(true)}
+                className="text-gray-600 hover:text-gray-800 transition"
+              >
+                ← Back to Mode Selection
+              </button>
               <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">WS</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Writer Suite</h1>
-                <p className="text-sm text-gray-600">Professional Content Creation</p>
+                <h1 className="text-xl font-bold text-gray-900">Writer Suite Classic</h1>
+                <p className="text-sm text-gray-600">Step-by-step Content Creation</p>
               </div>
             </div>
             
@@ -229,6 +264,7 @@ export default function WriterSuite({ onComplete, onExit }: WriterSuiteProps) {
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-lg text-xs max-w-sm">
           <div className="font-bold mb-2">Debug Info:</div>
+          <div>Mode: {selectedMode}</div>
           <div>Current Step: {currentStep}</div>
           <div>Topic: {suiteData.topic || 'Not set'}</div>
           <div>Angle: {suiteData.selectedAngle?.type || 'Not selected'}</div>
