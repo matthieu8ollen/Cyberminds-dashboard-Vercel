@@ -520,25 +520,49 @@ What's your take? Is speed overrated in business?
         </button>
         <button
           onClick={async () => {
-  try {
-    const saved = await saveDraft({
-      content_text: adaptedContent,
-      content_type: 'framework',
-      tone_used: selectedAngle?.id || 'professional',
-      prompt_input: contentInput || contentUrl,
-      is_saved: true,
-      title: `Repurposed: ${selectedAngle?.title}`
-    })
-    
-    if (saved) {
-      showToast('success', 'Repurposed content saved!')
-      setSelectedContent(saved)
-      setShowScheduleModal(true)
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save content')
-  }
-}}
+            try {
+              const saved = await saveDraft({
+                content_text: adaptedContent,
+                content_type: 'framework',
+                tone_used: selectedAngle?.id || 'professional',
+                prompt_input: contentInput || contentUrl,
+                is_saved: true,
+                title: `Repurposed: ${selectedAngle?.title}`,
+                status: 'draft'
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Repurposed content saved as draft!')
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save draft')
+            }
+          }}
+          className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+        >
+          Save Draft
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              const saved = await saveDraft({
+                content_text: adaptedContent,
+                content_type: 'framework',
+                tone_used: selectedAngle?.id || 'professional',
+                prompt_input: contentInput || contentUrl,
+                is_saved: true,
+                title: `Repurposed: ${selectedAngle?.title}`
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Repurposed content saved!')
+                setSelectedContent(saved)
+                setShowScheduleModal(true)
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save content')
+            }
+          }}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <CheckCircle className="w-4 h-4" />
