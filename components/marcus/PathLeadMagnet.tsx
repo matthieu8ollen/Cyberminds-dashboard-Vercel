@@ -527,7 +527,7 @@ Comment "READY" and I'll send you the complete checklist.
         </div>
       </div>
 
-      <div className="flex justify-center space-x-4">
+<div className="flex justify-center space-x-4">
         <button
           onClick={() => setCurrentStep('strategy')}
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
@@ -536,25 +536,49 @@ Comment "READY" and I'll send you the complete checklist.
         </button>
         <button
           onClick={async () => {
-  try {
-    const saved = await saveDraft({
-      content_text: generatedContent,
-      content_type: 'framework',
-      tone_used: selectedStrategy?.id || 'professional',
-      prompt_input: `Lead Magnet: ${selectedMagnet?.name}`,
-      is_saved: true,
-      title: `${selectedMagnet?.name} - ${selectedStrategy?.title}`
-    })
-    
-    if (saved) {
-      showToast('success', 'Lead magnet content saved!')
-      setSelectedContent(saved)
-      setShowScheduleModal(true)
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save content')
-  }
-}}
+            try {
+              const saved = await saveDraft({
+                content_text: generatedContent,
+                content_type: 'framework',
+                tone_used: selectedStrategy?.id || 'professional',
+                prompt_input: `Lead Magnet: ${selectedMagnet?.name}`,
+                is_saved: true,
+                title: `${selectedMagnet?.name} - ${selectedStrategy?.title}`,
+                status: 'draft'
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Lead magnet draft saved!')
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save draft')
+            }
+          }}
+          className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+        >
+          Save Draft
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              const saved = await saveDraft({
+                content_text: generatedContent,
+                content_type: 'framework',
+                tone_used: selectedStrategy?.id || 'professional',
+                prompt_input: `Lead Magnet: ${selectedMagnet?.name}`,
+                is_saved: true,
+                title: `${selectedMagnet?.name} - ${selectedStrategy?.title}`
+              }, 'marcus')
+              
+              if (saved) {
+                showToast('success', 'Lead magnet content saved!')
+                setSelectedContent(saved)
+                setShowScheduleModal(true)
+              }
+            } catch (error) {
+              showToast('error', 'Failed to save content')
+            }
+          }}
           className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
         >
           <Magnet className="w-4 h-4" />
