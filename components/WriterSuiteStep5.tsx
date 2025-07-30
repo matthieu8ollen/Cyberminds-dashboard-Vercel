@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { Sparkles, Smartphone, MessageSquare, BarChart3, Download, Save, CheckCircle } from 'lucide-react'
+import { useContent } from '../contexts/ContentContext'
+import { useToast } from './ToastNotifications'
+import { GeneratedContent } from '../lib/supabase'
 
 interface Enhancement {
   id: string
@@ -31,6 +34,8 @@ export default function WriterSuiteStep5({
   onFinish, 
   onBack 
 }: WriterSuiteStep5Props) {
+  const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
+  const { showToast } = useToast()
   const [enhancements, setEnhancements] = useState<Enhancement[]>([
     {
       id: 'engagement-1',
@@ -284,14 +289,58 @@ export default function WriterSuiteStep5({
               </button>
               
               <button
-                onClick={handleExportFinal}
+                onClick={async () => {
+                  try {
+                    const finalContent = Object.values(sections).join('\n\n')
+                    const saved = await saveDraft({
+                      content_text: finalContent,
+                      content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                                   selectedAngle?.type === 'data' ? 'metrics' : 'framework',
+                      tone_used: selectedAngle?.type || 'professional',
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Writer Suite Classic - ${topic}`
+                    }, 'classic')
+                    
+                    if (saved) {
+                      showToast('success', 'Content saved successfully!')
+                      setSelectedContent(saved)
+                      setShowScheduleModal(true)
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save content')
+                  }
+                }}
                 className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition flex items-center justify-center space-x-2"
               >
                 <Download className="w-4 h-4" />
-                <span>Export Final</span>
+                <span>Save & Publish</span>
               </button>
               
-              <button className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition flex items-center justify-center space-x-2">
+             <button 
+                onClick={async () => {
+                  try {
+                    const finalContent = Object.values(sections).join('\n\n')
+                    const saved = await saveDraft({
+                      content_text: finalContent,
+                      content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                                   selectedAngle?.type === 'data' ? 'metrics' : 'framework',
+                      tone_used: selectedAngle?.type || 'professional',
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Writer Suite Classic - ${topic}`,
+                      status: 'draft'
+                    }, 'classic')
+                    
+                    if (saved) {
+                      showToast('success', 'Content saved as draft!')
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save draft')
+                  }
+                }}
+                className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition flex items-center justify-center space-x-2"
+              >
                 <Save className="w-4 h-4" />
                 <span>Save Draft</span>
               </button>
@@ -332,19 +381,60 @@ export default function WriterSuiteStep5({
         </button>
 
         <div className="flex space-x-4">
-          <button
-            onClick={() => console.log('Save draft')}
+<button
+            onClick={async () => {
+              try {
+                const finalContent = Object.values(sections).join('\n\n')
+                const saved = await saveDraft({
+                  content_text: finalContent,
+                  content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                               selectedAngle?.type === 'data' ? 'metrics' : 'framework',
+                  tone_used: selectedAngle?.type || 'professional',
+                  prompt_input: topic,
+                  is_saved: true,
+                  title: `Writer Suite Classic - ${topic}`,
+                  status: 'draft'
+                }, 'classic')
+                
+                if (saved) {
+                  showToast('success', 'Content saved as draft!')
+                }
+              } catch (error) {
+                showToast('error', 'Failed to save draft')
+              }
+            }}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition"
           >
             Save Draft
           </button>
           
           <button
-            onClick={handleExportFinal}
+            onClick={async () => {
+              try {
+                const finalContent = Object.values(sections).join('\n\n')
+                const saved = await saveDraft({
+                  content_text: finalContent,
+                  content_type: selectedAngle?.type === 'personal' ? 'story' : 
+                               selectedAngle?.type === 'data' ? 'metrics' : 'framework',
+                  tone_used: selectedAngle?.type || 'professional',
+                  prompt_input: topic,
+                  is_saved: true,
+                  title: `Writer Suite Classic - ${topic}`
+                }, 'classic')
+                
+                if (saved) {
+                  showToast('success', 'Content saved successfully!')
+                  setSelectedContent(saved)
+                  setShowScheduleModal(true)
+                }
+              } catch (error) {
+                showToast('error', 'Failed to save content')
+              }
+            }}
             className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition flex items-center space-x-2"
           >
             <Download className="w-4 h-4" />
-            <span>Export Final Content</span>
+            <span>Save & Publish</span>
           </button>
         </div>
       </div>
