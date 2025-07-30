@@ -565,12 +565,12 @@ export default function ContentCalendar() {
         </div>
 
             {/* View Controls - MOVED HERE */}
-   <div className="flex rounded-lg border border-gray-300 overflow-hidden mb-4">
+   <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
      {(['week', 'day'] as CalendarView[]).map(viewType => (
        <button
          key={viewType}
          onClick={() => setView(viewType)}
-        className={`flex-1 px-4 py-2 text-sm font-medium capitalize ${
+        className={`px-6 py-2 text-sm font-medium capitalize text-center ${
   view === viewType
     ? 'bg-slate-700 text-white'
     : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
@@ -582,8 +582,8 @@ export default function ContentCalendar() {
    </div>
 
         {/* Mini Calendar */}
-        <div className="flex-1 p-6">
-          <div className="mb-4">
+        <div className="flex-1 p-6 flex flex-col">
+          <div className="flex-1 mb-4 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => navigateMonth('prev')}
@@ -602,17 +602,18 @@ export default function ContentCalendar() {
               </button>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {DAYS_OF_WEEK.map(day => (
-                <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-                  {day}
-                </div>
-              ))}
-            </div>
-            
-            <div className="grid grid-cols-7 gap-1">
-              {getDaysInMonth(currentDate).map((date, index) => {
+            <div className="flex-shrink-0 max-h-80 overflow-visible">
+  {/* Calendar Grid */}
+  <div className="grid grid-cols-7 gap-1 mb-2">
+    {DAYS_OF_WEEK.map(day => (
+      <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+        {day}
+      </div>
+    ))}
+  </div>
+  
+  <div className="grid grid-cols-7 gap-1">
+    {getDaysInMonth(currentDate).map((date, index) => {
                 const isCurrentMonth = date.getMonth() === currentDate.getMonth()
                 const isToday = date.toDateString() === new Date().toDateString()
                 const isSelected = date.toDateString() === selectedDate.toDateString()
