@@ -564,6 +564,23 @@ export default function ContentCalendar() {
           </div>
         </div>
 
+            {/* View Controls - MOVED HERE */}
+   <div className="flex rounded-lg border border-gray-300 overflow-hidden mb-4">
+     {(['week', 'day'] as CalendarView[]).map(viewType => (
+       <button
+         key={viewType}
+         onClick={() => setView(viewType)}
+         className={`flex-1 px-3 py-2 text-xs font-medium capitalize ${
+           view === viewType
+             ? 'bg-slate-700 text-white'
+             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+         } transition-colors`}
+       >
+         {viewType}
+       </button>
+     ))}
+   </div>
+
         {/* Mini Calendar */}
         <div className="flex-1 p-6">
           <div className="mb-4">
@@ -584,23 +601,6 @@ export default function ContentCalendar() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-
-            {/* View Controls - MOVED HERE */}
-   <div className="flex rounded-lg border border-gray-300 overflow-hidden mb-4">
-     {(['month', 'week', 'day'] as CalendarView[]).map(viewType => (
-       <button
-         key={viewType}
-         onClick={() => setView(viewType)}
-         className={`flex-1 px-3 py-2 text-xs font-medium capitalize ${
-           view === viewType
-             ? 'bg-slate-700 text-white'
-             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-         } transition-colors`}
-       >
-         {viewType}
-       </button>
-     ))}
-   </div>
 
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1 mb-2">
