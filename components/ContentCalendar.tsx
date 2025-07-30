@@ -564,26 +564,45 @@ export default function ContentCalendar() {
           </div>
         </div>
 
-            {/* View Controls - MOVED HERE */}
-   <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
-     {(['week', 'day'] as CalendarView[]).map(viewType => (
-       <button
-         key={viewType}
-         onClick={() => setView(viewType)}
-        className={`px-6 py-2 text-sm font-medium capitalize text-center ${
-  view === viewType
-    ? 'bg-slate-700 text-white'
-    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-} transition-colors`}
-       >
-         {viewType}
-       </button>
-     ))}
-   </div>
-
         {/* Mini Calendar */}
         <div className="flex-1 p-6 flex flex-col">
           <div className="flex-1 mb-4 flex flex-col">
+
+{/* View Controls - MOVE HERE */}
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
+              {(['week', 'day'] as CalendarView[]).map(viewType => (
+                <button
+                  key={viewType}
+                  onClick={() => setView(viewType)}
+                  className={`px-6 py-2 text-sm font-medium capitalize text-center ${
+                    view === viewType
+                      ? 'bg-slate-700 text-white'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  } transition-colors`}
+                >
+                  {viewType}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigateMonth('prev')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h3>
+              <button
+                onClick={() => navigateMonth('next')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => navigateMonth('prev')}
