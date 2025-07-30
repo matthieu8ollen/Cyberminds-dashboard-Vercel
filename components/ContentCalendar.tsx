@@ -668,8 +668,8 @@ export default function ContentCalendar() {
 
   // Right Panel - Content Details
   function RightPanel() {
-    const renderContent = () => {
-      if (view === 'day') {
+    const renderContent = (): JSX.Element => {
+  if (view === 'day') {
         const dayContent = getContentForDate(selectedDate)
         return (
           <div className="space-y-4">
@@ -752,8 +752,44 @@ export default function ContentCalendar() {
         )
       }
 
-      // Month view - show selected date content
-      return renderContent()
+      // Month view - show selected date content (same as day view)
+const dayContent = getContentForDate(selectedDate)
+return (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold text-gray-900">
+        {selectedDate.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'long', 
+          day: 'numeric' 
+        })}
+      </h2>
+      <span className="text-sm text-gray-600">
+        {dayContent.length} {dayContent.length === 1 ? 'item' : 'items'}
+      </span>
+    </div>
+    
+    {dayContent.length > 0 ? (
+      <div className="space-y-3">
+        {dayContent.map(content => (
+          <DraggableContentCard key={content.id} content={content} isTimeline />
+        ))}
+      </div>
+    ) : (
+      <div className="text-center py-12">
+        <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No content scheduled</h3>
+        <p className="text-gray-600 mb-4">This date doesn't have any content scheduled yet.</p>
+        <button 
+          onClick={() => setShowScheduleModalLocal(true)}
+          className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
+        >
+          Schedule Content
+        </button>
+      </div>
+    )}
+  </div>
+)
     }
 
     return (
