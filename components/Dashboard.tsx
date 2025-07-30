@@ -18,7 +18,6 @@ import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
-import FloatingNewPostButton from './FloatingNewPostButton'
 import ModeSelection from './ModeSelection'
 import ExpressGenerator from './ExpressGenerator'
 import StandardGenerator from './StandardGenerator'
@@ -731,9 +730,6 @@ export default function Dashboard() {
         <main>
           {renderPageContent()}
         </main>
-        
-        {/* Floating New Post Button */}
-        <FloatingNewPostButton />
       </div>
 
       {/* Keyboard Shortcuts Help Modal */}
