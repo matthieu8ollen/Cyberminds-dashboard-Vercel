@@ -5,25 +5,128 @@ import { useAuth } from '../contexts/AuthContext'
 import { useContent } from '../contexts/ContentContext'
 import { useToast } from './ToastNotifications'
 import { 
-  RefreshCw,
-  Archive,
-  Edit3,
-  Clock,
-  CheckCircle,
-  AlertCircle,
+  Filter, 
+  MoreVertical, 
+  Calendar, 
+  Eye, 
+  Edit3, 
+  Trash2, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle, 
   Send,
-  Calendar,
-  Eye,
-  Trash2,
+  BarChart3,
+  Target,
+  Sparkles,
+  TrendingUp,
+  Archive,
+  RefreshCw,
   ExternalLink,
   User,
-  Sparkles,
   Zap,
-  Settings,
-  MoreHorizontal
+  FileText
 } from 'lucide-react'
 
-type ContentFilterType = 'all' | 'ready' | 'progress' | 'scheduled' | 'published'
+type ContentFilterType = 'all' | 'draft' | 'scheduled' | 'published' | 'failed'
+
+interface UniversalEditorProps {
+  content: any
+  onSave: (updatedContent: string) => void
+  onClose: () => void
+}
+
+// Universal Editor Component for Express/Standard content
+function UniversalEditor({ content, onSave, onClose }: UniversalEditorProps) {
+  const [editedContent, setEditedContent] = useState(content.content_text)
+
+  const handleSave = () => {
+    onSave(editedContent)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Edit Content</h3>
+              <p className="text-sm text-gray-600">
+                {content.content_type} • Created in {getCreationModeDisplay(content)}
+              </p>
+            </div>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          <textarea
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none"
+            placeholder="Edit your content..."
+          />
+        </div>
+        
+        <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Helper function to get creation mode display text
+function getCreationModeDisplay(content: any): string {
+  const variationsData = content.variations_data
+  if (!variationsData || !variationsData.creation_mode) {
+    return 'Unknown Mode'
+  }
+
+  const mode = variationsData.creation_mode
+  switch (mode) {
+    case 'marcus': return 'Marcus Mode'
+    case 'classic': return 'Writer Suite Classic'
+    case 'express': return 'Express Mode'
+    case 'standard': return 'Standard Mode'
+    default: return 'Unknown Mode'
+  }
+}
+
+// Helper function to get creation mode icon
+function getCreationModeIcon(content: any) {
+  const variationsData = content.variations_data
+  if (!variationsData || !variationsData.creation_mode) {
+    return <FileText className="w-4 h-4" />
+  }
+
+  const mode = variationsData.creation_mode
+  switch (mode) {
+    case 'marcus': return <User className="w-4 h-4" />
+    case 'classic': return <Sparkles className="w-4 h-4" />
+    case 'express': return <Zap className="w-4 h-4" />
+    case 'standard': return <Clock className="w-4 h-4" />
+    default: return <FileText className="w-4 h-4" />
+  }
+}
 
 export default function ProductionPipeline() {
   const { user } = useAuth()
@@ -33,6 +136,7 @@ export default function ProductionPipeline() {
     publishedContent, 
     loadingContent,
     refreshContent,
+    updateContent,
     publishContent,
     deleteContent,
     setSelectedContent,
@@ -43,88 +147,25 @@ export default function ProductionPipeline() {
   const [filter, setFilter] = useState<ContentFilterType>('all')
   const [selectedContentItem, setSelectedContentItem] = useState<any>(null)
   const [showPreview, setShowPreview] = useState(false)
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const [showUniversalEditor, setShowUniversalEditor] = useState(false)
+  const [editingContent, setEditingContent] = useState<any>(null)
 
-  // Combine all content
+  // Combine all content based on filter
   const allContent = [
     ...draftContent.map(c => ({ ...c, status: c.status || 'draft' as const })),
     ...scheduledContent.map(c => ({ ...c, status: c.status || 'scheduled' as const })),
     ...publishedContent.map(c => ({ ...c, status: c.status || 'published' as const }))
   ]
 
-  // Smart content grouping
-  const readyToSchedule = allContent.filter(c => 
-    c.status === 'draft' && c.content_text.length > 200 // Content with substance
-  )
-  
-  const inProgress = allContent.filter(c => 
-    c.status === 'draft' && c.content_text.length <= 200 // Shorter content still being worked on
-  )
-  
-  const scheduled = allContent.filter(c => c.status === 'scheduled')
-  const published = allContent.filter(c => c.status === 'published').slice(0, 6) // Last 6
+  const filteredContent = filter === 'all' 
+    ? allContent 
+    : allContent.filter(item => item.status === filter)
 
   useEffect(() => {
     if (user) {
       refreshContent()
     }
   }, [user, refreshContent])
-
-  const getCreationModeInfo = (content: any) => {
-    const modeData = content.variations_data?.creation_mode
-    
-    switch (modeData) {
-      case 'marcus':
-        return { 
-          icon: <User className="w-3 h-3" />, 
-          label: 'Marcus', 
-          color: 'text-teal-600 bg-teal-50 border-teal-200',
-          route: '/marcus' // We'll implement routing later
-        }
-      case 'classic':
-        return { 
-          icon: <Sparkles className="w-3 h-3" />, 
-          label: 'Writer Suite', 
-          color: 'text-purple-600 bg-purple-50 border-purple-200',
-          route: '/writer-suite'
-        }
-      case 'express':
-        return { 
-          icon: <Zap className="w-3 h-3" />, 
-          label: 'Express', 
-          color: 'text-blue-600 bg-blue-50 border-blue-200',
-          route: '/create/express'
-        }
-      case 'standard':
-        return { 
-          icon: <Settings className="w-3 h-3" />, 
-          label: 'Standard', 
-          color: 'text-gray-600 bg-gray-50 border-gray-200',
-          route: '/create/standard'
-        }
-      default:
-        return { 
-          icon: <Edit3 className="w-3 h-3" />, 
-          label: 'Draft', 
-          color: 'text-gray-600 bg-gray-50 border-gray-200',
-          route: '/create'
-        }
-    }
-  }
-
-const getContentHook = (content: any) => {
-    const lines = content.content_text.split('\n').filter((line: string) => line.trim())
-    const firstLine = lines[0] || ''
-    
-    // Return first meaningful line, truncated if too long
-    return firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine
-  }
-
-  const handleContinueEditing = (content: any) => {
-    const modeInfo = getCreationModeInfo(content)
-    showToast('info', `Opening content in ${modeInfo.label} for editing...`)
-    // TODO: Implement actual routing to original creation mode with content loaded
-  }
 
   const handleScheduleContent = (content: any) => {
     setSelectedContent(content)
@@ -161,114 +202,100 @@ const getContentHook = (content: any) => {
     }
   }
 
-  const ContentCard = ({ content, size = 'normal', showActions = true }: { 
-    content: any, 
-    size?: 'normal' | 'large' | 'compact',
-    showActions?: boolean 
-  }) => {
-    const modeInfo = getCreationModeInfo(content)
-    const hook = getContentHook(content)
-    const isHovered = hoveredCard === content.id
+  const handleContinueEditing = (content: any) => {
+    const variationsData = content.variations_data
+    const creationMode = variationsData?.creation_mode
 
-    const cardClasses = `
-      bg-white rounded-lg border border-gray-200 transition-all duration-200 cursor-pointer relative
-      ${size === 'large' ? 'p-6' : size === 'compact' ? 'p-4' : 'p-5'}
-      ${isHovered ? 'shadow-md border-gray-300 transform -translate-y-0.5' : 'shadow-sm hover:shadow-md'}
-    `
+    switch (creationMode) {
+      case 'marcus':
+        // Navigate to Marcus with content loaded
+        // For now, show a toast - in real implementation, you'd navigate to Marcus
+        showToast('info', 'Opening content in Marcus Mode...')
+        // TODO: Navigate to Marcus with pre-populated content
+        break
+      
+      case 'classic':
+        // Navigate to Writer Suite Classic with content loaded
+        showToast('info', 'Opening content in Writer Suite Classic...')
+        // TODO: Navigate to Writer Suite Classic with pre-populated content
+        break
+      
+      case 'express':
+      case 'standard':
+        // Open universal editor
+        setEditingContent(content)
+        setShowUniversalEditor(true)
+        break
+      
+      default:
+        // Fallback to universal editor
+        setEditingContent(content)
+        setShowUniversalEditor(true)
+        break
+    }
+  }
 
-    return (
-      <div
-        className={cardClasses}
-        onMouseEnter={() => setHoveredCard(content.id)}
-        onMouseLeave={() => setHoveredCard(null)}
-        onClick={() => {
-          setSelectedContentItem(content)
-          setShowPreview(true)
-        }}
-      >
-        {/* Creation Mode Badge */}
-        <div className="flex items-center justify-between mb-3">
-          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${modeInfo.color}`}>
-            {modeInfo.icon}
-            <span className="ml-1">{modeInfo.label}</span>
-          </span>
-          
-          <span className="text-xs text-gray-500">
-            {new Date(content.created_at).toLocaleDateString()}
-          </span>
-        </div>
+  const handleUniversalEditorSave = async (updatedContent: string) => {
+    if (!editingContent) return
 
-        {/* Content Preview */}
-        <div className="mb-3">
-          {content.title && (
-            <h3 className="font-medium text-gray-900 mb-1 line-clamp-1 text-sm">
-              {content.title}
-            </h3>
-          )}
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
-            {hook}
-          </p>
-        </div>
+    try {
+      const success = await updateContent(editingContent.id, {
+        content_text: updatedContent
+      })
+      
+      if (success) {
+        showToast('success', 'Content updated successfully!')
+        refreshContent()
+      } else {
+        showToast('error', 'Failed to update content')
+      }
+    } catch (error) {
+      showToast('error', 'An error occurred while updating')
+    }
+  }
 
-        {/* Metadata */}
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-          <span className="capitalize">{content.content_type || 'draft'}</span>
-          <span>{content.content_text.length} chars</span>
-        </div>
+  const getContinueButtonText = (content: any): string => {
+    const variationsData = content.variations_data
+    const creationMode = variationsData?.creation_mode
 
-        {/* Hover Actions */}
-        {showActions && isHovered && (
-          <div className="absolute inset-x-4 bottom-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 shadow-sm">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleContinueEditing(content)
-              }}
-              className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-            >
-              <Edit3 className="w-3 h-3" />
-              <span>Continue</span>
-            </button>
+    switch (creationMode) {
+      case 'marcus': return 'Continue in Marcus'
+      case 'classic': return 'Continue in Writer Suite Classic'  
+      case 'express': return 'Continue in Express Mode'
+      case 'standard': return 'Continue in Standard Mode'
+      default: return 'Edit Content'
+    }
+  }
 
-            {content.status === 'draft' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleScheduleContent(content)
-                }}
-                className="flex items-center space-x-1 px-2 py-1 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
-              >
-                <Calendar className="w-3 h-3" />
-                <span>Schedule</span>
-              </button>
-            )}
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'published': return 'bg-green-100 text-green-800 border-green-200'
+      case 'failed': return 'bg-red-100 text-red-800 border-red-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
 
-            {content.status === 'scheduled' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePublishNow(content)
-                }}
-                className="flex items-center space-x-1 px-2 py-1 text-xs text-green-700 hover:text-green-900 hover:bg-green-100 rounded transition-colors"
-              >
-                <Send className="w-3 h-3" />
-                <span>Publish</span>
-              </button>
-            )}
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'draft': return <Edit3 className="w-4 h-4" />
+      case 'scheduled': return <Clock className="w-4 h-4" />
+      case 'published': return <CheckCircle className="w-4 h-4" />
+      case 'failed': return <AlertCircle className="w-4 h-4" />
+      default: return <Edit3 className="w-4 h-4" />
+    }
+  }
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                // Handle archive/delete
-              }}
-              className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-            >
-              <MoreHorizontal className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-      </div>
-    )
+  const getContentTypeIcon = (type: string) => {
+    switch (type) {
+      case 'framework': return <BarChart3 className="w-4 h-4" />
+      case 'story': return <Target className="w-4 h-4" />
+      case 'trend': return <TrendingUp className="w-4 h-4" />
+      case 'mistake': return <AlertCircle className="w-4 h-4" />
+      case 'metrics': return <Sparkles className="w-4 h-4" />
+      default: return <BarChart3 className="w-4 h-4" />
+    }
   }
 
   const ContentPreviewModal = () => {
@@ -282,12 +309,12 @@ const getContentHook = (content: any) => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Content Preview</h3>
                 <div className="flex items-center space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCreationModeInfo(selectedContentItem).color}`}>
-                    {getCreationModeInfo(selectedContentItem).icon}
-                    <span className="ml-1">{getCreationModeInfo(selectedContentItem).label}</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(selectedContentItem.status)}`}>
+                    {getStatusIcon(selectedContentItem.status)}
+                    <span className="ml-1 capitalize">{selectedContentItem.status}</span>
                   </span>
                   <span className="text-sm text-gray-500 capitalize">
-                    {selectedContentItem.status} • {selectedContentItem.content_type}
+                    {selectedContentItem.content_type} • Created in {getCreationModeDisplay(selectedContentItem)}
                   </span>
                 </div>
               </div>
@@ -314,11 +341,24 @@ const getContentHook = (content: any) => {
                     setShowPreview(false)
                     handleContinueEditing(selectedContentItem)
                   }}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
                 >
                   <Edit3 className="w-4 h-4" />
-                  <span>Continue in {getCreationModeInfo(selectedContentItem).label}</span>
+                  <span>{getContinueButtonText(selectedContentItem)}</span>
                 </button>
+                
+                {selectedContentItem.status === 'draft' && (
+                  <button 
+                    onClick={() => {
+                      setShowPreview(false)
+                      handleScheduleContent(selectedContentItem)
+                    }}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span>Schedule</span>
+                  </button>
+                )}
               </div>
               
               <div className="flex space-x-3">
@@ -328,7 +368,7 @@ const getContentHook = (content: any) => {
                       setShowPreview(false)
                       handleScheduleContent(selectedContentItem)
                     }}
-                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
                   >
                     Schedule
                   </button>
@@ -340,7 +380,7 @@ const getContentHook = (content: any) => {
                       setShowPreview(false)
                       handlePublishNow(selectedContentItem)
                     }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 transition-colors"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
                   >
                     <Send className="w-4 h-4" />
                     <span>Publish Now</span>
@@ -352,7 +392,7 @@ const getContentHook = (content: any) => {
                     href={selectedContentItem.linkedin_post_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition-colors"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span>View on LinkedIn</span>
@@ -364,7 +404,7 @@ const getContentHook = (content: any) => {
                     setShowPreview(false)
                     handleDeleteContent(selectedContentItem.id)
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 text-red-600 hover:text-red-700"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete</span>
@@ -382,7 +422,7 @@ const getContentHook = (content: any) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
           <div className="w-8 h-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your content pipeline...</p>
+          <p className="text-gray-600">Loading your content...</p>
         </div>
       </div>
     )
@@ -391,189 +431,249 @@ const getContentHook = (content: any) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Production Pipeline</h1>
-          <p className="text-gray-600 mt-1">
-            Track your content from creation to publication
-          </p>
-        </div>
-        
-        <button 
-          onClick={() => refreshContent()}
-          className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Refresh</span>
-        </button>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-orange-100">
-              <CheckCircle className="w-5 h-5 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Ready to Schedule</p>
-              <p className="text-2xl font-bold text-gray-900">{readyToSchedule.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-gray-100">
-              <Edit3 className="w-5 h-5 text-gray-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900">{inProgress.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-blue-100">
-              <Clock className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Scheduled</p>
-              <p className="text-2xl font-bold text-gray-900">{scheduled.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-green-100">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Published</p>
-              <p className="text-2xl font-bold text-gray-900">{publishedContent.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Ready to Schedule Section */}
-      {readyToSchedule.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-              🎯 Ready to Schedule
-              <span className="ml-2 bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
-                {readyToSchedule.length}
-              </span>
-            </h2>
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Production Pipeline</h1>
+            <p className="text-gray-600 mt-2">
+              Manage your content workflow from draft to published
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {readyToSchedule.map((content) => (
-              <ContentCard key={content.id} content={content} size="large" />
+          <button 
+            onClick={() => refreshContent()}
+            className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-gray-100">
+                <Edit3 className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Drafts</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {draftContent.length}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-blue-100">
+                <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Scheduled</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {scheduledContent.length}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-green-100">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Published</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {publishedContent.length}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-red-100">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Failed</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {allContent.filter(c => c.status === 'failed').length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter:</span>
+          </div>
+          
+          <div className="flex space-x-2">
+            {(['all', 'draft', 'scheduled', 'published', 'failed'] as ContentFilterType[]).map(filterOption => (
+              <button
+                key={filterOption}
+                onClick={() => setFilter(filterOption)}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                  filter === filterOption
+                    ? 'bg-slate-100 text-slate-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                {filterOption === 'all' ? 'All' : filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                <span className="ml-1 text-xs">
+                  ({filterOption === 'all' ? allContent.length : allContent.filter(c => c.status === filterOption).length})
+                </span>
+              </button>
             ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* In Progress Section */}
-      {inProgress.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-              ✏️ In Progress
-              <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
-                {inProgress.length}
-              </span>
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {inProgress.map((content) => (
-              <ContentCard key={content.id} content={content} />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredContent.map((item) => (
+          <div
+            key={item.id}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 group relative"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                {getContentTypeIcon(item.content_type)}
+                <span className="text-sm font-medium text-gray-600 capitalize">
+                  {item.content_type} • Created in {getCreationModeDisplay(item)}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
+                  {getStatusIcon(item.status)}
+                  <span className="ml-1 capitalize">{item.status}</span>
+                </span>
+              </div>
+            </div>
 
-      {/* Scheduled Section */}
-      {scheduled.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-              ⏰ Scheduled
-              <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                {scheduled.length}
-              </span>
-            </h2>
-          </div>
-          
-          <div className="space-y-3">
-            {scheduled.map((content) => (
-              <div key={content.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
-                <div className="flex items-center space-x-4">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCreationModeInfo(content).color}`}>
-                    {getCreationModeInfo(content).icon}
-                    <span className="ml-1">{getCreationModeInfo(content).label}</span>
-                  </span>
+            {/* Content Preview */}
+            <div className="mb-4">
+              <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                {item.title || item.content_text.split('\n')[0].substring(0, 60) + '...'}
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                {item.content_text.length > 150 
+                  ? item.content_text.substring(0, 150) + '...'
+                  : item.content_text
+                }
+              </p>
+            </div>
+
+            {/* Metadata */}
+            <div className="space-y-2 mb-4 text-xs text-gray-500">
+              <div className="flex justify-between">
+                <span>Tone: {item.tone_used}</span>
+                <span>{item.word_count || item.content_text.length} chars</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                {item.published_at && (
+                  <span>Published: {new Date(item.published_at).toLocaleDateString()}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Hover Actions */}
+            <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
+              <div className="flex justify-between items-center">
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      setSelectedContentItem(item)
+                      setShowPreview(true)
+                    }}
+                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+                  >
+                    <Eye className="w-3 h-3" />
+                    <span>Preview</span>
+                  </button>
                   
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">
-                      {getContentHook(content)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Scheduled for {content.scheduled_date} at {content.scheduled_time}
-                    </p>
-                  </div>
+                  <button 
+                    onClick={() => handleContinueEditing(item)}
+                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>Continue</span>
+                  </button>
                 </div>
                 
-                <button
-                  onClick={() => handlePublishNow(content)}
-                  className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
-                >
-                  Publish Now
-                </button>
+                <div className="flex space-x-2">
+                  {item.status === 'draft' && (
+                    <button 
+                      onClick={() => handleScheduleContent(item)}
+                      className="px-3 py-1 bg-slate-700 text-white text-xs rounded hover:bg-slate-800 transition"
+                    >
+                      Schedule
+                    </button>
+                  )}
+                  
+                  {item.status === 'scheduled' && (
+                    <button 
+                      onClick={() => handlePublishNow(item)}
+                      className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+                    >
+                      Publish
+                    </button>
+                  )}
+
+                  {item.status === 'published' && item.linkedin_post_url && (
+                    <a
+                      href={item.linkedin_post_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 flex items-center space-x-1 transition"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>View</span>
+                    </a>
+                  )}
+                </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
-      {/* Published Section */}
-      {published.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">✅ Recently Published</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {published.map((content) => (
-              <ContentCard key={content.id} content={content} size="compact" showActions={false} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {allContent.length === 0 && (
+      {filteredContent.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Archive className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No content in your pipeline</h3>
-          <p className="text-gray-600 mb-4">
-            Start by creating content in Marcus or Writer Suite to see it here.
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No content found</h3>
+          <p className="text-gray-600">
+            {filter === 'all' 
+              ? 'Start by creating content in Marcus or Writer Suite.' 
+              : `No content with status "${filter}" found.`}
           </p>
-          <button className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors">
-            Create Your First Content
-          </button>
         </div>
       )}
 
       <ContentPreviewModal />
+      
+      {showUniversalEditor && editingContent && (
+        <UniversalEditor
+          content={editingContent}
+          onSave={handleUniversalEditorSave}
+          onClose={() => {
+            setShowUniversalEditor(false)
+            setEditingContent(null)
+          }}
+        />
+      )}
     </div>
   )
 }
