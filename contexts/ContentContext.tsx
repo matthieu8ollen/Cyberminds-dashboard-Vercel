@@ -17,6 +17,7 @@ interface ContentContextType {
   draftContent: GeneratedContent[]
   scheduledContent: GeneratedContent[]
   publishedContent: GeneratedContent[]
+  archivedContent: GeneratedContent[]
   loadingContent: boolean
   
   // Actions
@@ -55,6 +56,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const draftContent = allContent.filter(c => c.status === 'draft' || !c.status)
   const scheduledContent = allContent.filter(c => c.status === 'scheduled')
   const publishedContent = allContent.filter(c => c.status === 'published')
+  const archivedContent = allContent.filter(c => c.status === 'archived')
 
   // Load all content on mount and user change
   useEffect(() => {
@@ -190,6 +192,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     draftContent,
     scheduledContent,
     publishedContent,
+    archivedContent,
     loadingContent,
     saveDraft,
     updateContent,
