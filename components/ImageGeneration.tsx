@@ -121,7 +121,7 @@ export default function ImageGeneration() {
         refreshContent()
         
         // Update local state
-        setSelectedContent(prev => ({ ...prev, image_url: imageUrl }))
+        setSelectedContent(prev => prev ? { ...prev, image_url: imageUrl } : null)
       } else {
         showToast('error', 'Failed to attach image')
       }
