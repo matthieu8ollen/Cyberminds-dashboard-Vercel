@@ -61,6 +61,7 @@ export interface GeneratedContent {
   published_at?: string
   scheduled_date?: string
   scheduled_time?: string
+  image_url?: string
   created_at: string
 }
 
@@ -97,6 +98,17 @@ export interface ContentCalendar {
   status: 'scheduled' | 'posted' | 'failed' | 'cancelled'
   posted_at?: string
   linkedin_post_url?: string
+  created_at: string
+}
+
+export interface GeneratedImage {
+  id: string
+  user_id: string
+  content_id: string
+  image_url: string
+  original_prompt: string
+  optimized_prompt?: string
+  openai_image_id?: string
   created_at: string
 }
 
@@ -339,4 +351,39 @@ export const getScheduledContent = async (userId: string, limit: number = 10) =>
     .limit(limit)
   
   return { data, error }
+}
+
+// Image generation helpers
+export const saveGeneratedImage = async (image: Omit<GeneratedImage, 'id' | 'created_at'>) => {
+  const { data, error } = await supabase
+    .from('generated_images')
+    .insert(image)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const getGeneratedImages = async (userId: string, contentId?: string) => {
+  let query = supabase
+    .from('generated_images')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  
+  if (contentId) {
+    query = query.eq('content_id', contentId)
+  }
+  
+  const { data, error } = await query
+  return { data, error }
+}
+
+export const deleteGeneratedImage = async (imageId: string) => {
+  const { error } = await supabase
+    .from('generated_images')
+    .delete()
+    .eq('id', imageId)
+  
+  return { error }
 }
