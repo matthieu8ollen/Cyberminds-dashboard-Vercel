@@ -155,7 +155,7 @@ export default function ProductionPipeline() {
   const allContent = [
     ...draftContent.map(c => ({ ...c, status: c.status || 'draft' as const })),
     ...scheduledContent.map(c => ({ ...c, status: c.status || 'scheduled' as const })),
-    ...publishedContent.map(c => ({ ...c, status: c.status || 'published' as const }))
+    ...publishedContent.map(c => ({ ...c, status: c.status || 'published' as const })),
     ...archivedContent.map(c => ({ ...c, status: c.status || 'archived' as const }))
   ]
 
