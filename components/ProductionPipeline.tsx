@@ -112,8 +112,8 @@ export default function ProductionPipeline() {
     }
   }
 
-  const getContentHook = (content: any) => {
-    const lines = content.content_text.split('\n').filter(line => line.trim())
+const getContentHook = (content: any) => {
+    const lines = content.content_text.split('\n').filter((line: string) => line.trim())
     const firstLine = lines[0] || ''
     
     // Return first meaningful line, truncated if too long
