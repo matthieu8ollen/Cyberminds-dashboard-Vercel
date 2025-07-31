@@ -150,6 +150,7 @@ export default function ProductionPipeline() {
   const [showPreview, setShowPreview] = useState(false)
   const [showUniversalEditor, setShowUniversalEditor] = useState(false)
   const [editingContent, setEditingContent] = useState<any>(null)
+  const [showLinkedInPreview, setShowLinkedInPreview] = useState(false)
 
   // Combine all content based on filter
   const allContent = [
@@ -215,6 +216,20 @@ export default function ProductionPipeline() {
     }
   } catch (error) {
     showToast('error', 'An error occurred while archiving')
+  }
+}
+
+  const handleUnarchiveContent = async (contentId: string) => {
+  try {
+    const success = await updateContent(contentId, { status: 'draft' })
+    if (success) {
+      showToast('success', 'Content moved back to drafts')
+      refreshContent()
+    } else {
+      showToast('error', 'Failed to unarchive content')
+    }
+  } catch (error) {
+    showToast('error', 'An error occurred while unarchiving')
   }
 }
 
@@ -342,38 +357,85 @@ export default function ProductionPipeline() {
           </div>
           
           <div className="p-6 overflow-y-auto max-h-96">
-            <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
-              {selectedContentItem.content_text}
+  {showLinkedInPreview ? (
+    // LinkedIn Preview
+    <div className="max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold text-sm">YN</span>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">Your Name</div>
+            <div className="text-sm text-gray-500">Finance Professional • 1st</div>
+            <div className="text-xs text-gray-400 flex items-center">
+              <span>2h</span>
+              <span className="mx-1">•</span>
+              <span>🌍</span>
             </div>
           </div>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
+          {selectedContentItem.content_text}
+        </div>
+      </div>
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+          <button className="flex items-center space-x-1 hover:text-blue-600">
+            <span>👍</span>
+            <span>Like</span>
+          </button>
+          <button className="flex items-center space-x-1 hover:text-blue-600">
+            <span>💬</span>
+            <span>Comment</span>
+          </button>
+          <button className="flex items-center space-x-1 hover:text-blue-600">
+            <span>🔄</span>
+            <span>Repost</span>
+          </button>
+          <button className="flex items-center space-x-1 hover:text-blue-600">
+            <span>📤</span>
+            <span>Send</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : (
+    // Regular Text Preview
+    <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
+      {selectedContentItem.content_text}
+    </div>
+  )}
+</div>
           
           <div className="p-6 border-t border-gray-200 bg-gray-50">
             <div className="flex justify-between">
-              <div className="flex space-x-2">
-                <button 
-                  onClick={() => {
-                    setShowPreview(false)
-                    handleContinueEditing(selectedContentItem)
-                  }}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{getContinueButtonText(selectedContentItem)}</span>
-                </button>
-                
-                {selectedContentItem.status === 'draft' && (
-                  <button 
-                    onClick={() => {
-                      setShowPreview(false)
-                      handleScheduleContent(selectedContentItem)
-                    }}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    <span>Schedule</span>
-                  </button>
-                )}
-              </div>
+             <div className="flex space-x-2">
+  <button 
+    onClick={() => {
+      setShowPreview(false)
+      handleContinueEditing(selectedContentItem)
+    }}
+    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+  >
+    <Edit3 className="w-4 h-4" />
+    <span>{getContinueButtonText(selectedContentItem)}</span>
+  </button>
+  
+  <button 
+    onClick={() => setShowLinkedInPreview(!showLinkedInPreview)}
+    className={`flex items-center space-x-2 px-3 py-2 text-sm transition ${
+      showLinkedInPreview 
+        ? 'text-blue-600 bg-blue-50' 
+        : 'text-gray-600 hover:text-gray-800'
+    }`}
+  >
+    <Eye className="w-4 h-4" />
+    <span>LinkedIn Preview</span>
+  </button>
+</div>
               
               <div className="flex space-x-3">
                 {selectedContentItem.status === 'draft' && (
@@ -602,13 +664,23 @@ export default function ProductionPipeline() {
                     <span>Continue</span>
                   </button>
 
-                  <button 
-                    onClick={() => handleArchiveContent(item.id)}
-                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
-                  >
-                    <Archive className="w-3 h-3" />
-                    <span>Archive</span>
-                  </button>
+                 {item.status !== 'archived' ? (
+  <button 
+    onClick={() => handleArchiveContent(item.id)}
+    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+  >
+    <Archive className="w-3 h-3" />
+    <span>Archive</span>
+  </button>
+) : (
+  <button 
+    onClick={() => handleUnarchiveContent(item.id)}
+    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+  >
+    <RefreshCw className="w-3 h-3" />
+    <span>Unarchive</span>
+  </button>
+)}
                 </div>
                 
                 <div className="flex space-x-2">
