@@ -24,7 +24,8 @@ import {
   ExternalLink,
   User,
   Zap,
-  FileText
+  FileText,
+  Camera
 } from 'lucide-react'
 
 type ContentFilterType = 'draft' | 'scheduled' | 'published' | 'archived'
