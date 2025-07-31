@@ -48,7 +48,8 @@ export default function ImageGeneration() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([])
   const [customPrompt, setCustomPrompt] = useState('')
   const [optimizedPrompt, setOptimizedPrompt] = useState('')
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
+  const [aiGeneratedImages, setAiGeneratedImages] = useState<GeneratedImage[]>([])
+  const [customGeneratedImages, setCustomGeneratedImages] = useState<GeneratedImage[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [activeTab, setActiveTab] = useState<'draft' | 'scheduled'>('draft')
   const [showOptimized, setShowOptimized] = useState(false)
@@ -62,7 +63,8 @@ export default function ImageGeneration() {
     if (selectedContent) {
       const prompts = generatePromptSuggestions(selectedContent)
       setSuggestedPrompts(prompts)
-      setGeneratedImages([])
+      setAiGeneratedImages([])
+      setCustomGeneratedImages([])
       setCustomPrompt('')
       setOptimizedPrompt('')
       setShowOptimized(false)
@@ -89,10 +91,26 @@ export default function ImageGeneration() {
       // AI agent will generate content-specific images based on the selected content
       const aiPrompt = `Generate professional LinkedIn image for ${selectedContent.content_type} content`
       const response = await generateImagesMock({ prompt: aiPrompt, n: 3 })
-      setGeneratedImages(response.data)
+      setAiGeneratedImages(response.data)
       showToast('success', 'AI images generated successfully!')
     } catch (error) {
       showToast('error', 'Failed to generate AI images')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleGenerateFromCustom = async () => {
+    const promptToUse = showOptimized ? optimizedPrompt : customPrompt
+    if (!promptToUse.trim()) return
+
+    setIsGenerating(true)
+    try {
+      const response = await generateImagesMock({ prompt: promptToUse, n: 3 })
+      setCustomGeneratedImages(response.data)
+      showToast('success', 'Images generated from custom prompt!')
+    } catch (error) {
+      showToast('error', 'Failed to generate images')
     } finally {
       setIsGenerating(false)
     }
