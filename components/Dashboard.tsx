@@ -11,7 +11,7 @@ import {
   GeneratedContent,
   ContentIdea
 } from '../lib/supabase'
-import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye } from 'lucide-react'
+import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera } from 'lucide-react'
 import IdeasPage from './IdeasPage'
 import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
@@ -27,10 +27,11 @@ import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
 import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
+import ImageGeneration from './ImageGeneration'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
 type CreateSubPage = 'mode-selection' | 'express' | 'standard'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
@@ -378,6 +379,7 @@ export default function Dashboard() {
   const navigationItems = [
     { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
     { id: 'create' as ActivePage, label: 'Create', icon: Zap },
+    { id: 'images' as ActivePage, label: 'Images', icon: Camera },
     { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
     { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
     { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
@@ -416,6 +418,9 @@ export default function Dashboard() {
       
       case 'settings':
         return <SettingsPage />
+
+        case 'images':
+  return <ImageGeneration />
       
       case 'create':
         // Handle Create tab with sub-navigation
