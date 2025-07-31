@@ -53,6 +53,7 @@ export default function ImageGeneration() {
   const [activeTab, setActiveTab] = useState<'draft' | 'scheduled'>('draft')
   const [showOptimized, setShowOptimized] = useState(false)
   const [promptMode, setPromptMode] = useState<'ai' | 'custom'>('ai')
+  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null)
 
   // Only show draft and scheduled content
   const currentContent = activeTab === 'draft' ? draftContent : scheduledContent
@@ -578,6 +579,26 @@ export default function ImageGeneration() {
           </div>
         )}
       </div>
+
+      {/* Image Preview Modal */}
+      {selectedImagePreview && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setSelectedImagePreview(null)}>
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
+            <img
+              src={selectedImagePreview}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setSelectedImagePreview(null)}
+              className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+            >
+              <span className="text-xl leading-none">✕</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
