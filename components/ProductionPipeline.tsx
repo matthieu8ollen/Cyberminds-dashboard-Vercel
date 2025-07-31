@@ -288,7 +288,6 @@ export default function ProductionPipeline() {
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'published': return 'bg-green-100 text-green-800 border-green-200'
-      case 'failed': return 'bg-red-100 text-red-800 border-red-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -298,7 +297,6 @@ export default function ProductionPipeline() {
       case 'draft': return <Edit3 className="w-4 h-4" />
       case 'scheduled': return <Clock className="w-4 h-4" />
       case 'published': return <CheckCircle className="w-4 h-4" />
-      case 'failed': return <AlertCircle className="w-4 h-4" />
       default: return <Edit3 className="w-4 h-4" />
     }
   }
