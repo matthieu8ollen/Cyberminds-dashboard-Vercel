@@ -67,6 +67,31 @@ export default function ImageGeneration() {
     }
   }, [selectedContent])
 
+  // Auto-select content if coming from Production Pipeline
+useEffect(() => {
+  const selectedContentFromStorage = localStorage.getItem('selectedContentForImage')
+  if (selectedContentFromStorage) {
+    try {
+      const contentData = JSON.parse(selectedContentFromStorage)
+      
+      // Find the content in current data and select it
+      const allContent = [...draftContent, ...scheduledContent]
+      const matchingContent = allContent.find(c => c.id === contentData.id)
+      
+      if (matchingContent) {
+        setSelectedContent(matchingContent)
+        // Set the appropriate tab
+        setActiveTab(matchingContent.status === 'scheduled' ? 'scheduled' : 'draft')
+      }
+      
+      // Clean up localStorage
+      localStorage.removeItem('selectedContentForImage')
+    } catch (error) {
+      console.error('Error parsing selected content from storage:', error)
+    }
+  }
+}, [draftContent, scheduledContent])
+
   const handleContentSelect = (content: any) => {
     setSelectedContent(content)
   }
