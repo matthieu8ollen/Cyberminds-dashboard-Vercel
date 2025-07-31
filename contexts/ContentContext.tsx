@@ -27,6 +27,7 @@ interface ContentContextType {
   publishContent: (contentId: string) => Promise<boolean>
   deleteContent: (contentId: string) => Promise<boolean>
   refreshContent: () => Promise<void>
+  attachImage: (contentId: string, imageUrl: string) => Promise<boolean>
   
   // UI State
   selectedContent: GeneratedContent | null
@@ -188,6 +189,19 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }
 
+  const attachImage = async (contentId: string, imageUrl: string) => {
+  try {
+    const success = await updateContent(contentId, { image_url: imageUrl })
+    if (success) {
+      return true
+    }
+    return false
+  } catch (error) {
+    console.error('Error attaching image:', error)
+    return false
+  }
+}
+
   const value = {
     draftContent,
     scheduledContent,
@@ -200,6 +214,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     publishContent,
     deleteContent,
     refreshContent,
+    attachImage,
     selectedContent,
     setSelectedContent,
     showScheduleModal,
