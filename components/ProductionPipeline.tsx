@@ -493,16 +493,16 @@ export default function ProductionPipeline() {
     )
   }
 
-  if (loadingContent) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <div className="w-8 h-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your content...</p>
-        </div>
+  if (loadingContent && draftContent.length === 0 && scheduledContent.length === 0 && publishedContent.length === 0) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="text-center py-12">
+        <div className="w-8 h-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading your content...</p>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
