@@ -513,15 +513,17 @@ export default function ProductionPipeline() {
             </button>
           </div>
           
-          {/* Sliding Underline Indicator */}
-          <div className="absolute -bottom-1 h-0.5 bg-slate-600 transition-all duration-300 ease-out" 
-               style={{
-                 width: '25%',
-                 left: filter === 'draft' ? '0%' : 
-                       filter === 'scheduled' ? '25%' : 
-                       filter === 'published' ? '50%' : 
-                       filter === 'archived' ? '75%' : '0%'
-               }}>
+{/* Sliding Underline Indicator */}
+          <div 
+            className="absolute -bottom-1 h-0.5 bg-slate-600 transition-all duration-300 ease-out" 
+            style={{
+              width: '25%',
+              left: filter === 'draft' ? '0%' : 
+                    filter === 'scheduled' ? '25%' : 
+                    filter === 'published' ? '50%' : 
+                    filter === 'archived' ? '75%' : '0%'
+            }}
+          >
           </div>
         </div>
           
