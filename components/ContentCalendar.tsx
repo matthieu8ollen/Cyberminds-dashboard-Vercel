@@ -44,6 +44,7 @@ import {
   Sparkles,
   RepeatIcon,
   ExternalLink,
+  Archive,
   X,
   ChevronDown,
   List
@@ -59,7 +60,7 @@ interface ScheduledContent {
   is_saved: boolean
   scheduled_date: string
   scheduled_time: string
-  status: 'scheduled' | 'published' | 'failed' | 'draft'
+  status: 'scheduled' | 'published' | 'archived' | 'draft'
   recurring?: {
     frequency: 'daily' | 'weekly' | 'monthly'
     interval: number
@@ -73,7 +74,7 @@ interface ScheduledContent {
 }
 
 type CalendarView = 'month' | 'week' | 'day'
-type ContentFilter = 'all' | 'scheduled' | 'published' | 'failed' | 'draft'
+type ContentFilter = 'all' | 'scheduled' | 'published' | 'archived' | 'draft'
 
 const DAYS_OF_WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -397,7 +398,7 @@ export default function ContentCalendar() {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'published': return 'bg-green-100 text-green-800 border-green-200'
-      case 'failed': return 'bg-red-100 text-red-800 border-red-200'
+      case 'archived': return 'bg-gray-100 text-gray-800 border-gray-200'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -407,7 +408,7 @@ export default function ContentCalendar() {
     switch (status) {
       case 'scheduled': return <Clock className="w-3 h-3" />
       case 'published': return <CheckCircle className="w-3 h-3" />
-      case 'failed': return <AlertCircle className="w-3 h-3" />
+      case 'archived': return <Archive className="w-3 h-3" />
       case 'draft': return <Edit3 className="w-3 h-3" />
       default: return <Clock className="w-3 h-3" />
     }
@@ -428,10 +429,10 @@ export default function ContentCalendar() {
     
     const hasScheduled = content.some(c => c.status === 'scheduled')
     const hasPublished = content.some(c => c.status === 'published')
-    const hasFailed = content.some(c => c.status === 'failed')
-    
-    let color = 'bg-gray-400'
-    if (hasFailed) color = 'bg-red-500'
+  const hasArchived = content.some(c => c.status === 'archived')
+
+let color = 'bg-gray-400'
+if (hasArchived) color = 'bg-gray-500'
     else if (hasScheduled) color = 'bg-blue-500'
     else if (hasPublished) color = 'bg-green-500'
     
@@ -805,7 +806,7 @@ return (
                   <option value="all">All Content</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="published">Published</option>
-                  <option value="failed">Failed</option>
+                  <option value="archived">Archived</option>
                   <option value="draft">Drafts</option>
                 </select>
               </div>
@@ -970,7 +971,7 @@ return (
                   </button>
                 )}
                 
-                {selectedContentItem.status === 'failed' && (
+                {selectedContentItem.status === 'archived' && (
                   <button 
                     onClick={() => {
                       setShowContentPreview(false)
