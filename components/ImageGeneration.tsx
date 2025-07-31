@@ -83,6 +83,23 @@ export default function ImageGeneration() {
     }
   }
 
+  const handleGenerateFromAI = async () => {
+    if (!selectedContent) return
+
+    setIsGenerating(true)
+    try {
+      // AI agent will generate content-specific images based on the selected content
+      const aiPrompt = `Generate professional LinkedIn image for ${selectedContent.content_type} content`
+      const response = await generateImagesMock({ prompt: aiPrompt, n: 3 })
+      setAiGeneratedImages(response.data)
+      showToast('success', 'AI images generated successfully!')
+    } catch (error) {
+      showToast('error', 'Failed to generate AI images')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   const handleGenerateFromCustom = async () => {
     const promptToUse = showOptimized ? optimizedPrompt : customPrompt
     if (!promptToUse.trim()) return
