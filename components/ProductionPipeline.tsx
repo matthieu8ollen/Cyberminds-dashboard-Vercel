@@ -27,7 +27,7 @@ import {
   FileText
 } from 'lucide-react'
 
-type ContentFilterType = 'all' | 'draft' | 'scheduled' | 'published' | 'failed'
+type ContentFilterType = 'draft' | 'scheduled' | 'published' | 'archived'
 
 interface UniversalEditorProps {
   content: any
@@ -144,7 +144,7 @@ export default function ProductionPipeline() {
   } = useContent()
   const { showToast } = useToast()
   
-  const [filter, setFilter] = useState<ContentFilterType>('all')
+  const [filter, setFilter] = useState<ContentFilterType>('draft')
   const [selectedContentItem, setSelectedContentItem] = useState<any>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [showUniversalEditor, setShowUniversalEditor] = useState(false)
@@ -157,9 +157,7 @@ export default function ProductionPipeline() {
     ...publishedContent.map(c => ({ ...c, status: c.status || 'published' as const }))
   ]
 
-  const filteredContent = filter === 'all' 
-    ? allContent 
-    : allContent.filter(item => item.status === filter)
+  const filteredContent = allContent.filter(item => item.status === filter)
 
   useEffect(() => {
     if (user) {
@@ -187,20 +185,36 @@ export default function ProductionPipeline() {
   }
 
   const handleDeleteContent = async (contentId: string) => {
-    if (window.confirm('Are you sure you want to delete this content?')) {
-      try {
-        const success = await deleteContent(contentId)
-        if (success) {
-          showToast('success', 'Content deleted successfully')
-          refreshContent()
-        } else {
-          showToast('error', 'Failed to delete content')
-        }
-      } catch (error) {
-        showToast('error', 'An error occurred while deleting')
+  const confirmed = window.confirm('Are you sure you want to permanently delete this content? This action cannot be undone.')
+  
+  if (confirmed) {
+    try {
+      const success = await deleteContent(contentId)
+      if (success) {
+        showToast('success', 'Content deleted permanently')
+        refreshContent()
+      } else {
+        showToast('error', 'Failed to delete content')
       }
+    } catch (error) {
+      showToast('error', 'An error occurred while deleting')
     }
   }
+}
+
+  const handleArchiveContent = async (contentId: string) => {
+  try {
+    const success = await updateContent(contentId, { status: 'archived' })
+    if (success) {
+      showToast('success', 'Content archived successfully')
+      refreshContent()
+    } else {
+      showToast('error', 'Failed to archive content')
+    }
+  } catch (error) {
+    showToast('error', 'An error occurred while archiving')
+  }
+}
 
   const handleContinueEditing = (content: any) => {
     const variationsData = content.variations_data
@@ -449,21 +463,67 @@ export default function ProductionPipeline() {
           </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-lg bg-gray-100">
-                <Edit3 className="w-5 h-5 text-gray-600" />
+{/* Stats - Now Clickable Filters */}
+        <div className="relative mb-8">
+          <div className="grid grid-cols-4 gap-6">
+            <button
+              onClick={() => setFilter('draft')}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Edit3 className="w-5 h-5 text-gray-600 group-hover:text-slate-600" />
+                <span className="text-2xl font-bold text-gray-900">{draftContent.length}</span>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Drafts</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {draftContent.length}
-                </p>
+              <p className="text-sm font-medium text-gray-600">Drafts</p>
+            </button>
+            
+            <button
+              onClick={() => setFilter('scheduled')}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Clock className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
+                <span className="text-2xl font-bold text-gray-900">{scheduledContent.length}</span>
               </div>
-            </div>
+              <p className="text-sm font-medium text-gray-600">Scheduled</p>
+            </button>
+            
+            <button
+              onClick={() => setFilter('published')}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <CheckCircle className="w-5 h-5 text-green-600 group-hover:text-green-700" />
+                <span className="text-2xl font-bold text-gray-900">{publishedContent.length}</span>
+              </div>
+              <p className="text-sm font-medium text-gray-600">Published</p>
+            </button>
+            
+            <button
+              onClick={() => setFilter('archived')}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Archive className="w-5 h-5 text-gray-600 group-hover:text-gray-700" />
+                <span className="text-2xl font-bold text-gray-900">
+                  {allContent.filter(c => c.status === 'archived').length}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-gray-600">Archived</p>
+            </button>
           </div>
+          
+          {/* Sliding Underline Indicator */}
+          <div className="absolute -bottom-1 h-0.5 bg-slate-600 transition-all duration-300 ease-out" 
+               style={{
+                 width: '25%',
+                 left: filter === 'draft' ? '0%' : 
+                       filter === 'scheduled' ? '25%' : 
+                       filter === 'published' ? '50%' : 
+                       filter === 'archived' ? '75%' : '0%'
+               }}>
+          </div>
+        </div>
           
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center">
@@ -505,33 +565,6 @@ export default function ProductionPipeline() {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filter:</span>
-          </div>
-          
-          <div className="flex space-x-2">
-            {(['all', 'draft', 'scheduled', 'published', 'failed'] as ContentFilterType[]).map(filterOption => (
-              <button
-                key={filterOption}
-                onClick={() => setFilter(filterOption)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                  filter === filterOption
-                    ? 'bg-slate-100 text-slate-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                {filterOption === 'all' ? 'All' : filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                <span className="ml-1 text-xs">
-                  ({filterOption === 'all' ? allContent.length : allContent.filter(c => c.status === filterOption).length})
-                </span>
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -609,6 +642,14 @@ export default function ProductionPipeline() {
                     <Edit3 className="w-3 h-3" />
                     <span>Continue</span>
                   </button>
+
+                  <button 
+                    onClick={() => handleArchiveContent(item.id)}
+                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+                  >
+                    <Archive className="w-3 h-3" />
+                    <span>Archive</span>
+                  </button>
                 </div>
                 
                 <div className="flex space-x-2">
@@ -654,10 +695,10 @@ export default function ProductionPipeline() {
             <Archive className="w-8 h-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No content found</h3>
-          <p className="text-gray-600">
-            {filter === 'all' 
+         <p className="text-gray-600">
+            {filter === 'draft' 
               ? 'Start by creating content in Marcus or Writer Suite.' 
-              : `No content with status "${filter}" found.`}
+              : `No ${filter} content found.`}
           </p>
         </div>
       )}
