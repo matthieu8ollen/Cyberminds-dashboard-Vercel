@@ -80,18 +80,44 @@ export default function ImageGeneration() {
     }
   }
 
-  const handleGenerateFromPrompt = async (prompt: string) => {
-    if (!prompt.trim()) return
+  const handleGenerateFromAI = async () => {
+    if (!selectedContent) return
 
     setIsGenerating(true)
     try {
-      const response = await generateImagesMock({ prompt, n: 3 })
+      // AI agent will generate content-specific images based on the selected content
+      const aiPrompt = `Generate professional LinkedIn image for ${selectedContent.content_type} content`
+      const response = await generateImagesMock({ prompt: aiPrompt, n: 3 })
       setGeneratedImages(response.data)
-      showToast('success', 'Images generated successfully!')
+      showToast('success', 'AI images generated successfully!')
     } catch (error) {
-      showToast('error', 'Failed to generate images')
+      showToast('error', 'Failed to generate AI images')
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const handleRemoveImage = async () => {
+    if (!selectedContent || !user) return
+
+    const confirmed = window.confirm('Are you sure you want to remove this image?')
+    if (!confirmed) return
+
+    try {
+      const success = await updateContent(selectedContent.id, {
+        image_url: null
+      })
+
+      if (success) {
+        showToast('success', 'Image removed successfully!')
+        refreshContent()
+        
+        setSelectedContent((prev: any) => prev ? { ...prev, image_url: null } : null)
+      } else {
+        showToast('error', 'Failed to remove image')
+      }
+    } catch (error) {
+      showToast('error', 'An error occurred while removing image')
     }
   }
 
@@ -319,12 +345,19 @@ export default function ImageGeneration() {
                 </div>
                 
                 {selectedContent.image_url && (
-                  <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
                     <img
                       src={selectedContent.image_url}
                       alt="Current image"
                       className="w-full h-full object-cover"
                     />
+                    <button
+                      onClick={handleRemoveImage}
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
                   </div>
                 )}
               </div>
@@ -346,7 +379,7 @@ export default function ImageGeneration() {
                     >
                       <div className="flex items-center space-x-2">
                         <Wand2 className="w-4 h-4" />
-                        <span>AI Suggested Prompts</span>
+                        <span>AI Suggested</span>
                       </div>
                     </button>
                     <button
@@ -366,35 +399,54 @@ export default function ImageGeneration() {
                 </div>
               </div>
 
-              {/* AI Suggested Prompts Section */}
+              {/* AI Suggested Section */}
               {promptMode === 'ai' && (
                 <div className="space-y-8">
                   <div>
-                    <div className="grid grid-cols-1 gap-4">
-                      {suggestedPrompts.map((prompt, index) => (
-                        <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-teal-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                             onClick={() => handleGenerateFromPrompt(prompt)}>
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-3 flex-1">
-                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0 mt-0.5 group-hover:bg-slate-100 transition-colors">
-                                <span className="text-sm font-semibold text-slate-600">{index + 1}</span>
-                              </div>
-                              <p className="text-sm text-gray-700 leading-relaxed flex-1">{prompt}</p>
-                            </div>
-                            <button
-                              disabled={isGenerating}
-                              className="ml-4 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
-                            >
-                              {isGenerating ? (
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Camera className="w-4 h-4" />
-                              )}
-                              <span className="hidden sm:inline">Generate</span>
-                            </button>
-                          </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <Sparkles className="w-5 h-5 mr-3 text-teal-500" />
+                      Example Images for Your Content
+                    </h3>
+                    
+                    {/* Example Images */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="aspect-square bg-gradient-to-br from-slate-100 to-teal-100 rounded-xl border border-gray-200 flex items-center justify-center">
+                        <div className="text-center">
+                          <ImageIcon className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                          <p className="text-xs text-gray-600">Sample Style 1</p>
                         </div>
-                      ))}
+                      </div>
+                      <div className="aspect-square bg-gradient-to-br from-teal-100 to-slate-100 rounded-xl border border-gray-200 flex items-center justify-center">
+                        <div className="text-center">
+                          <BarChart3 className="w-8 h-8 text-teal-600 mx-auto mb-2" />
+                          <p className="text-xs text-gray-600">Sample Style 2</p>
+                        </div>
+                      </div>
+                      <div className="aspect-square bg-gradient-to-br from-slate-200 to-teal-200 rounded-xl border border-gray-200 flex items-center justify-center">
+                        <div className="text-center">
+                          <Target className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+                          <p className="text-xs text-gray-600">Sample Style 3</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Generate Button */}
+                    <div className="text-center">
+                      <button
+                        onClick={handleGenerateFromAI}
+                        disabled={isGenerating}
+                        className="px-8 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3 mx-auto transition-all duration-200 shadow-sm hover:shadow-md"
+                      >
+                        {isGenerating ? (
+                          <RefreshCw className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-5 h-5" />
+                        )}
+                        <span className="font-medium">Generate AI Images</span>
+                      </button>
+                      <p className="text-sm text-gray-600 mt-3">
+                        Our AI will create images perfectly matched to your {selectedContent.content_type} content
+                      </p>
                     </div>
                   </div>
                 </div>
