@@ -152,15 +152,15 @@ export default function ImageGeneration() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'draft': return <Edit3 className="w-4 h-4" />
-      case 'scheduled': return <Clock className="w-4 h-4" />
-      case 'published': return <CheckCircle className="w-4 h-4" />
-      case 'archived': return <Archive className="w-4 h-4" />
-      default: return <Edit3 className="w-4 h-4" />
-    }
+  const getStatusIcon = (status: string | undefined) => {
+  switch (status) {
+    case 'draft': return <Edit3 className="w-4 h-4" />
+    case 'scheduled': return <Clock className="w-4 h-4" />
+    case 'published': return <CheckCircle className="w-4 h-4" />
+    case 'archived': return <Archive className="w-4 h-4" />
+    default: return <Edit3 className="w-4 h-4" />
   }
+}
 
   return (
     <div className="flex h-screen bg-gray-50">
