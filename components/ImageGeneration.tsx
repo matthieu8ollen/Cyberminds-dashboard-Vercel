@@ -105,14 +105,14 @@ export default function ImageGeneration() {
 
     try {
       const success = await updateContent(selectedContent.id, {
-        image_url: null
+        image_url: ''
       })
 
       if (success) {
         showToast('success', 'Image removed successfully!')
         refreshContent()
         
-        setSelectedContent((prev: any) => prev ? { ...prev, image_url: null } : null)
+        setSelectedContent((prev: any) => prev ? { ...prev, image_url: '' } : null)
       } else {
         showToast('error', 'Failed to remove image')
       }
