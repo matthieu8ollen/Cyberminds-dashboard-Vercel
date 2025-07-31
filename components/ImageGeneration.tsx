@@ -17,14 +17,16 @@ import {
   Edit3,
   Clock,
   CheckCircle,
-  Archive,
   BarChart3,
   Target,
   TrendingUp,
   AlertCircle,
   User,
   Zap,
-  FileText
+  FileText,
+  Wand2,
+  ImageIcon,
+  ArrowRight
 } from 'lucide-react'
 
 interface GeneratedImage {
@@ -37,8 +39,6 @@ export default function ImageGeneration() {
   const { 
     draftContent, 
     scheduledContent, 
-    publishedContent,
-    archivedContent,
     updateContent,
     refreshContent 
   } = useContent()
@@ -50,47 +50,60 @@ export default function ImageGeneration() {
   const [optimizedPrompt, setOptimizedPrompt] = useState('')
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
-  const [activeTab, setActiveTab] = useState<'scheduled' | 'draft' | 'published' | 'archived'>('scheduled')
+  const [activeTab, setActiveTab] = useState<'draft' | 'scheduled'>('draft')
+  const [showOptimized, setShowOptimized] = useState(false)
 
-  // Combine all content
-  const allContent = {
-    scheduled: scheduledContent,
-    draft: draftContent,
-    published: publishedContent,
-    archived: archivedContent
-  }
-
-  const currentContent = allContent[activeTab]
+  // Only show draft and scheduled content
+  const currentContent = activeTab === 'draft' ? draftContent : scheduledContent
 
   useEffect(() => {
     if (selectedContent) {
       const prompts = generatePromptSuggestions(selectedContent)
       setSuggestedPrompts(prompts)
+      setGeneratedImages([])
+      setCustomPrompt('')
+      setOptimizedPrompt('')
+      setShowOptimized(false)
     }
   }, [selectedContent])
 
   const handleContentSelect = (content: any) => {
     setSelectedContent(content)
-    setGeneratedImages([])
-    setCustomPrompt('')
-    setOptimizedPrompt('')
   }
 
   const handleOptimizePrompt = () => {
     if (customPrompt.trim()) {
       const optimized = optimizePrompt(customPrompt)
       setOptimizedPrompt(optimized)
+      setShowOptimized(true)
     }
   }
 
-  const handleGenerateImages = async (prompt: string) => {
-    if (!prompt.trim()) return
+  const handleGenerateFromAISuggestions = async () => {
+    if (suggestedPrompts.length === 0) return
 
     setIsGenerating(true)
     try {
-      const response = await generateImagesMock({ prompt, n: 3 })
+      // Generate images from the first AI suggestion
+      const response = await generateImagesMock({ prompt: suggestedPrompts[0], n: 3 })
       setGeneratedImages(response.data)
-      showToast('success', 'Images generated successfully!')
+      showToast('success', 'Images generated from AI suggestions!')
+    } catch (error) {
+      showToast('error', 'Failed to generate images')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleGenerateFromCustom = async () => {
+    const promptToUse = showOptimized ? optimizedPrompt : customPrompt
+    if (!promptToUse.trim()) return
+
+    setIsGenerating(true)
+    try {
+      const response = await generateImagesMock({ prompt: promptToUse, n: 3 })
+      setGeneratedImages(response.data)
+      showToast('success', 'Images generated from custom prompt!')
     } catch (error) {
       showToast('error', 'Failed to generate images')
     } finally {
@@ -102,13 +115,11 @@ export default function ImageGeneration() {
     if (!selectedContent || !user) return
 
     try {
-      // Update content with image URL
       const success = await updateContent(selectedContent.id, {
         image_url: imageUrl
       })
 
       if (success) {
-        // Save to generated_images table
         await saveGeneratedImage({
           user_id: user.id,
           content_id: selectedContent.id,
@@ -120,7 +131,6 @@ export default function ImageGeneration() {
         showToast('success', 'Image attached to content!')
         refreshContent()
         
-        // Update local state
         setSelectedContent((prev: any) => prev ? { ...prev, image_url: imageUrl } : null)
       } else {
         showToast('error', 'Failed to attach image')
@@ -153,40 +163,59 @@ export default function ImageGeneration() {
   }
 
   const getStatusIcon = (status: string | undefined) => {
-  switch (status) {
-    case 'draft': return <Edit3 className="w-4 h-4" />
-    case 'scheduled': return <Clock className="w-4 h-4" />
-    case 'published': return <CheckCircle className="w-4 h-4" />
-    case 'archived': return <Archive className="w-4 h-4" />
-    default: return <Edit3 className="w-4 h-4" />
+    switch (status) {
+      case 'draft': return <Edit3 className="w-4 h-4 text-gray-500" />
+      case 'scheduled': return <Clock className="w-4 h-4 text-blue-500" />
+      default: return <Edit3 className="w-4 h-4 text-gray-500" />
+    }
   }
-}
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Panel - Content Selection */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        {/* Header */}
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Image Generation</h1>
-          <p className="text-sm text-gray-600">Generate AI images for your content</p>
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
+              <ImageIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Image Generation</h1>
+              <p className="text-sm text-gray-600">Create AI images for your content</p>
+            </div>
+          </div>
         </div>
 
         {/* Content Tabs */}
         <div className="border-b border-gray-200">
           <div className="flex">
-            {(['scheduled', 'draft', 'published', 'archived'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-4 py-3 text-sm font-medium capitalize ${
-                  activeTab === tab
-                    ? 'text-slate-700 border-b-2 border-slate-700'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            <button
+              onClick={() => setActiveTab('draft')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-all ${
+                activeTab === 'draft'
+                  ? 'text-slate-700 border-b-2 border-slate-700 bg-slate-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Edit3 className="w-4 h-4" />
+                <span>Draft ({draftContent.length})</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('scheduled')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-all ${
+                activeTab === 'scheduled'
+                  ? 'text-slate-700 border-b-2 border-slate-700 bg-slate-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Clock className="w-4 h-4" />
+                <span>Scheduled ({scheduledContent.length})</span>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -197,41 +226,60 @@ export default function ImageGeneration() {
               <div
                 key={content.id}
                 onClick={() => handleContentSelect(content)}
-                className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
                   selectedContent?.id === content.id
-                    ? 'border-slate-700 bg-slate-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                    ? 'border-slate-700 bg-slate-50 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-start justify-between mb-2">
+                {/* Content Header */}
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     {getContentTypeIcon(content.content_type)}
                     {getCreationModeIcon(content)}
+                    <span className="text-xs font-medium text-gray-600 capitalize">
+                      {content.content_type}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-2">
                     {getStatusIcon(content.status)}
                     {content.image_url && (
-                      <Camera className="w-4 h-4 text-teal-500" />
+                      <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center">
+                        <Camera className="w-3 h-3 text-teal-600" />
+                      </div>
                     )}
                   </div>
                 </div>
                 
-                <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                {/* Content Preview */}
+                <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 leading-tight">
                   {content.title || content.content_text.split('\n')[0].substring(0, 50) + '...'}
                 </h3>
                 
-                <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
                   {content.content_text.substring(0, 100) + '...'}
                 </p>
+
+                {/* Content Meta */}
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{new Date(content.created_at).toLocaleDateString()}</span>
+                    <span>{content.word_count || content.content_text.length} chars</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
 
           {currentContent.length === 0 && (
             <div className="text-center py-12">
-              <Camera className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ImageIcon className="w-8 h-8 text-gray-400" />
+              </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No content found</h3>
-              <p className="text-gray-600">No {activeTab} content available for image generation.</p>
+              <p className="text-gray-600">
+                No {activeTab} content available for image generation.
+              </p>
             </div>
           )}
         </div>
@@ -243,92 +291,134 @@ export default function ImageGeneration() {
           <>
             {/* Header */}
             <div className="p-6 border-b border-gray-200 bg-white">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Generate Image for Content
-              </h2>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                {getContentTypeIcon(selectedContent.content_type)}
-                <span className="capitalize">{selectedContent.content_type}</span>
-                <span>•</span>
-                <span className="capitalize">{selectedContent.status}</span>
-                {selectedContent.image_url && (
-                  <>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Generate Image for Content
+                  </h2>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      {getContentTypeIcon(selectedContent.content_type)}
+                      <span className="capitalize font-medium">{selectedContent.content_type}</span>
+                    </div>
                     <span>•</span>
-                    <Camera className="w-4 h-4 text-teal-500" />
-                    <span className="text-teal-600">Has Image</span>
-                  </>
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(selectedContent.status)}
+                      <span className="capitalize">{selectedContent.status}</span>
+                    </div>
+                    {selectedContent.image_url && (
+                      <>
+                        <span>•</span>
+                        <div className="flex items-center space-x-2 text-teal-600">
+                          <Camera className="w-4 h-4" />
+                          <span className="font-medium">Has Image</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {selectedContent.image_url && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
+                    <img
+                      src={selectedContent.image_url}
+                      alt="Current image"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
               {/* AI Suggested Prompts */}
-              <div className="mb-8">
-                <h3 className="font-medium text-gray-900 mb-4 flex items-center">
-                  <Sparkles className="w-5 h-5 mr-2 text-teal-500" />
-                  AI Suggested Prompts
-                </h3>
-                <div className="space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Wand2 className="w-5 h-5 mr-3 text-teal-500" />
+                    AI Suggested Prompts
+                  </h3>
+                  <button
+                    onClick={handleGenerateFromAISuggestions}
+                    disabled={isGenerating || suggestedPrompts.length === 0}
+                    className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    {isGenerating ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    <span>Generate Images</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
                   {suggestedPrompts.map((prompt, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700 flex-1 mr-4">{prompt}</p>
-                      <button
-                        onClick={() => handleGenerateImages(prompt)}
-                        disabled={isGenerating}
-                        className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                      >
-                        {isGenerating ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Camera className="w-4 h-4" />
-                        )}
-                        <span>Generate</span>
-                      </button>
+                    <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-teal-50 rounded-xl border border-gray-200">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0 mt-0.5">
+                          <span className="text-sm font-semibold text-slate-600">{index + 1}</span>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed flex-1">{prompt}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Custom Prompt */}
-              <div className="mb-8">
-                <h3 className="font-medium text-gray-900 mb-4">Custom Prompt</h3>
-                <div className="space-y-3">
-                  <textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Describe the image you want to generate..."
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-24"
-                  />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                  <Edit3 className="w-5 h-5 mr-3 text-slate-500" />
+                  Custom Prompt
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <textarea
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      placeholder="Describe the image you want to generate..."
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-32 transition-all duration-200"
+                    />
+                  </div>
                   
-                  {optimizedPrompt && (
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
-                      <p className="text-sm text-blue-800">{optimizedPrompt}</p>
+                  {showOptimized && optimizedPrompt && (
+                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                      <div className="flex items-start space-x-3">
+                        <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
+                          <p className="text-sm text-blue-800 leading-relaxed">{optimizedPrompt}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
-                  <div className="flex space-x-3">
+                  <div className="flex items-center space-x-3">
                     <button
                       onClick={handleOptimizePrompt}
                       disabled={!customPrompt.trim()}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200"
                     >
-                      <Sparkles className="w-4 h-4" />
-                      <span>Optimize</span>
+                      <Wand2 className="w-4 h-4" />
+                      <span>Optimize Prompt</span>
                     </button>
                     
+                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                    
                     <button
-                      onClick={() => handleGenerateImages(optimizedPrompt || customPrompt)}
+                      onClick={handleGenerateFromCustom}
                       disabled={!customPrompt.trim() || isGenerating}
-                      className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       {isGenerating ? (
                         <RefreshCw className="w-4 h-4 animate-spin" />
                       ) : (
                         <Camera className="w-4 h-4" />
                       )}
-                      <span>Generate</span>
+                      <span>Generate Images</span>
                     </button>
                   </div>
                 </div>
@@ -337,20 +427,25 @@ export default function ImageGeneration() {
               {/* Generated Images */}
               {generatedImages.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-4">Generated Images</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <ImageIcon className="w-5 h-5 mr-3 text-green-500" />
+                    Generated Images
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {generatedImages.map((image, index) => (
-                      <div key={index} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                        <img
-                          src={image.url}
-                          alt={`Generated ${index + 1}`}
-                          className="w-full h-48 object-cover"
-                        />
+                      <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                        <div className="aspect-square overflow-hidden">
+                          <img
+                            src={image.url}
+                            alt={`Generated ${index + 1}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
                         <div className="p-4">
                           <div className="flex space-x-2">
                             <button
                               onClick={() => window.open(image.url, '_blank')}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2"
+                              className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
                             >
                               <Download className="w-4 h-4" />
                               <span>Download</span>
@@ -358,7 +453,7 @@ export default function ImageGeneration() {
                             
                             <button
                               onClick={() => handleAttachImage(image.url, image.revised_prompt || '')}
-                              className="flex-1 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center justify-center space-x-2"
+                              className="flex-1 px-3 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
                             >
                               <Link className="w-4 h-4" />
                               <span>Attach</span>
@@ -373,20 +468,26 @@ export default function ImageGeneration() {
 
               {/* Loading State */}
               {isGenerating && generatedImages.length === 0 && (
-                <div className="text-center py-12">
-                  <RefreshCw className="w-8 h-8 text-slate-700 animate-spin mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Generating Images</h3>
-                  <p className="text-gray-600">This may take a few moments...</p>
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <RefreshCw className="w-8 h-8 text-slate-600 animate-spin" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Generating Images</h3>
+                  <p className="text-gray-600">Creating AI-powered visuals for your content...</p>
                 </div>
               )}
             </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <Camera className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Select Content</h3>
-              <p className="text-gray-600">Choose content from the left panel to generate images</p>
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 bg-gradient-to-r from-slate-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ImageIcon className="w-10 h-10 text-slate-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Select Content to Begin</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Choose content from the left panel to start generating professional AI images for your LinkedIn posts.
+              </p>
             </div>
           </div>
         )}
