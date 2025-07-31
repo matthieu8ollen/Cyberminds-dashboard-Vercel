@@ -6,7 +6,7 @@ import { useContent } from '../contexts/ContentContext'
 import { useToast } from './ToastNotifications'
 import { generateImagesMock } from '../lib/imageGenerationService'
 import { generatePromptSuggestions, optimizePrompt } from '../lib/promptOptimizationService'
-import { saveGeneratedImage, updateGeneratedContent } from '../lib/supabase'
+import { saveGeneratedImage } from '../lib/supabase'
 import {
   Camera,
   Sparkles,
@@ -71,6 +71,31 @@ export default function ImageGeneration() {
     }
   }, [selectedContent])
 
+  // Auto-select content if coming from Production Pipeline
+  useEffect(() => {
+    const selectedContentFromStorage = localStorage.getItem('selectedContentForImage')
+    if (selectedContentFromStorage) {
+      try {
+        const contentData = JSON.parse(selectedContentFromStorage)
+        
+        // Find the content in current data and select it
+        const allContent = [...draftContent, ...scheduledContent]
+        const matchingContent = allContent.find(c => c.id === contentData.id)
+        
+        if (matchingContent) {
+          setSelectedContent(matchingContent)
+          // Set the appropriate tab
+          setActiveTab(matchingContent.status === 'scheduled' ? 'scheduled' : 'draft')
+        }
+        
+        // Clean up localStorage
+        localStorage.removeItem('selectedContentForImage')
+      } catch (error) {
+        console.error('Error parsing selected content from storage:', error)
+      }
+    }
+  }, [draftContent, scheduledContent])
+
   const handleContentSelect = (content: any) => {
     setSelectedContent(content)
   }
@@ -116,46 +141,6 @@ export default function ImageGeneration() {
     }
   }
 
-  const handleRemoveImage = async () => {
-    if (!selectedContent || !user) return
-
-    const confirmed = window.confirm('Are you sure you want to remove this image?')
-    if (!confirmed) return
-
-    try {
-      const success = await updateContent(selectedContent.id, {
-        image_url: ''
-      })
-
-      if (success) {
-        showToast('success', 'Image removed successfully!')
-        refreshContent()
-        
-        setSelectedContent((prev: any) => prev ? { ...prev, image_url: '' } : null)
-      } else {
-        showToast('error', 'Failed to remove image')
-      }
-    } catch (error) {
-      showToast('error', 'An error occurred while removing image')
-    }
-  }
-
-  const handleGenerateFromCustom = async () => {
-    const promptToUse = showOptimized ? optimizedPrompt : customPrompt
-    if (!promptToUse.trim()) return
-
-    setIsGenerating(true)
-    try {
-      const response = await generateImagesMock({ prompt: promptToUse, n: 3 })
-      setGeneratedImages(response.data)
-      showToast('success', 'Images generated from custom prompt!')
-    } catch (error) {
-      showToast('error', 'Failed to generate images')
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
   const handleAttachImage = async (imageUrl: string, prompt: string) => {
     if (!selectedContent || !user) return
 
@@ -182,6 +167,30 @@ export default function ImageGeneration() {
       }
     } catch (error) {
       showToast('error', 'An error occurred while attaching image')
+    }
+  }
+
+  const handleRemoveImage = async () => {
+    if (!selectedContent || !user) return
+
+    const confirmed = window.confirm('Are you sure you want to remove this image?')
+    if (!confirmed) return
+
+    try {
+      const success = await updateContent(selectedContent.id, {
+        image_url: ''
+      })
+
+      if (success) {
+        showToast('success', 'Image removed successfully!')
+        refreshContent()
+        
+        setSelectedContent((prev: any) => prev ? { ...prev, image_url: '' } : null)
+      } else {
+        showToast('error', 'Failed to remove image')
+      }
+    } catch (error) {
+      showToast('error', 'An error occurred while removing image')
     }
   }
 
@@ -385,202 +394,244 @@ export default function ImageGeneration() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {/* Prompt Mode Toggle */}
-              <div className="mb-8">
-                <div className="border-b border-gray-200">
-                  <div className="flex space-x-8">
-                    <button
-                      onClick={() => setPromptMode('ai')}
-                      className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        promptMode === 'ai'
-                          ? 'border-slate-700 text-slate-700'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Wand2 className="w-4 h-4" />
-                        <span>AI Suggested</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setPromptMode('custom')}
-                      className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        promptMode === 'custom'
-                          ? 'border-slate-700 text-slate-700'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Edit3 className="w-4 h-4" />
-                        <span>Custom Prompt</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Suggested Section */}
-              {promptMode === 'ai' && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                      <Sparkles className="w-5 h-5 mr-3 text-teal-500" />
-                      Example Images for Your Content
-                    </h3>
-                    
-                    {/* Example Images */}
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="aspect-square bg-gradient-to-br from-slate-100 to-teal-100 rounded-xl border border-gray-200 flex items-center justify-center">
-                        <div className="text-center">
-                          <ImageIcon className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                          <p className="text-xs text-gray-600">Sample Style 1</p>
-                        </div>
-                      </div>
-                      <div className="aspect-square bg-gradient-to-br from-teal-100 to-slate-100 rounded-xl border border-gray-200 flex items-center justify-center">
-                        <div className="text-center">
-                          <BarChart3 className="w-8 h-8 text-teal-600 mx-auto mb-2" />
-                          <p className="text-xs text-gray-600">Sample Style 2</p>
-                        </div>
-                      </div>
-                      <div className="aspect-square bg-gradient-to-br from-slate-200 to-teal-200 rounded-xl border border-gray-200 flex items-center justify-center">
-                        <div className="text-center">
-                          <Target className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                          <p className="text-xs text-gray-600">Sample Style 3</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Generate Button */}
-                    <div className="text-center">
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-y-auto scroll-smooth">
+                <div className="p-6">
+                  {/* Prompt Mode Toggle */}
+                  <div className="border-b border-gray-200 mb-6">
+                    <div className="flex space-x-8">
                       <button
-                        onClick={handleGenerateFromAI}
-                        disabled={isGenerating}
-                        className="px-8 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3 mx-auto transition-all duration-200 shadow-sm hover:shadow-md"
+                        onClick={() => setPromptMode('ai')}
+                        className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                          promptMode === 'ai'
+                            ? 'border-slate-700 text-slate-700'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
                       >
-                        {isGenerating ? (
-                          <RefreshCw className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Sparkles className="w-5 h-5" />
-                        )}
-                        <span className="font-medium">Generate AI Images</span>
+                        <div className="flex items-center space-x-2">
+                          <Wand2 className="w-4 h-4" />
+                          <span>AI Suggested</span>
+                        </div>
                       </button>
-                      <p className="text-sm text-gray-600 mt-3">
-                        Our AI will create images perfectly matched to your {selectedContent.content_type} content
-                      </p>
+                      <button
+                        onClick={() => setPromptMode('custom')}
+                        className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                          promptMode === 'custom'
+                            ? 'border-slate-700 text-slate-700'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Edit3 className="w-4 h-4" />
+                          <span>Custom Prompt</span>
+                        </div>
+                      </button>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Custom Prompt Section */}
-              {promptMode === 'custom' && (
-                <div className="space-y-8">
-                  <div>
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <textarea
-                          value={customPrompt}
-                          onChange={(e) => setCustomPrompt(e.target.value)}
-                          placeholder="Describe the image you want to generate..."
-                          className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-32 transition-all duration-200"
-                        />
-                      </div>
-                      
-                      {showOptimized && optimizedPrompt && (
-                        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                          <div className="flex items-start space-x-3">
-                            <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                              <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
-                              <p className="text-sm text-blue-800 leading-relaxed">{optimizedPrompt}</p>
+                  {/* AI Suggested Section */}
+                  {promptMode === 'ai' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                          <Sparkles className="w-5 h-5 mr-3 text-teal-500" />
+                          Example Images for Your Content
+                        </h3>
+                        
+                        {/* Example Images */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="aspect-square bg-gradient-to-br from-slate-100 to-teal-100 rounded-xl border border-gray-200 flex items-center justify-center">
+                            <div className="text-center">
+                              <ImageIcon className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                              <p className="text-xs text-gray-600">Sample Style 1</p>
+                            </div>
+                          </div>
+                          <div className="aspect-square bg-gradient-to-br from-teal-100 to-slate-100 rounded-xl border border-gray-200 flex items-center justify-center">
+                            <div className="text-center">
+                              <BarChart3 className="w-8 h-8 text-teal-600 mx-auto mb-2" />
+                              <p className="text-xs text-gray-600">Sample Style 2</p>
+                            </div>
+                          </div>
+                          <div className="aspect-square bg-gradient-to-br from-slate-200 to-teal-200 rounded-xl border border-gray-200 flex items-center justify-center">
+                            <div className="text-center">
+                              <Target className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+                              <p className="text-xs text-gray-600">Sample Style 3</p>
                             </div>
                           </div>
                         </div>
-                      )}
 
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={handleOptimizePrompt}
-                          disabled={!customPrompt.trim()}
-                          className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200"
-                        >
-                          <Wand2 className="w-4 h-4" />
-                          <span>Optimize Prompt</span>
-                        </button>
-                        
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                        
-                        <button
-                          onClick={handleGenerateFromCustom}
-                          disabled={!customPrompt.trim() || isGenerating}
-                          className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
-                        >
-                          {isGenerating ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Camera className="w-4 h-4" />
-                          )}
-                          <span>Generate Images</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Generated Images */}
-              {generatedImages.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <ImageIcon className="w-5 h-5 mr-3 text-green-500" />
-                    Generated Images
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {generatedImages.map((image, index) => (
-                      <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
-                        <div className="aspect-square overflow-hidden">
-                          <img
-                            src={image.url}
-                            alt={`Generated ${index + 1}`}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          />
+                        {/* Generate Button & Text - Always Visible */}
+                        <div className="text-center space-y-4">
+                          <button
+                            onClick={handleGenerateFromAI}
+                            disabled={isGenerating}
+                            className="px-8 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3 mx-auto transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            {isGenerating ? (
+                              <RefreshCw className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-5 h-5" />
+                            )}
+                            <span className="font-medium">Generate AI Images</span>
+                          </button>
+                          <p className="text-sm text-gray-600">
+                            Our AI will create images perfectly matched to your {selectedContent?.content_type} content
+                          </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => window.open(image.url, '_blank')}
-                              className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
-                            >
-                              <Download className="w-4 h-4" />
-                              <span>Download</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAttachImage(image.url, image.revised_prompt || '')}
-                              className="flex-1 px-3 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
-                            >
-                              <Link className="w-4 h-4" />
-                              <span>Attach</span>
-                            </button>
+                      </div>
+
+                      {/* Generated Images for AI */}
+                      {aiGeneratedImages.length > 0 && (
+                        <div className="mt-8 space-y-6">
+                          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                            <ImageIcon className="w-5 h-5 mr-3 text-green-500" />
+                            Generated Images
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {aiGeneratedImages.map((image, index) => (
+                              <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                                <div className="aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedImagePreview(image.url)}>
+                                  <img
+                                    src={image.url}
+                                    alt={`Generated ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                                <div className="p-4">
+                                  <div className="flex space-x-2">
+                                    <button
+                                      onClick={() => window.open(image.url, '_blank')}
+                                      className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
+                                    >
+                                      <Download className="w-4 h-4" />
+                                      <span>Download</span>
+                                    </button>
+                                    
+                                    <button
+                                      onClick={() => handleAttachImage(image.url, image.revised_prompt || '')}
+                                      className="flex-1 px-3 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
+                                    >
+                                      <Link className="w-4 h-4" />
+                                      <span>Attach</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      )}
+                    </div>
+                  )}
 
-              {/* Loading State */}
-              {isGenerating && generatedImages.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <RefreshCw className="w-8 h-8 text-slate-600 animate-spin" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Generating Images</h3>
-                  <p className="text-gray-600">Creating AI-powered visuals for your content...</p>
+                  {/* Custom Prompt Section */}
+                  {promptMode === 'custom' && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <textarea
+                            value={customPrompt}
+                            onChange={(e) => setCustomPrompt(e.target.value)}
+                            placeholder="Describe the image you want to generate..."
+                            className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-32 transition-all duration-200"
+                          />
+                        </div>
+                        
+                        {showOptimized && optimizedPrompt && (
+                          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <div className="flex items-start space-x-3">
+                              <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
+                                <p className="text-sm text-blue-800 leading-relaxed">{optimizedPrompt}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={handleOptimizePrompt}
+                            disabled={!customPrompt.trim()}
+                            className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200"
+                          >
+                            <Wand2 className="w-4 h-4" />
+                            <span>Optimize Prompt</span>
+                          </button>
+                          
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                          
+                          <button
+                            onClick={handleGenerateFromCustom}
+                            disabled={!customPrompt.trim() || isGenerating}
+                            className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            {isGenerating ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Camera className="w-4 h-4" />
+                            )}
+                            <span>Generate Images</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Generated Images for Custom */}
+                      {customGeneratedImages.length > 0 && (
+                        <div className="mt-8 space-y-6">
+                          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                            <ImageIcon className="w-5 h-5 mr-3 text-green-500" />
+                            Generated Images
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {customGeneratedImages.map((image, index) => (
+                              <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                                <div className="aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedImagePreview(image.url)}>
+                                  <img
+                                    src={image.url}
+                                    alt={`Generated ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                                <div className="p-4">
+                                  <div className="flex space-x-2">
+                                    <button
+                                      onClick={() => window.open(image.url, '_blank')}
+                                      className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
+                                    >
+                                      <Download className="w-4 h-4" />
+                                      <span>Download</span>
+                                    </button>
+                                    
+                                    <button
+                                      onClick={() => handleAttachImage(image.url, image.revised_prompt || '')}
+                                      className="flex-1 px-3 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center justify-center space-x-2 text-sm transition-all duration-200"
+                                    >
+                                      <Link className="w-4 h-4" />
+                                      <span>Attach</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Loading State */}
+                  {isGenerating && aiGeneratedImages.length === 0 && customGeneratedImages.length === 0 && (
+                    <div className="text-center py-16">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <RefreshCw className="w-8 h-8 text-slate-600 animate-spin" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Generating Images</h3>
+                      <p className="text-gray-600">Creating AI-powered visuals for your content...</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </>
         ) : (
