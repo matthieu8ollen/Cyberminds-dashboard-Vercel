@@ -52,6 +52,7 @@ export default function ImageGeneration() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [activeTab, setActiveTab] = useState<'draft' | 'scheduled'>('draft')
   const [showOptimized, setShowOptimized] = useState(false)
+  const [promptMode, setPromptMode] = useState<'ai' | 'custom'>('ai')
 
   // Only show draft and scheduled content
   const currentContent = activeTab === 'draft' ? draftContent : scheduledContent
@@ -67,31 +68,6 @@ export default function ImageGeneration() {
     }
   }, [selectedContent])
 
-  // Auto-select content if coming from Production Pipeline
-useEffect(() => {
-  const selectedContentFromStorage = localStorage.getItem('selectedContentForImage')
-  if (selectedContentFromStorage) {
-    try {
-      const contentData = JSON.parse(selectedContentFromStorage)
-      
-      // Find the content in current data and select it
-      const allContent = [...draftContent, ...scheduledContent]
-      const matchingContent = allContent.find(c => c.id === contentData.id)
-      
-      if (matchingContent) {
-        setSelectedContent(matchingContent)
-        // Set the appropriate tab
-        setActiveTab(matchingContent.status === 'scheduled' ? 'scheduled' : 'draft')
-      }
-      
-      // Clean up localStorage
-      localStorage.removeItem('selectedContentForImage')
-    } catch (error) {
-      console.error('Error parsing selected content from storage:', error)
-    }
-  }
-}, [draftContent, scheduledContent])
-
   const handleContentSelect = (content: any) => {
     setSelectedContent(content)
   }
@@ -104,15 +80,14 @@ useEffect(() => {
     }
   }
 
-  const handleGenerateFromAISuggestions = async () => {
-    if (suggestedPrompts.length === 0) return
+  const handleGenerateFromPrompt = async (prompt: string) => {
+    if (!prompt.trim()) return
 
     setIsGenerating(true)
     try {
-      // Generate images from the first AI suggestion
-      const response = await generateImagesMock({ prompt: suggestedPrompts[0], n: 3 })
+      const response = await generateImagesMock({ prompt, n: 3 })
       setGeneratedImages(response.data)
-      showToast('success', 'Images generated from AI suggestions!')
+      showToast('success', 'Images generated successfully!')
     } catch (error) {
       showToast('error', 'Failed to generate images')
     } finally {
@@ -356,98 +331,130 @@ useEffect(() => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              {/* AI Suggested Prompts */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                    <Wand2 className="w-5 h-5 mr-3 text-teal-500" />
-                    AI Suggested Prompts
-                  </h3>
-                  <button
-                    onClick={handleGenerateFromAISuggestions}
-                    disabled={isGenerating || suggestedPrompts.length === 0}
-                    className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
-                  >
-                    {isGenerating ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    <span>Generate Images</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {suggestedPrompts.map((prompt, index) => (
-                    <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-teal-50 rounded-xl border border-gray-200">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0 mt-0.5">
-                          <span className="text-sm font-semibold text-slate-600">{index + 1}</span>
-                        </div>
-                        <p className="text-sm text-gray-700 leading-relaxed flex-1">{prompt}</p>
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Prompt Mode Toggle */}
+              <div className="mb-8">
+                <div className="border-b border-gray-200">
+                  <div className="flex space-x-8">
+                    <button
+                      onClick={() => setPromptMode('ai')}
+                      className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        promptMode === 'ai'
+                          ? 'border-slate-700 text-slate-700'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Wand2 className="w-4 h-4" />
+                        <span>AI Suggested Prompts</span>
                       </div>
-                    </div>
-                  ))}
+                    </button>
+                    <button
+                      onClick={() => setPromptMode('custom')}
+                      className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        promptMode === 'custom'
+                          ? 'border-slate-700 text-slate-700'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Edit3 className="w-4 h-4" />
+                        <span>Custom Prompt</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Custom Prompt */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                  <Edit3 className="w-5 h-5 mr-3 text-slate-500" />
-                  Custom Prompt
-                </h3>
-
-                <div className="space-y-4">
-                  <div className="relative">
-                    <textarea
-                      value={customPrompt}
-                      onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder="Describe the image you want to generate..."
-                      className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-32 transition-all duration-200"
-                    />
-                  </div>
-                  
-                  {showOptimized && optimizedPrompt && (
-                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                      <div className="flex items-start space-x-3">
-                        <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
-                          <p className="text-sm text-blue-800 leading-relaxed">{optimizedPrompt}</p>
+              {/* AI Suggested Prompts Section */}
+              {promptMode === 'ai' && (
+                <div className="space-y-8">
+                  <div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {suggestedPrompts.map((prompt, index) => (
+                        <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-teal-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                             onClick={() => handleGenerateFromPrompt(prompt)}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3 flex-1">
+                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0 mt-0.5 group-hover:bg-slate-100 transition-colors">
+                                <span className="text-sm font-semibold text-slate-600">{index + 1}</span>
+                              </div>
+                              <p className="text-sm text-gray-700 leading-relaxed flex-1">{prompt}</p>
+                            </div>
+                            <button
+                              disabled={isGenerating}
+                              className="ml-4 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                              {isGenerating ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Camera className="w-4 h-4" />
+                              )}
+                              <span className="hidden sm:inline">Generate</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
 
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={handleOptimizePrompt}
-                      disabled={!customPrompt.trim()}
-                      className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200"
-                    >
-                      <Wand2 className="w-4 h-4" />
-                      <span>Optimize Prompt</span>
-                    </button>
-                    
-                    <ArrowRight className="w-4 h-4 text-gray-400" />
-                    
-                    <button
-                      onClick={handleGenerateFromCustom}
-                      disabled={!customPrompt.trim() || isGenerating}
-                      className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      {isGenerating ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4" />
+              {/* Custom Prompt Section */}
+              {promptMode === 'custom' && (
+                <div className="space-y-8">
+                  <div>
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <textarea
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          placeholder="Describe the image you want to generate..."
+                          className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-none h-32 transition-all duration-200"
+                        />
+                      </div>
+                      
+                      {showOptimized && optimizedPrompt && (
+                        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                          <div className="flex items-start space-x-3">
+                            <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <h4 className="font-medium text-blue-900 mb-2">Optimized Prompt:</h4>
+                              <p className="text-sm text-blue-800 leading-relaxed">{optimizedPrompt}</p>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                      <span>Generate Images</span>
-                    </button>
+
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={handleOptimizePrompt}
+                          disabled={!customPrompt.trim()}
+                          className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200"
+                        >
+                          <Wand2 className="w-4 h-4" />
+                          <span>Optimize Prompt</span>
+                        </button>
+                        
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                        
+                        <button
+                          onClick={handleGenerateFromCustom}
+                          disabled={!customPrompt.trim() || isGenerating}
+                          className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                          {isGenerating ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Camera className="w-4 h-4" />
+                          )}
+                          <span>Generate Images</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Generated Images */}
               {generatedImages.length > 0 && (
