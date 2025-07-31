@@ -377,9 +377,18 @@ export default function ProductionPipeline() {
         </div>
       </div>
       <div className="p-4">
-        <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
+        <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4">
           {selectedContentItem.content_text}
         </div>
+        {selectedContentItem.image_url && (
+          <div className="mb-4">
+            <img
+              src={selectedContentItem.image_url}
+              alt="Content image"
+              className="w-full rounded-lg"
+            />
+          </div>
+        )}
       </div>
       <div className="px-4 pb-4">
         <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
@@ -404,8 +413,19 @@ export default function ProductionPipeline() {
     </div>
   ) : (
     // Regular Text Preview
-    <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
-      {selectedContentItem.content_text}
+    <div>
+      {selectedContentItem.image_url && (
+        <div className="mb-4">
+          <img
+            src={selectedContentItem.image_url}
+            alt="Content image"
+            className="w-full rounded-lg"
+          />
+        </div>
+      )}
+      <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line">
+        {selectedContentItem.content_text}
+      </div>
     </div>
   )}
 </div>
@@ -615,17 +635,26 @@ export default function ProductionPipeline() {
             </div>
 
             {/* Content Preview */}
-            <div className="mb-4">
-              <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                {item.title || item.content_text.split('\n')[0].substring(0, 60) + '...'}
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                {item.content_text.length > 150 
-                  ? item.content_text.substring(0, 150) + '...'
-                  : item.content_text
-                }
-              </p>
-            </div>
+<div className="mb-4">
+  {item.image_url && (
+    <div className="mb-3">
+      <img
+        src={item.image_url}
+        alt="Content preview"
+        className="w-full h-32 object-cover rounded-lg"
+      />
+    </div>
+  )}
+  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+    {item.title || item.content_text.split('\n')[0].substring(0, 60) + '...'}
+  </h3>
+  <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+    {item.content_text.length > 150 
+      ? item.content_text.substring(0, 150) + '...'
+      : item.content_text
+    }
+  </p>
+</div>
 
             {/* Metadata */}
             <div className="space-y-2 mb-4 text-xs text-gray-500">
@@ -644,44 +673,52 @@ export default function ProductionPipeline() {
             {/* Hover Actions */}
             <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
               <div className="flex justify-between items-center">
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => {
-                      setSelectedContentItem(item)
-                      setShowPreview(true)
-                    }}
-                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
-                  >
-                    <Eye className="w-3 h-3" />
-                    <span>Preview</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => handleContinueEditing(item)}
-                    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Continue</span>
-                  </button>
+               <div className="flex space-x-2">
+  <button 
+    onClick={() => {
+      setSelectedContentItem(item)
+      setShowPreview(true)
+    }}
+    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+  >
+    <Eye className="w-3 h-3" />
+    <span>Preview</span>
+  </button>
+  
+  <button 
+    onClick={() => handleContinueEditing(item)}
+    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+  >
+    <Edit3 className="w-3 h-3" />
+    <span>Continue</span>
+  </button>
 
-                 {item.status !== 'archived' ? (
   <button 
-    onClick={() => handleArchiveContent(item.id)}
+    onClick={() => window.open(`/images?content=${item.id}`, '_blank')}
     className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
   >
-    <Archive className="w-3 h-3" />
-    <span>Archive</span>
+    <Camera className="w-3 h-3" />
+    <span>{item.image_url ? 'Change' : 'Add'} Image</span>
   </button>
-) : (
-  <button 
-    onClick={() => handleUnarchiveContent(item.id)}
-    className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
-  >
-    <RefreshCw className="w-3 h-3" />
-    <span>Unarchive</span>
-  </button>
-)}
-                </div>
+
+  {item.status !== 'archived' ? (
+    <button 
+      onClick={() => handleArchiveContent(item.id)}
+      className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+    >
+      <Archive className="w-3 h-3" />
+      <span>Archive</span>
+    </button>
+  ) : (
+    <button 
+      onClick={() => handleUnarchiveContent(item.id)}
+      className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition"
+    >
+      <RefreshCw className="w-3 h-3" />
+      <span>Unarchive</span>
+    </button>
+  )}
+</div>
                 
                 <div className="flex space-x-2">
                   {item.status === 'draft' && (
