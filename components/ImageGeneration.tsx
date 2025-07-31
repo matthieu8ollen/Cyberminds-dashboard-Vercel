@@ -345,18 +345,20 @@ export default function ImageGeneration() {
                 </div>
                 
                 {selectedContent.image_url && (
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
-                    <img
-                      src={selectedContent.image_url}
-                      alt="Current image"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
+                      <img
+                        src={selectedContent.image_url}
+                        alt="Current image"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <button
                       onClick={handleRemoveImage}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md border-2 border-white"
                       title="Remove image"
                     >
-                      ✕
+                      <span className="text-xs leading-none">✕</span>
                     </button>
                   </div>
                 )}
