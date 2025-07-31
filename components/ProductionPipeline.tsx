@@ -133,7 +133,8 @@ export default function ProductionPipeline() {
   const { 
     draftContent, 
     scheduledContent, 
-    publishedContent, 
+    publishedContent,
+    archivedContent,
     loadingContent,
     refreshContent,
     updateContent,
@@ -155,6 +156,7 @@ export default function ProductionPipeline() {
     ...draftContent.map(c => ({ ...c, status: c.status || 'draft' as const })),
     ...scheduledContent.map(c => ({ ...c, status: c.status || 'scheduled' as const })),
     ...publishedContent.map(c => ({ ...c, status: c.status || 'published' as const }))
+    ...archivedContent.map(c => ({ ...c, status: c.status || 'archived' as const }))
   ]
 
   const filteredContent = allContent.filter(item => item.status === filter)
@@ -506,8 +508,8 @@ export default function ProductionPipeline() {
               <div className="flex items-center justify-between mb-2">
                 <Archive className="w-5 h-5 text-gray-600 group-hover:text-gray-700" />
                 <span className="text-2xl font-bold text-gray-900">
-                  {allContent.filter(c => c.status === 'archived').length}
-                </span>
+  {archivedContent.length}
+</span>
               </div>
               <p className="text-sm font-medium text-gray-600">Archived</p>
             </button>
