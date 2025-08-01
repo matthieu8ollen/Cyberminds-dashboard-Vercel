@@ -265,7 +265,7 @@ export default function ContentCalendar() {
     setShowContentPreview(false)
   }
 
-  function getStatusColor(status: string) {
+  function getStatusColor(status: string | undefined) {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'published': return 'bg-green-100 text-green-800 border-green-200'
@@ -275,7 +275,7 @@ export default function ContentCalendar() {
     }
   }
 
-  function getStatusIcon(status: string) {
+  function getStatusIcon(status: string | undefined) {
     switch (status) {
       case 'scheduled': return <Clock className="w-3 h-3" />
       case 'published': return <CheckCircle className="w-3 h-3" />
@@ -328,9 +328,9 @@ export default function ContentCalendar() {
             <span className="text-sm font-medium text-gray-900 capitalize">
               {content.content_type}
             </span>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(content.status)}`}>
-              {getStatusIcon(content.status)}
-              <span className="ml-1 capitalize">{content.status}</span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(content.status || 'draft')}`}>
+              {getStatusIcon(content.status || 'draft')}
+              <span className="ml-1 capitalize">{content.status || 'draft'}</span>
             </span>
           </div>
           <p className="text-sm text-gray-700 line-clamp-2">
