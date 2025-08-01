@@ -690,8 +690,8 @@ const success = await updateContent(selectedContentItem.id, {
     if (!showRescheduleModal || !selectedContentItem) return null
 
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full overflow-hidden">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowRescheduleModal(false)}>
+        <div className="bg-white rounded-xl max-w-md w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">Reschedule Content</h3>
@@ -704,7 +704,7 @@ const success = await updateContent(selectedContentItem.id, {
             </div>
           </div>
           
-          <div className="p-6">
+          <div className="p-6" onClick={(e) => e.stopPropagation()}>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -715,6 +715,8 @@ const success = await updateContent(selectedContentItem.id, {
                   value={rescheduleDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setRescheduleDate(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white cursor-pointer"
                   style={{ colorScheme: 'light' }}
                 />
@@ -727,6 +729,8 @@ const success = await updateContent(selectedContentItem.id, {
                 <select
                   value={rescheduleTime}
                   onChange={(e) => setRescheduleTime(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
                 >
                   {TIME_SLOTS.map(time => (
