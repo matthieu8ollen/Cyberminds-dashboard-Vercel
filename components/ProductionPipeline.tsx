@@ -340,6 +340,39 @@ export default function ProductionPipeline() {
     }
   }
 
+const getSmartDateDisplay = (item: any): string => {
+    switch (item.status) {
+      case 'draft':
+        return `Created: ${new Date(item.created_at).toLocaleDateString()}`
+      case 'scheduled':
+        return `Scheduled: ${item.scheduled_date ? new Date(item.scheduled_date).toLocaleDateString() : new Date(item.created_at).toLocaleDateString()}`
+      case 'published':
+        return `Published: ${item.published_at ? new Date(item.published_at).toLocaleDateString() : new Date(item.created_at).toLocaleDateString()}`
+      case 'archived':
+        // Show the most relevant date for archived content
+        if (item.published_at) {
+          return `Published: ${new Date(item.published_at).toLocaleDateString()}`
+        } else if (item.scheduled_date) {
+          return `Scheduled: ${new Date(item.scheduled_date).toLocaleDateString()}`
+        } else {
+          return `Created: ${new Date(item.created_at).toLocaleDateString()}`
+        }
+      default:
+        return `Created: ${new Date(item.created_at).toLocaleDateString()}`
+    }
+  }
+
+  const getSmartTimeDisplay = (item: any): string => {
+    if (item.status === 'scheduled' && item.scheduled_time) {
+      return `at ${item.scheduled_time}`
+    }
+    if (item.status === 'published' && item.published_at) {
+      const time = item.published_at.split('T')[1]?.substring(0, 5)
+      return time ? `at ${time}` : ''
+    }
+    return ''
+  }
+  
   const ContentPreviewModal = () => {
     if (!showPreview || !selectedContentItem) return null
 
@@ -640,10 +673,8 @@ export default function ProductionPipeline() {
                 <span>{item.word_count || item.content_text.length} chars</span>
               </div>
               <div className="flex justify-between">
-                <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                {item.published_at && (
-                  <span>Published: {new Date(item.published_at).toLocaleDateString()}</span>
-                )}
+                <span>{getSmartDateDisplay(item)}</span>
+                <span>{getSmartTimeDisplay(item)}</span>
               </div>
             </div>
 
