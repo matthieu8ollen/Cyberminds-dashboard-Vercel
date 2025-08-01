@@ -357,57 +357,60 @@ export default function ProductionPipeline() {
             </div>
           </div>
           
-          {/* LinkedIn Preview - Now Direct and Larger */}
-          <div className="p-8 overflow-y-auto max-h-[60vh] flex justify-center">
-            <div className="max-w-lg w-full bg-white border border-gray-200 rounded-lg shadow-lg">
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold">YN</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Your Name</div>
-                    <div className="text-sm text-gray-500">Finance Professional • 1st</div>
-                    <div className="text-xs text-gray-400 flex items-center">
-                      <span>2h</span>
-                      <span className="mx-1">•</span>
-                      <span>🌍</span>
+          {/* LinkedIn Preview - Improved Layout */}
+          <div className="flex p-6 overflow-y-auto max-h-[65vh] gap-6">
+            {/* LinkedIn Preview */}
+            <div className="flex-1 flex justify-center">
+              <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold">YN</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Your Name</div>
+                      <div className="text-sm text-gray-500">Finance Professional • 1st</div>
+                      <div className="text-xs text-gray-400 flex items-center">
+                        <span>2h</span>
+                        <span className="mx-1">•</span>
+                        <span>🌍</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4">
-                  {selectedContentItem.content_text}
-                </div>
-                {selectedContentItem.image_url && (
-                  <div className="mb-4">
-                    <img
-                      src={selectedContentItem.image_url}
-                      alt="Content image"
-                      className="w-full rounded-lg"
-                    />
+                <div className="p-4">
+                  <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4">
+                    {selectedContentItem.content_text}
                   </div>
-                )}
-              </div>
-              <div className="px-4 pb-4">
-                <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>👍</span>
-                    <span>Like</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>💬</span>
-                    <span>Comment</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>🔄</span>
-                    <span>Repost</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>📤</span>
-                    <span>Send</span>
-                  </button>
+                  {selectedContentItem.image_url && (
+                    <div className="mb-4">
+                      <img
+                        src={selectedContentItem.image_url}
+                        alt="Content image"
+                        className="w-full rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 pb-4">
+                  <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>👍</span>
+                      <span>Like</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>💬</span>
+                      <span>Comment</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>🔄</span>
+                      <span>Repost</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>📤</span>
+                      <span>Send</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -664,10 +667,10 @@ export default function ProductionPipeline() {
                   {item.status !== 'published' && (
                     <button 
                       onClick={() => handleImageAction(item)}
-                      className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-600 hover:text-teal-600 transition"
-                      title={item.image_url ? 'Change Image' : 'Add Image'}
+                      className="flex items-center space-x-1 px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 transition"
                     >
                       <Camera className="w-3 h-3" />
+                      <span>Image</span>
                     </button>
                   )}
 
@@ -715,34 +718,7 @@ export default function ProductionPipeline() {
                       <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         {item.status !== 'archived' ? (
                           <button
-                            onClick={() =>{
-                              setShowMoreActions(null)
-                              handleArchiveContent(item.id)
-                            }}
-                            className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <Archive className="w-3 h-3" />
-                              <span>Archive</span>
-                            </div>
-                          </button>
-                        ) : (
-                          <button
                             onClick={() => {
-                              setShowMoreActions(null)
-                              handleUnarchiveContent(item.id)
-                            }}
-                            className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RefreshCw className="w-3 h-3" />
-                              <span>Unarchive</span>
-                            </div>
-                          </button>
-                        )}
-                        
-                        <button
-                          onClick={() => {
                             setShowMoreActions(null)
                             handleDeleteContent(item.id)
                           }}
