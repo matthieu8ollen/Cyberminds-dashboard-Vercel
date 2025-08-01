@@ -718,7 +718,11 @@ export default function ProductionPipeline() {
                       <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         {item.status !== 'archived' ? (
                           <button
-                            onClick={() => {
+                            onClick={() => )}
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
                             setShowMoreActions(null)
                             handleDeleteContent(item.id)
                           }}
@@ -742,7 +746,7 @@ export default function ProductionPipeline() {
       {/* Click outside to close dropdown */}
       {showMoreActions && (
         <div 
-          className="fixed inset-0 z-5" 
+          className="fixed inset-0 z-10" 
           onClick={() => setShowMoreActions(null)}
         />
       )}
