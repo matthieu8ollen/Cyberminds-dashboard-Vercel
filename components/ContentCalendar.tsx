@@ -239,24 +239,30 @@ export default function ContentCalendar() {
     
     try {
       // Ensure date stays in local timezone without conversion
-const localDate = new Date(rescheduleDate + 'T00:00:00')
-const dateString = localDate.toISOString().split('T')[0]
+      const localDate = new Date(rescheduleDate + 'T00:00:00')
+      const dateString = localDate.toISOString().split('T')[0]
 
-const success = await updateContent(selectedContentItem.id, {
-  scheduled_date: dateString,
-  scheduled_time: rescheduleTime
-})
+      const success = await updateContent(selectedContentItem.id, {
+        scheduled_date: dateString,
+        scheduled_time: rescheduleTime
+      })
       
       if (success) {
-  showToast('success', 'Content rescheduled successfully!')
-  setShowRescheduleModal(false)
-  setShowContentPreview(false)
-  await refreshContent()
-  // Force re-render by clearing and resetting selected date
-  const currentSelected = selectedDate
-  setSelectedDate(new Date())
-  setTimeout(() => setSelectedDate(currentSelected), 0)
-} else {
+        showToast('success', 'Content rescheduled successfully!')
+        setShowRescheduleModal(false)
+        setShowContentPreview(false)
+        
+        // Refresh content globally - this updates both calendar AND production pipeline
+        await refreshContent()
+        
+        // Also trigger a manual refresh event for any other components listening
+        window.dispatchEvent(new CustomEvent('contentUpdated'))
+        
+        // Force re-render by clearing and resetting selected date
+        const currentSelected = selectedDate
+        setSelectedDate(new Date())
+        setTimeout(() => setSelectedDate(currentSelected), 0)
+      } else {
         showToast('error', 'Failed to reschedule content')
       }
     } catch (error) {
