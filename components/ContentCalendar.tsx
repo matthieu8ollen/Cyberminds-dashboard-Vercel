@@ -239,10 +239,14 @@ export default function ContentCalendar() {
     if (!selectedContentItem || !rescheduleDate || !rescheduleTime) return
     
     try {
-      const success = await updateContent(selectedContentItem.id, {
-        scheduled_date: rescheduleDate,
-        scheduled_time: rescheduleTime
-      })
+      // Ensure date stays in local timezone without conversion
+const localDate = new Date(rescheduleDate + 'T00:00:00')
+const dateString = localDate.toISOString().split('T')[0]
+
+const success = await updateContent(selectedContentItem.id, {
+  scheduled_date: dateString,
+  scheduled_time: rescheduleTime
+})
       
       if (success) {
   showToast('success', 'Content rescheduled successfully!')
@@ -687,7 +691,7 @@ export default function ContentCalendar() {
 
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full">
+        <div className="bg-white rounded-xl max-w-md w-full overflow-hidden">
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">Reschedule Content</h3>
@@ -706,31 +710,31 @@ export default function ContentCalendar() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Date
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={rescheduleDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setRescheduleDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10"
-                  />
-                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" /><CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                <input
+                  type="date"
+                  value={rescheduleDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Time
                 </label>
-                <select
-                  value={rescheduleTime}
-                  onChange={(e) => setRescheduleTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  {TIME_SLOTS.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white pr-8"
+                  >
+                    {TIME_SLOTS.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                  <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
