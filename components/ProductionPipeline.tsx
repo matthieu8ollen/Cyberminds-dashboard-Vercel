@@ -341,11 +341,17 @@ export default function ProductionPipeline() {
   }
 
 const getSmartDateDisplay = (item: any): string => {
+    // Helper function to format date without timezone conversion
+    const formatDateSafely = (dateString: string) => {
+      const date = new Date(dateString + 'T00:00:00')
+      return date.toLocaleDateString()
+    }
+
     switch (item.status) {
       case 'draft':
         return `Created: ${new Date(item.created_at).toLocaleDateString()}`
       case 'scheduled':
-        return `Scheduled: ${item.scheduled_date ? new Date(item.scheduled_date).toLocaleDateString() : new Date(item.created_at).toLocaleDateString()}`
+        return `Scheduled: ${item.scheduled_date ? formatDateSafely(item.scheduled_date) : new Date(item.created_at).toLocaleDateString()}`
       case 'published':
         return `Published: ${item.published_at ? new Date(item.published_at).toLocaleDateString() : new Date(item.created_at).toLocaleDateString()}`
       case 'archived':
@@ -353,7 +359,7 @@ const getSmartDateDisplay = (item: any): string => {
         if (item.published_at) {
           return `Published: ${new Date(item.published_at).toLocaleDateString()}`
         } else if (item.scheduled_date) {
-          return `Scheduled: ${new Date(item.scheduled_date).toLocaleDateString()}`
+          return `Scheduled: ${formatDateSafely(item.scheduled_date)}`
         } else {
           return `Created: ${new Date(item.created_at).toLocaleDateString()}`
         }
@@ -361,7 +367,7 @@ const getSmartDateDisplay = (item: any): string => {
         return `Created: ${new Date(item.created_at).toLocaleDateString()}`
     }
   }
-
+  
   const getSmartTimeDisplay = (item: any): string => {
     if (item.status === 'scheduled' && item.scheduled_time) {
       return `at ${item.scheduled_time}`
