@@ -369,57 +369,59 @@ export default function ProductionPipeline() {
             </div>
           </div>
           
-          {/* LinkedIn Preview - Better Contained Layout */}
-          <div className="flex-1 flex justify-center items-center p-8 overflow-y-auto min-h-0">
-            <div className="max-w-lg w-full bg-white border border-gray-200 rounded-lg shadow-lg">
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold">YN</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Your Name</div>
-                    <div className="text-sm text-gray-500">Finance Professional • 1st</div>
-                    <div className="text-xs text-gray-400 flex items-center">
-                      <span>2h</span>
-                      <span className="mx-1">•</span>
-                      <span>🌍</span>
+          {/* LinkedIn Preview - Better Contained Layout with Fixed Scroll */}
+          <div className="flex-1 overflow-y-auto min-h-0 p-8">
+            <div className="flex justify-center items-start min-h-full">
+              <div className="max-w-lg w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold">YN</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Your Name</div>
+                      <div className="text-sm text-gray-500">Finance Professional • 1st</div>
+                      <div className="text-xs text-gray-400 flex items-center">
+                        <span>2h</span>
+                        <span className="mx-1">•</span>
+                        <span>🌍</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4 max-h-80 overflow-y-auto">
-                  {selectedContentItem.content_text}
-                </div>
-                {selectedContentItem.image_url && (
-                  <div className="mb-4">
-                    <img
-                      src={selectedContentItem.image_url}
-                      alt="Content image"
-                      className="w-full rounded-lg max-h-60 object-cover"
-                    />
+                <div className="p-4">
+                  <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4">
+                    {selectedContentItem.content_text}
                   </div>
-                )}
-              </div>
-              <div className="px-4 pb-4">
-                <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>👍</span>
-                    <span>Like</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>💬</span>
-                    <span>Comment</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>🔄</span>
-                    <span>Repost</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                    <span>📤</span>
-                    <span>Send</span>
-                  </button>
+                  {selectedContentItem.image_url && (
+                    <div className="mb-4">
+                      <img
+                        src={selectedContentItem.image_url}
+                        alt="Content image"
+                        className="w-full rounded-lg max-h-60 object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 pb-4">
+                  <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>👍</span>
+                      <span>Like</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>💬</span>
+                      <span>Comment</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>🔄</span>
+                      <span>Repost</span>
+                    </button>
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                      <span>📤</span>
+                      <span>Send</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -649,7 +651,7 @@ export default function ProductionPipeline() {
             <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
               <div className="flex justify-between items-center">
                 {/* Left Side: Primary Actions */}
-                <div className="flex space-x-2">
+                <div className="flex items-center space-x-2">
                   <button 
                     onClick={() => {
                       setSelectedContentItem(item)
@@ -672,8 +674,8 @@ export default function ProductionPipeline() {
 
                 {/* Right Side: Secondary Actions with Consistent Layout */}
                 <div className="flex items-center space-x-2">
-                  {/* Image Button - Only for non-published content, consistently placed */}
-                  {item.status !== 'published' && (
+                  {/* Image Button - Only for draft and scheduled content, consistently placed */}
+                  {(item.status === 'draft' || item.status === 'scheduled') && (
                     <button 
                       onClick={() => handleImageAction(item)}
                       className="flex items-center space-x-1 px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 transition"
