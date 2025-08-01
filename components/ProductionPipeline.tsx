@@ -333,8 +333,8 @@ export default function ProductionPipeline() {
 
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">LinkedIn Preview</h3>
@@ -357,74 +357,71 @@ export default function ProductionPipeline() {
             </div>
           </div>
           
-          {/* LinkedIn Preview - Improved Layout */}
-          <div className="flex p-6 overflow-y-auto max-h-[65vh] gap-6">
-            {/* LinkedIn Preview */}
-            <div className="flex-1 flex justify-center">
-              <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-lg">
-                <div className="p-4 border-b border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">YN</span>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">Your Name</div>
-                      <div className="text-sm text-gray-500">Finance Professional • 1st</div>
-                      <div className="text-xs text-gray-400 flex items-center">
-                        <span>2h</span>
-                        <span className="mx-1">•</span>
-                        <span>🌍</span>
-                      </div>
+          {/* LinkedIn Preview - Better Contained Layout */}
+          <div className="flex-1 flex justify-center items-center p-8 overflow-y-auto min-h-0">
+            <div className="max-w-lg w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold">YN</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Your Name</div>
+                    <div className="text-sm text-gray-500">Finance Professional • 1st</div>
+                    <div className="text-xs text-gray-400 flex items-center">
+                      <span>2h</span>
+                      <span className="mx-1">•</span>
+                      <span>🌍</span>
                     </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4">
-                    {selectedContentItem.content_text}
-                  </div>
-                  {selectedContentItem.image_url && (
-                    <div className="mb-4">
-                      <img
-                        src={selectedContentItem.image_url}
-                        alt="Content image"
-                        className="w-full rounded-lg"
-                      />
-                    </div>
-                  )}
+              </div>
+              <div className="p-4">
+                <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-line mb-4 max-h-80 overflow-y-auto">
+                  {selectedContentItem.content_text}
                 </div>
-                <div className="px-4 pb-4">
-                  <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
-                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                      <span>👍</span>
-                      <span>Like</span>
-                    </button>
-                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                      <span>💬</span>
-                      <span>Comment</span>
-                    </button>
-                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                      <span>🔄</span>
-                      <span>Repost</span>
-                    </button>
-                    <button className="flex items-center space-x-1 hover:text-blue-600 transition">
-                      <span>📤</span>
-                      <span>Send</span>
-                    </button>
+                {selectedContentItem.image_url && (
+                  <div className="mb-4">
+                    <img
+                      src={selectedContentItem.image_url}
+                      alt="Content image"
+                      className="w-full rounded-lg max-h-60 object-cover"
+                    />
                   </div>
+                )}
+              </div>
+              <div className="px-4 pb-4">
+                <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                    <span>👍</span>
+                    <span>Like</span>
+                  </button>
+                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                    <span>💬</span>
+                    <span>Comment</span>
+                  </button>
+                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                    <span>🔄</span>
+                    <span>Repost</span>
+                  </button>
+                  <button className="flex items-center space-x-1 hover:text-blue-600 transition">
+                    <span>📤</span>
+                    <span>Send</span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Action Buttons */}
-          <div className="p-6 border-t border-gray-200 bg-gray-50">
+          {/* Action Buttons - Better Spaced */}
+          <div className="p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="flex justify-between items-center">
               <button 
                 onClick={() => {
                   setShowPreview(false)
                   handleContinueEditing(selectedContentItem)
                 }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>{getContinueButtonText(selectedContentItem)}</span>
@@ -437,7 +434,7 @@ export default function ProductionPipeline() {
                       setShowPreview(false)
                       handleScheduleContent(selectedContentItem)
                     }}
-                    className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition"
+                    className="px-6 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition"
                   >
                     Schedule
                   </button>
@@ -449,7 +446,7 @@ export default function ProductionPipeline() {
                       setShowPreview(false)
                       handlePublishNow(selectedContentItem)
                     }}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 transition"
+                    className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 transition"
                   >
                     <Send className="w-4 h-4" />
                     <span>Publish Now</span>
@@ -461,7 +458,7 @@ export default function ProductionPipeline() {
                     href={selectedContentItem.linkedin_post_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition"
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition"
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span>View on LinkedIn</span>
@@ -473,7 +470,7 @@ export default function ProductionPipeline() {
                     setShowPreview(false)
                     handleDeleteContent(selectedContentItem.id)
                   }}
-                  className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-400 flex items-center space-x-2 transition"
+                  className="px-4 py-2.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-400 flex items-center space-x-2 transition"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete</span>
@@ -716,66 +713,9 @@ export default function ProductionPipeline() {
                     
                     {showMoreActions === item.id && (
                       <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                       {item.status !== 'archived' ? (
-  <button
-    onClick={() => {
-      setShowMoreActions(null)
-      handleArchiveContent(item.id)
-    }}
-    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-  >
-    <div className="flex items-center space-x-2">
-      <Archive className="w-3 h-3" />
-      <span>Archive</span>
-    </div>
-  </button>
-) : (
-  <button
-    onClick={() => {
-      setShowMoreActions(null)
-      handleUnarchiveContent(item.id)
-    }}
-    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-  >
-    <div className="flex items-center space-x-2">
-      <RefreshCw className="w-3 h-3" />
-      <span>Unarchive</span>
-    </div>
-  </button>
-)}
-                        
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setShowMoreActions(null)
-                            handleDeleteContent(item.id)
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition border-t border-gray-100"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <Trash2 className="w-3 h-3" />
-                            <span>Delete</span>
-                          </div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Click outside to close dropdown */}
-      {showMoreActions && (
-        <div 
-          className="fixed inset-0 z-10" 
-          onClick={() => setShowMoreActions(null)}
-        />
-      )}
-
-      {filteredContent.length === 0 && (
+                        {item.status !== 'archived' ? (
+                          <button
+                            onClick={() => {filteredContent.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Archive className="w-8 h-8 text-gray-400" />
