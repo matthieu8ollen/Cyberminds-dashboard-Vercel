@@ -343,11 +343,10 @@ export default function ProductionPipeline() {
 const getSmartDateDisplay = (item: any): string => {
     // Helper function to format date without timezone conversion
     const formatDateSafely = (dateString: string) => {
-      // Parse as local date to avoid timezone shifts
-      const [year, month, day] = dateString.split('-')
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-      return date.toLocaleDateString()
-    }
+  // Simply format the YYYY-MM-DD string directly without creating Date object
+  const [year, month, day] = dateString.split('-')
+  return `${month}/${day}/${year}`
+}
 
     switch (item.status) {
       case 'draft':
