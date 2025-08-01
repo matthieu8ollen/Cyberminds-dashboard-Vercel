@@ -716,9 +716,33 @@ export default function ProductionPipeline() {
                     
                     {showMoreActions === item.id && (
                       <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                        {item.status !== 'archived' ? (
-                          <button
-                            onClick={() => )}
+                       {item.status !== 'archived' ? (
+  <button
+    onClick={() => {
+      setShowMoreActions(null)
+      handleArchiveContent(item.id)
+    }}
+    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <Archive className="w-3 h-3" />
+      <span>Archive</span>
+    </div>
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setShowMoreActions(null)
+      handleUnarchiveContent(item.id)
+    }}
+    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <RefreshCw className="w-3 h-3" />
+      <span>Unarchive</span>
+    </div>
+  </button>
+)}
                         
                         <button
                           onClick={(e) => {
