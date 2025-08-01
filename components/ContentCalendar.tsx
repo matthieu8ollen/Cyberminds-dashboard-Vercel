@@ -11,7 +11,6 @@ import {
   Clock, 
   CheckCircle, 
   AlertCircle, 
-  Filter,
   Eye,
   Edit3,
   Trash2,
@@ -564,25 +563,10 @@ const success = await updateContent(selectedContentItem.id, {
 
     return (
       <div className="flex-1 flex flex-col">
-        {/* Header */}
+       {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-lg font-semibold text-gray-900 capitalize">{view} View</h2>
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value as ContentFilter)}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="all">All Content</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-            </div>
+            <h2 className="text-lg font-semibold text-gray-900 capitalize">{view} View</h2>
           </div>
         </div>
 
