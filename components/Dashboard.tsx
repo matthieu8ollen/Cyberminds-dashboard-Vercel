@@ -724,12 +724,7 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-        {/* Top Header - Now Empty or Minimal */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-6 py-4">
-            {/* Header can be empty or contain breadcrumbs/page title if needed */}
-          </div>
-        </header>
+   {/* Removed empty header to save space */}
 
         {/* Page Content */}
         <main>
