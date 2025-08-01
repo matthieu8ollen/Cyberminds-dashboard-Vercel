@@ -714,8 +714,45 @@ export default function ProductionPipeline() {
                     {showMoreActions === item.id && (
                       <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         {item.status !== 'archived' ? (
-                          <button
-                            onClick={() => {filteredContent.length === 0 && (
+  <button
+    onClick={() => {
+      setShowMoreActions(null)
+      handleArchiveContent(item.id)
+    }}
+    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <Archive className="w-3 h-3" />
+      <span>Archive</span>
+    </div>
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setShowMoreActions(null)
+      handleUnarchiveContent(item.id)
+    }}
+    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <RefreshCw className="w-3 h-3" />
+      <span>Unarchive</span>
+    </div>
+  </button>
+)}
+
+<button
+  onClick={() => {
+    setShowMoreActions(null)
+    handleDeleteContent(item.id)
+  }}
+  className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition border-t border-gray-100"
+>
+  <div className="flex items-center space-x-2">
+    <Trash2 className="w-3 h-3" />
+    <span>Delete</span>
+  </div>
+</button>
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Archive className="w-8 h-8 text-gray-400" />
