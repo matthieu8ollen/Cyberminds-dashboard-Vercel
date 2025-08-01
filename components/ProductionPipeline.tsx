@@ -170,6 +170,18 @@ export default function ProductionPipeline() {
     }
   }, [user, refreshContent])
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowMoreActions(null)
+    }
+
+    if (showMoreActions) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showMoreActions])
+
   const handleScheduleContent = (content: any) => {
     setSelectedContent(content)
     setShowScheduleModal(true)
@@ -633,10 +645,10 @@ export default function ProductionPipeline() {
               </div>
             </div>
 
-            {/* Hover Actions - Simplified */}
+            {/* Button Actions - Fixed Layout for All Cards */}
             <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
               <div className="flex justify-between items-center">
-                {/* Primary Actions */}
+                {/* Left Side: Primary Actions */}
                 <div className="flex space-x-2">
                   <button 
                     onClick={() => {
@@ -658,9 +670,9 @@ export default function ProductionPipeline() {
                   </button>
                 </div>
 
-                {/* Status-Specific Actions */}
+                {/* Right Side: Secondary Actions with Consistent Layout */}
                 <div className="flex items-center space-x-2">
-                  {/* Image Action - Only for non-published content */}
+                  {/* Image Button - Only for non-published content, consistently placed */}
                   {item.status !== 'published' && (
                     <button 
                       onClick={() => handleImageAction(item)}
@@ -671,7 +683,7 @@ export default function ProductionPipeline() {
                     </button>
                   )}
 
-                  {/* Status Actions */}
+                  {/* Status-Specific Action Button */}
                   {item.status === 'draft' && (
                     <button 
                       onClick={() => handleScheduleContent(item)}
@@ -702,59 +714,82 @@ export default function ProductionPipeline() {
                     </a>
                   )}
 
-                  {/* More Actions Dropdown */}
+                  {/* More Actions Dropdown - Fixed */}
                   <div className="relative">
                     <button
-                      onClick={() => setShowMoreActions(showMoreActions === item.id ? null : item.id)}
-                      className="p-1 text-gray-400 hover:text-gray-600 transition"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setShowMoreActions(showMoreActions === item.id ? null : item.id)
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition"
                     >
-                      <MoreVertical className="w-4 h-4" />
+                      <MoreVertical className="w-3 h-3" />
                     </button>
                     
-              {showMoreActions === item.id && (
-  <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-    {item.status !== 'archived' ? (
-      <button
-        onClick={() => {
-          setShowMoreActions(null)
-          handleArchiveContent(item.id)
-        }}
-        className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-      >
-        <div className="flex items-center space-x-2">
-          <Archive className="w-3 h-3" />
-          <span>Archive</span>
-        </div>
-      </button>
-    ) : (
-      <button
-        onClick={() => {
-          setShowMoreActions(null)
-          handleUnarchiveContent(item.id)
-        }}
-        className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition"
-      >
-        <div className="flex items-center space-x-2">
-          <RefreshCw className="w-3 h-3" />
-          <span>Unarchive</span>
-        </div>
-      </button>
-    )}
-    
-    <button
-      onClick={() => {
-        setShowMoreActions(null)
-        handleDeleteContent(item.id)
-      }}
-      className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition border-t border-gray-100"
-    >
-      <div className="flex items-center space-x-2">
-        <Trash2 className="w-3 h-3" />
-        <span>Delete</span>
+                    {showMoreActions === item.id && (
+                      <>
+                        {/* Backdrop to close dropdown */}
+                        <div 
+                          className="fixed inset-0 z-20" 
+                          onClick={() => setShowMoreActions(null)}
+                        ></div>
+                        
+                        {/* Dropdown Menu */}
+                        <div className="absolute right-0 bottom-full mb-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-30">
+                          {item.status !== 'archived' ? (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                setShowMoreActions(null)
+                                handleArchiveContent(item.id)
+                              }}
+                              className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition flex items-center space-x-2"
+                            >
+                              <Archive className="w-3 h-3" />
+                              <span>Archive</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                setShowMoreActions(null)
+                                handleUnarchiveContent(item.id)
+                              }}
+                              className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition flex items-center space-x-2"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>Unarchive</span>
+                            </button>
+                          )}
+                          
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setShowMoreActions(null)
+                              handleDeleteContent(item.id)
+                            }}
+                            className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition border-t border-gray-100 flex items-center space-x-2"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </button>
-  </div>
-)}
+
+      {/* Empty State */}
+      {filteredContent.length === 0 && !loadingContent && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Archive className="w-8 h-8 text-gray-400" />
