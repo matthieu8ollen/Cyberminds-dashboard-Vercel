@@ -130,31 +130,25 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }
 
-  const scheduleContentItem = async (contentId: string, date: string, time: string) => {
-    if (!user) return false
+const scheduleContentItem = async (contentId: string, date: string, time: string) => {
+  if (!user) return false
+  
+  try {
+    // Update content with status AND scheduled date/time
+    const success = await updateContent(contentId, { 
+      status: 'scheduled',
+      scheduled_date: date,
+      scheduled_time: time
+    })
     
-    try {
-      // Update content status to scheduled
-      await updateContent(contentId, { status: 'scheduled' })
-      
-      // Create calendar entry
-      const { error } = await scheduleContent({
-        user_id: user.id,
-        content_id: contentId,
-        scheduled_date: date,
-        scheduled_time: time,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        status: 'scheduled'
-      })
-      
-      if (error) throw error
-      
-      return true
-    } catch (error) {
-      console.error('Error scheduling content:', error)
-      return false
-    }
+    if (!success) throw new Error('Failed to update content')
+    
+    return true
+  } catch (error) {
+    console.error('Error scheduling content:', error)
+    return false
   }
+}
 
   const publishContent = async (contentId: string) => {
     try {
