@@ -26,7 +26,10 @@ export default function SchedulingModal() {
   const handleSchedule = async () => {
     setIsScheduling(true)
     try {
-      const success = await scheduleContentItem(selectedContent.id, selectedDate, selectedTime)
+      // Ensure date stays in local timezone
+const localDate = new Date(selectedDate + 'T00:00:00')
+const dateString = localDate.toISOString().split('T')[0]
+const success = await scheduleContentItem(selectedContent.id, dateString, selectedTime)
       if (success) {
   showToast('success', `Content scheduled for ${selectedDate} at ${selectedTime}`)
   await refreshContent() // Refresh to sync with calendar
