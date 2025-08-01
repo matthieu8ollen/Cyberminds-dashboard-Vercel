@@ -81,31 +81,31 @@ export default function ContentCalendar() {
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [rescheduleTime, setRescheduleTime] = useState('09:00')
 
-  // Combine all content with calendar information
-  const calendarContent: ScheduledContentWithCalendar[] = [
-    // Scheduled content
-    ...scheduledContent.map(content => ({
-      ...content,
-      status: content.status || 'scheduled' as const,
-      scheduled_date: content.scheduled_date || getTomorrowDate(),
-      scheduled_time: content.scheduled_time || '09:00'
-    })),
-    // Published content (use published_at date)
-    ...publishedContent.map(content => ({
-      ...content,
-      status: content.status || 'published' as const,
-      scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
-      scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00'
-    })),
-    // Archived content that has dates
-    ...archivedContent.filter(content => content.scheduled_date).map(content => ({
-      ...content,
-      status: content.status || 'archived' as const,
-      scheduled_date: content.scheduled_date!,
-      scheduled_time: content.scheduled_time || '09:00'
-    }))
-  ]
-
+  // Combine all content with calendar information - only show content with actual dates
+const calendarContent: ScheduledContentWithCalendar[] = [
+  // Scheduled content - only if has scheduled_date
+  ...scheduledContent.filter(content => content.scheduled_date).map(content => ({
+    ...content,
+    status: content.status || 'scheduled' as const,
+    scheduled_date: content.scheduled_date!,
+    scheduled_time: content.scheduled_time || '09:00'
+  })),
+  // Published content - use published_at date
+  ...publishedContent.map(content => ({
+    ...content,
+    status: content.status || 'published' as const,
+    scheduled_date: content.published_at ? content.published_at.split('T')[0] : new Date().toISOString().split('T')[0],
+    scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00'
+  })),
+  // Archived content that has dates
+  ...archivedContent.filter(content => content.scheduled_date).map(content => ({
+    ...content,
+    status: content.status || 'archived' as const,
+    scheduled_date: content.scheduled_date!,
+    scheduled_time: content.scheduled_time || '09:00'
+  }))
+]
+  
   useEffect(() => {
     if (user) {
       refreshContent()
@@ -245,11 +245,15 @@ export default function ContentCalendar() {
       })
       
       if (success) {
-        showToast('success', 'Content rescheduled successfully!')
-        setShowRescheduleModal(false)
-        setShowContentPreview(false)
-        refreshContent()
-      } else {
+  showToast('success', 'Content rescheduled successfully!')
+  setShowRescheduleModal(false)
+  setShowContentPreview(false)
+  await refreshContent()
+  // Force re-render by clearing and resetting selected date
+  const currentSelected = selectedDate
+  setSelectedDate(new Date())
+  setTimeout(() => setSelectedDate(currentSelected), 0)
+} else {
         showToast('error', 'Failed to reschedule content')
       }
     } catch (error) {
