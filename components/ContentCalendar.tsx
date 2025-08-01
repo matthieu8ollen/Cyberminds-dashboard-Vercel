@@ -3,78 +3,45 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useContent } from '../contexts/ContentContext'
-import { supabase } from '../lib/supabase'
 import { useToast } from './ToastNotifications'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragOverlay,
-  useDroppable,
-  DragStartEvent,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
   ChevronRight, 
-  Plus, 
   Clock, 
   CheckCircle, 
   AlertCircle, 
-  MoreHorizontal,
   Filter,
-  Settings,
   Eye,
   Edit3,
   Trash2,
-  Copy,
   Send,
   BarChart3,
   Target,
   Sparkles,
-  RepeatIcon,
   ExternalLink,
   Archive,
   X,
-  ChevronDown,
-  List
+  RefreshCw
 } from 'lucide-react'
 
-interface ScheduledContent {
+interface ScheduledContentWithCalendar {
   id: string
   user_id: string
   content_text: string
   content_type: string
   tone_used: string
-  prompt_input: string | null
-  is_saved: boolean
-  scheduled_date: string
-  scheduled_time: string
   status: 'scheduled' | 'published' | 'archived' | 'draft'
-  recurring?: {
-    frequency: 'daily' | 'weekly' | 'monthly'
-    interval: number
-    endDate?: string
-  }
-  publish_attempts?: number
-  last_error?: string
+  scheduled_date?: string
+  scheduled_time?: string
   created_at: string
   published_at?: string
   linkedin_post_url?: string
+  image_url?: string
 }
 
-type CalendarView = 'month' | 'week' | 'day'
-type ContentFilter = 'all' | 'scheduled' | 'published' | 'archived' | 'draft'
+type CalendarView = 'week' | 'day'
+type ContentFilter = 'all' | 'scheduled' | 'published' | 'archived'
 
 const DAYS_OF_WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -92,12 +59,10 @@ const TIME_SLOTS = [
 export default function ContentCalendar() {
   const { user } = useAuth()
   const { 
-    scheduledContent: realScheduledContent, 
-    draftContent, 
+    scheduledContent, 
     publishedContent,
+    archivedContent,
     loadingContent,
-    setSelectedContent,
-    setShowScheduleModal,
     refreshContent,
     updateContent,
     scheduleContentItem,
@@ -106,91 +71,45 @@ export default function ContentCalendar() {
   } = useContent()
   const { showToast } = useToast()
 
-  // Drag and drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('week')
   const [filter, setFilter] = useState<ContentFilter>('all')
-  const [scheduledContent, setScheduledContent] = useState<ScheduledContent[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [showScheduleModalLocal, setShowScheduleModalLocal] = useState(false)
-  const [selectedContentItem, setSelectedContentItem] = useState<ScheduledContent | null>(null)
+  const [selectedContentItem, setSelectedContentItem] = useState<ScheduledContentWithCalendar | null>(null)
   const [showContentPreview, setShowContentPreview] = useState(false)
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [availableContent, setAvailableContent] = useState<any[]>([])
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false)
+  const [rescheduleDate, setRescheduleDate] = useState('')
+  const [rescheduleTime, setRescheduleTime] = useState('09:00')
+
+  // Combine all content with calendar information
+  const calendarContent: ScheduledContentWithCalendar[] = [
+    // Scheduled content
+    ...scheduledContent.map(content => ({
+      ...content,
+      scheduled_date: content.scheduled_date || getTomorrowDate(),
+      scheduled_time: content.scheduled_time || '09:00'
+    })),
+    // Published content (use published_at date)
+    ...publishedContent.map(content => ({
+      ...content,
+      scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
+      scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00'
+    })),
+    // Archived content that has dates
+    ...archivedContent.filter(content => content.scheduled_date).map(content => ({
+      ...content,
+      scheduled_date: content.scheduled_date!,
+      scheduled_time: content.scheduled_time || '09:00'
+    }))
+  ]
 
   useEffect(() => {
-    loadScheduledContent()
-    loadAvailableContent()
-  }, [user, realScheduledContent, draftContent, publishedContent])
-
-  const loadScheduledContent = async () => {
-    const calendarContent: ScheduledContent[] = []
-    
-    // Add draft content that has scheduled dates
-    draftContent.forEach((content) => {
-      if (content.scheduled_date) {
-        calendarContent.push({
-          ...content,
-          scheduled_date: content.scheduled_date,
-          scheduled_time: content.scheduled_time || '09:00',
-          status: content.status || 'scheduled'
-        })
-      }
-    })
-    
-    // Add some sample scheduled content for testing
-    draftContent.slice(0, 3).forEach((content, index) => {
-      const dates = [
-        getTomorrowDate(),
-        getDateString(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
-        getDateString(new Date(Date.now() + 5 * 24 * 60 * 60 * 1000))
-      ]
-      const times = ['09:00', '14:00', '11:00']
-      
-      calendarContent.push({
-        ...content,
-        scheduled_date: dates[index],
-        scheduled_time: times[index],
-        status: 'scheduled'
-      })
-    })
-    
-    // Add published content
-    publishedContent.forEach((content) => {
-      calendarContent.push({
-        ...content,
-        scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
-        scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00',
-        status: 'published'
-      })
-    })
-    
-    setScheduledContent(calendarContent)
-  }
-
-  const loadAvailableContent = async () => {
-    if (!user) return
-    try {
-      const unscheduledContent = draftContent.filter(content => 
-        !scheduledContent.some(scheduled => scheduled.id === content.id)
-      )
-      setAvailableContent(unscheduledContent)
-    } catch (error) {
-      console.error('Error loading available content:', error)
+    if (user) {
+      refreshContent()
     }
-  }
+  }, [user, refreshContent])
 
+  // Utility functions
   function getTomorrowDate(): string {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -248,12 +167,12 @@ export default function ContentCalendar() {
     })
   }
 
-  function getContentForDate(date: Date): ScheduledContent[] {
+  function getContentForDate(date: Date): ScheduledContentWithCalendar[] {
     const dateString = getDateString(date)
-    return scheduledContent.filter(content => 
+    return calendarContent.filter(content => 
       content.scheduled_date === dateString &&
       (filter === 'all' || content.status === filter)
-    ).sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time))
+    ).sort((a, b) => (a.scheduled_time || '09:00').localeCompare(b.scheduled_time || '09:00'))
   }
 
   function getContentCountForDate(date: Date): number {
@@ -276,89 +195,18 @@ export default function ContentCalendar() {
     setSelectedDate(date)
   }
 
-  function handleContentClick(content: ScheduledContent, event: React.MouseEvent) {
+  function handleContentClick(content: ScheduledContentWithCalendar, event: React.MouseEvent) {
     event.stopPropagation()
     setSelectedContentItem(content)
     setShowContentPreview(true)
   }
 
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as string)
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    setActiveId(null)
-    
-    if (!over) return
-    
-    const activeContent = scheduledContent.find(c => c.id === active.id)
-    if (!activeContent) return
-    
-    const newDate = over.id.toString().replace('date-', '')
-    
-    if (activeContent.scheduled_date !== newDate) {
-      setScheduledContent(prev => prev.map(content =>
-        content.id === activeContent.id
-          ? { ...content, scheduled_date: newDate }
-          : content
-      ))
-      
-      showToast('success', `Content moved to ${new Date(newDate).toLocaleDateString()}`)
-      
-      updateContent(activeContent.id, { 
-        scheduled_date: newDate,
-        scheduled_time: activeContent.scheduled_time 
-      })
-        .then(success => {
-          if (success) {
-            setTimeout(() => {
-              loadScheduledContent()
-              refreshContent()
-            }, 500)
-          } else {
-            setScheduledContent(prev => prev.map(content =>
-              content.id === activeContent.id
-                ? { ...content, scheduled_date: activeContent.scheduled_date }
-                : content
-            ))
-            showToast('error', 'Failed to save changes')
-          }
-        })
-        .catch(() => {
-          setScheduledContent(prev => prev.map(content =>
-            content.id === activeContent.id
-              ? { ...content, scheduled_date: activeContent.scheduled_date }
-              : content
-          ))
-          showToast('error', 'Failed to save changes')
-        })
-    }
-  }
-
-  const handleScheduleContent = async (content: any, date: string, time: string) => {
-    try {
-      const success = await scheduleContentItem(content.id, date, time)
-      if (success) {
-        showToast('success', 'Content scheduled successfully!')
-        setShowScheduleModalLocal(false)
-        refreshContent()
-        loadScheduledContent()
-      } else {
-        showToast('error', 'Failed to schedule content')
-      }
-    } catch (error) {
-      showToast('error', 'An error occurred while scheduling')
-    }
-  }
-
-  const handlePublishNow = async (content: any) => {
+  const handlePublishNow = async (content: ScheduledContentWithCalendar) => {
     try {
       const success = await publishContent(content.id)
       if (success) {
         showToast('success', 'Content published successfully!')
         refreshContent()
-        loadScheduledContent()
       } else {
         showToast('error', 'Failed to publish content')
       }
@@ -374,7 +222,6 @@ export default function ContentCalendar() {
         if (success) {
           showToast('success', 'Content deleted successfully')
           refreshContent()
-          loadScheduledContent()
           setShowContentPreview(false)
         } else {
           showToast('error', 'Failed to delete content')
@@ -385,16 +232,37 @@ export default function ContentCalendar() {
     }
   }
 
-  const handleDuplicateContent = async (content: ScheduledContent) => {
+  const handleReschedule = async () => {
+    if (!selectedContentItem || !rescheduleDate || !rescheduleTime) return
+    
     try {
-      showToast('info', 'Content duplicated and saved as draft')
-      setShowContentPreview(false)
+      const success = await updateContent(selectedContentItem.id, {
+        scheduled_date: rescheduleDate,
+        scheduled_time: rescheduleTime
+      })
+      
+      if (success) {
+        showToast('success', 'Content rescheduled successfully!')
+        setShowRescheduleModal(false)
+        setShowContentPreview(false)
+        refreshContent()
+      } else {
+        showToast('error', 'Failed to reschedule content')
+      }
     } catch (error) {
-      showToast('error', 'Failed to duplicate content')
+      showToast('error', 'An error occurred while rescheduling')
     }
   }
 
-  function getStatusColor(status: ScheduledContent['status']) {
+  const openRescheduleModal = (content: ScheduledContentWithCalendar) => {
+    setSelectedContentItem(content)
+    setRescheduleDate(content.scheduled_date || '')
+    setRescheduleTime(content.scheduled_time || '09:00')
+    setShowRescheduleModal(true)
+    setShowContentPreview(false)
+  }
+
+  function getStatusColor(status: string) {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'published': return 'bg-green-100 text-green-800 border-green-200'
@@ -404,7 +272,7 @@ export default function ContentCalendar() {
     }
   }
 
-  function getStatusIcon(status: ScheduledContent['status']) {
+  function getStatusIcon(status: string) {
     switch (status) {
       case 'scheduled': return <Clock className="w-3 h-3" />
       case 'published': return <CheckCircle className="w-3 h-3" />
@@ -429,200 +297,137 @@ export default function ContentCalendar() {
     
     const hasScheduled = content.some(c => c.status === 'scheduled')
     const hasPublished = content.some(c => c.status === 'published')
-  const hasArchived = content.some(c => c.status === 'archived')
+    const hasArchived = content.some(c => c.status === 'archived')
 
-let color = 'bg-gray-400'
-if (hasArchived) color = 'bg-gray-500'
-    else if (hasScheduled) color = 'bg-blue-500'
+    let color = 'bg-gray-400'
+    if (hasScheduled) color = 'bg-blue-500'
     else if (hasPublished) color = 'bg-green-500'
+    else if (hasArchived) color = 'bg-gray-500'
     
     return (
       <div className={`w-2 h-2 ${color} rounded-full mx-auto mt-1`} />
     )
   }
 
-  // Draggable Content Card Component
-  function DraggableContentCard({ content, isTimeline = false }: { content: ScheduledContent; isTimeline?: boolean }) {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: content.id })
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    }
-
-    if (isTimeline) {
-      return (
-        <div
-          ref={setNodeRef}
-          style={style}
-          {...attributes}
-          {...listeners}
-          onClick={(e) => handleContentClick(content, e)}
-          className="flex items-start space-x-4 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md cursor-grab active:cursor-grabbing transition-all duration-200"
-        >
-          <div className="text-sm font-medium text-gray-500 w-16 flex-shrink-0">
-            {content.scheduled_time}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-2">
-              {getContentTypeIcon(content.content_type)}
-              <span className="text-sm font-medium text-gray-900 capitalize">
-                {content.content_type}
-              </span>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(content.status)}`}>
-                {getStatusIcon(content.status)}
-                <span className="ml-1 capitalize">{content.status}</span>
-              </span>
-            </div>
-            <p className="text-sm text-gray-700 line-clamp-2">
-              {content.content_text}
-            </p>
-            <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-              <span className="capitalize">{content.tone_used}</span>
-              <span>{content.content_text.length} chars</span>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
+  // Content Card Component
+  function ContentCard({ content }: { content: ScheduledContentWithCalendar }) {
     return (
       <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
         onClick={(e) => handleContentClick(content, e)}
-        className="bg-white border border-gray-200 rounded-lg p-3 cursor-grab hover:shadow-md transition-all duration-200 active:cursor-grabbing"
+        className="flex items-start space-x-4 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md cursor-pointer transition-all duration-200"
       >
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center space-x-1">
+        <div className="text-sm font-medium text-gray-500 w-16 flex-shrink-0">
+          {content.scheduled_time || '09:00'}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 mb-2">
             {getContentTypeIcon(content.content_type)}
-            {getStatusIcon(content.status)}
+            <span className="text-sm font-medium text-gray-900 capitalize">
+              {content.content_type}
+            </span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(content.status)}`}>
+              {getStatusIcon(content.status)}
+              <span className="ml-1 capitalize">{content.status}</span>
+            </span>
           </div>
-          <span className="text-xs text-gray-500">{content.scheduled_time}</span>
-        </div>
-        <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
-          {content.content_text.split('\n')[0].substring(0, 60)}...
-        </p>
-        <div className="flex items-center justify-between text-xs text-gray-600">
-          <span className="capitalize">{content.content_type}</span>
-          <span className="capitalize">{content.tone_used}</span>
+          <p className="text-sm text-gray-700 line-clamp-2">
+            {content.content_text}
+          </p>
+          <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+            <span className="capitalize">{content.tone_used}</span>
+            <span>{content.content_text.length} chars</span>
+          </div>
         </div>
       </div>
     )
   }
 
-  // Droppable Date Component
-  function DroppableDate({ date, children }: { date: Date; children: React.ReactNode }) {
-    const { isOver, setNodeRef } = useDroppable({
-      id: `date-${getDateString(date)}`,
-    })
-
+  // Left Panel - Compact Calendar
+  function LeftPanel() {
     return (
-      <div
-        ref={setNodeRef}
-        className={`relative ${isOver ? 'bg-teal-100' : ''} transition-colors`}
-      >
-        {children}
-      </div>
-    )
-  }
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Content Calendar</h1>
+          <p className="text-sm text-gray-600">View and manage scheduled content</p>
+        </div>
 
-// Left Panel - Compact Calendar
-function LeftPanel() {
-  return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Content Calendar</h1>
-        <p className="text-sm text-gray-600">Schedule and manage your content</p>
-      </div>
-
-      {/* Stats */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {scheduledContent.filter(c => c.status === 'scheduled').length}
+        {/* Stats */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {scheduledContent.length}
+              </div>
+              <div className="text-xs text-gray-600">Scheduled</div>
             </div>
-            <div className="text-xs text-gray-600">Scheduled</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {scheduledContent.filter(c => c.status === 'published').length}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {publishedContent.length}
+              </div>
+              <div className="text-xs text-gray-600">Published</div>
             </div>
-            <div className="text-xs text-gray-600">Published</div>
           </div>
         </div>
-      </div>
 
-      {/* Mini Calendar */}
-      <div className="flex-1 p-6 pb-2 flex flex-col">
-        <div className="flex-1 mb-6 flex flex-col">
-          {/* View Controls */}
-          <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
-            {(['week', 'day'] as CalendarView[]).map(viewType => (
-              <button
-                key={viewType}
-                onClick={() => setView(viewType)}
-                className={`px-6 py-2 text-sm font-medium capitalize text-center ${
-                  view === viewType
-                    ? 'bg-slate-700 text-white'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                } transition-colors`}
-              >
-                {viewType}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => navigateMonth('prev')}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </h3>
-            <button
-              onClick={() => navigateMonth('next')}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-<div className="flex-shrink-0 max-h-64 overflow-visible">
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {DAYS_OF_WEEK.map(day => (
-                <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-                  {day}
-                </div>
+        {/* Calendar */}
+        <div className="flex-1 p-6 pb-2 flex flex-col">
+          <div className="flex-1 mb-6 flex flex-col">
+            {/* View Controls */}
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-gray-300 overflow-hidden mb-4">
+              {(['week', 'day'] as CalendarView[]).map(viewType => (
+                <button
+                  key={viewType}
+                  onClick={() => setView(viewType)}
+                  className={`px-6 py-2 text-sm font-medium capitalize text-center ${
+                    view === viewType
+                      ? 'bg-slate-700 text-white'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  } transition-colors`}
+                >
+                  {viewType}
+                </button>
               ))}
             </div>
-            
-            <div className="grid grid-cols-7 gap-1">
-              {getDaysInMonth(currentDate).map((date, index) => {
-                const isCurrentMonth = date.getMonth() === currentDate.getMonth()
-                const isToday = date.toDateString() === new Date().toDateString()
-                const isSelected = date.toDateString() === selectedDate.toDateString()
-                const hasContent = getContentCountForDate(date) > 0
-                
-                return (
-                  <DroppableDate key={index} date={date}>
+
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigateMonth('prev')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h3>
+              <button
+                onClick={() => navigateMonth('next')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-shrink-0 max-h-64 overflow-visible">
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {DAYS_OF_WEEK.map(day => (
+                  <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="grid grid-cols-7 gap-1">
+                {getDaysInMonth(currentDate).map((date, index) => {
+                  const isCurrentMonth = date.getMonth() === currentDate.getMonth()
+                  const isToday = date.toDateString() === new Date().toDateString()
+                  const isSelected = date.toDateString() === selectedDate.toDateString()
+                  const hasContent = getContentCountForDate(date) > 0
+                  
+                  return (
                     <button
+                      key={index}
                       onClick={() => handleDateClick(date)}
                       className={`
                         w-8 h-8 text-xs rounded transition-colors relative
@@ -639,34 +444,31 @@ function LeftPanel() {
                         </div>
                       )}
                     </button>
-                  </DroppableDate>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
-  {/* Bottom Controls */}
-        <div className="mb-6">
-          <button
-            onClick={() => {
-              setShowScheduleModalLocal(true)
-            }}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="text-sm">Schedule Content</span>
-          </button>
+          {/* Refresh Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => refreshContent()}
+              className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="text-sm">Refresh Calendar</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   // Right Panel - Content Details
   function RightPanel() {
     const renderContent = (): JSX.Element => {
-  if (view === 'day') {
+      if (view === 'day') {
         const dayContent = getContentForDate(selectedDate)
         return (
           <div className="space-y-4">
@@ -686,7 +488,7 @@ function LeftPanel() {
             {dayContent.length > 0 ? (
               <div className="space-y-3">
                 {dayContent.map(content => (
-                  <DraggableContentCard key={content.id} content={content} isTimeline />
+                  <ContentCard key={content.id} content={content} />
                 ))}
               </div>
             ) : (
@@ -694,12 +496,7 @@ function LeftPanel() {
                 <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No content scheduled</h3>
                 <p className="text-gray-600 mb-4">This date doesn't have any content scheduled yet.</p>
-                <button 
-                  onClick={() => setShowScheduleModalLocal(true)}
-                  className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
-                >
-                  Schedule Content
-                </button>
+                <p className="text-sm text-gray-500">Schedule content from the Production Pipeline.</p>
               </div>
             )}
           </div>
@@ -735,7 +532,7 @@ function LeftPanel() {
                     {dayContent.length > 0 ? (
                       <div className="space-y-2">
                         {dayContent.map(content => (
-                          <DraggableContentCard key={content.id} content={content} isTimeline />
+                          <ContentCard key={content.id} content={content} />
                         ))}
                       </div>
                     ) : (
@@ -749,44 +546,7 @@ function LeftPanel() {
         )
       }
 
-      // Month view - show selected date content (same as day view)
-const dayContent = getContentForDate(selectedDate)
-return (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-gray-900">
-        {selectedDate.toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          month: 'long', 
-          day: 'numeric' 
-        })}
-      </h2>
-      <span className="text-sm text-gray-600">
-        {dayContent.length} {dayContent.length === 1 ? 'item' : 'items'}
-      </span>
-    </div>
-    
-    {dayContent.length > 0 ? (
-      <div className="space-y-3">
-        {dayContent.map(content => (
-          <DraggableContentCard key={content.id} content={content} isTimeline />
-        ))}
-      </div>
-    ) : (
-      <div className="text-center py-12">
-        <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No content scheduled</h3>
-        <p className="text-gray-600 mb-4">This date doesn't have any content scheduled yet.</p>
-        <button 
-          onClick={() => setShowScheduleModalLocal(true)}
-          className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800"
-        >
-          Schedule Content
-        </button>
-      </div>
-    )}
-  </div>
-)
+      return <div>Unknown view</div>
     }
 
     return (
@@ -807,7 +567,6 @@ return (
                   <option value="scheduled">Scheduled</option>
                   <option value="published">Published</option>
                   <option value="archived">Archived</option>
-                  <option value="draft">Drafts</option>
                 </select>
               </div>
             </div>
@@ -822,93 +581,6 @@ return (
     )
   }
 
-  // Schedule Modal Component
-  function ScheduleModal() {
-    if (!showScheduleModalLocal) return null
-    
-    const [selectedTime, setSelectedTime] = useState('09:00')
-    
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Schedule Content for {selectedDate.toLocaleDateString()}
-              </h3>
-              <button 
-                onClick={() => setShowScheduleModalLocal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-900 mb-3">Available Content</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {availableContent.map(content => (
-                  <div 
-                    key={content.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                        {content.content_text.substring(0, 80)}...
-                      </p>
-                      <p className="text-xs text-gray-600 capitalize">
-                        {content.content_type} • {content.tone_used}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={() => handleScheduleContent(content, getDateString(selectedDate), selectedTime)}
-                      className="ml-3 px-3 py-1 bg-slate-700 text-white text-xs rounded hover:bg-slate-800 transition-colors"
-                    >
-                      Schedule
-                    </button>
-                  </div>
-                ))}
-                {availableContent.length === 0 && (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No available content to schedule. Create some content first!
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Default Time
-              </label>
-              <select
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                {TIME_SLOTS.map(time => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="p-6 border-t border-gray-200 bg-gray-50">
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowScheduleModalLocal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  
   // Content Preview Modal Component
   function ContentPreviewModal() {
     if (!showContentPreview || !selectedContentItem) return null
@@ -948,13 +620,15 @@ return (
           <div className="p-6 border-t border-gray-200 bg-gray-50">
             <div className="flex justify-between">
               <div className="flex space-x-2">
-                <button 
-                  onClick={() => handleDuplicateContent(selectedContentItem)}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>Duplicate</span>
-                </button>
+                {selectedContentItem.status === 'scheduled' && (
+                  <button 
+                    onClick={() => openRescheduleModal(selectedContentItem)}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span>Reschedule</span>
+                  </button>
+                )}
               </div>
               
               <div className="flex space-x-3">
@@ -968,19 +642,6 @@ return (
                   >
                     <Send className="w-4 h-4" />
                     <span>Publish Now</span>
-                  </button>
-                )}
-                
-                {selectedContentItem.status === 'archived' && (
-                  <button 
-                    onClick={() => {
-                      setShowContentPreview(false)
-                      handlePublishNow(selectedContentItem)
-                    }}
-                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center space-x-2 transition-colors"
-                  >
-                    <RepeatIcon className="w-4 h-4" />
-                    <span>Retry</span>
                   </button>
                 )}
 
@@ -998,9 +659,9 @@ return (
                 
                 <button 
                   onClick={() => handleDeleteContent(selectedContentItem.id)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
+                  className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-400 flex items-center space-x-2 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                   <span>Delete</span>
                 </button>
               </div>
@@ -1011,7 +672,79 @@ return (
     )
   }
 
- if (loadingContent && scheduledContent.length === 0) {
+  // Reschedule Modal Component
+  function RescheduleModal() {
+    if (!showRescheduleModal || !selectedContentItem) return null
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl max-w-md w-full">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Reschedule Content</h3>
+              <button 
+                onClick={() => setShowRescheduleModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Date
+                </label>
+                <input
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Time
+                </label>
+                <select
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                >
+                  {TIME_SLOTS.map(time => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowRescheduleModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReschedule}
+                disabled={!rescheduleDate || !rescheduleTime}
+                className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Reschedule
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadingContent && calendarContent.length === 0) {
     return (
       <div className="flex h-screen">
         <div className="flex-1 flex items-center justify-center">
@@ -1025,30 +758,11 @@ return (
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex h-screen bg-gray-50">
-        <LeftPanel />
-        <RightPanel />
-        
-        <DragOverlay>
-          {activeId ? (
-            <div className="bg-white border-2 border-slate-300 rounded-lg p-3 shadow-xl opacity-90 transform rotate-2">
-              <div className="text-sm text-gray-600 flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4" />
-                <span>Moving content...</span>
-              </div>
-            </div>
-          ) : null}
-        </DragOverlay>
-      </div>
-      
-      <ScheduleModal />
+    <div className="flex h-screen bg-gray-50">
+      <LeftPanel />
+      <RightPanel />
       <ContentPreviewModal />
-    </DndContext>
+      <RescheduleModal />
+    </div>
   )
 }
