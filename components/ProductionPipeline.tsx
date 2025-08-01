@@ -649,7 +649,7 @@ export default function ProductionPipeline() {
 
             {/* Button Actions - Fixed Layout for All Cards */}
             <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
-              <div className="flex items-center justify-center space-x-2">
+              <div className={`flex items-center ${(item.status === 'draft' || item.status === 'scheduled') ? 'justify-center space-x-2' : 'justify-between'}`}>
                 {/* Left Side: Primary Actions */}
                 <div className="flex space-x-2">
                   <button 
