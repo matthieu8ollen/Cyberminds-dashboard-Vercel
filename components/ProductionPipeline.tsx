@@ -651,7 +651,7 @@ export default function ProductionPipeline() {
             <div className="absolute inset-x-6 bottom-6 pt-4 border-t border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white">
               <div className="flex justify-between items-center">
                 {/* Left Side: Primary Actions */}
-                <div className="flex items-center space-x-2">
+                <div className="flex space-x-2">
                   <button 
                     onClick={() => {
                       setSelectedContentItem(item)
@@ -671,7 +671,7 @@ export default function ProductionPipeline() {
                     <span>Edit</span>
                   </button>
                 </div>
-
+                
                 {/* Right Side: Secondary Actions with Consistent Layout */}
                 <div className="flex items-center space-x-2">
                   {/* Image Button - Only for draft and scheduled content, consistently placed */}
