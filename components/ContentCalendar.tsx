@@ -31,7 +31,7 @@ interface ScheduledContentWithCalendar {
   content_text: string
   content_type: string
   tone_used: string
-  status: 'scheduled' | 'published' | 'archived' | 'draft'
+  status: 'scheduled' | 'published' | 'archived' | 'draft' | undefined
   scheduled_date?: string
   scheduled_time?: string
   created_at: string
@@ -86,18 +86,21 @@ export default function ContentCalendar() {
     // Scheduled content
     ...scheduledContent.map(content => ({
       ...content,
+      status: content.status || 'scheduled' as const,
       scheduled_date: content.scheduled_date || getTomorrowDate(),
       scheduled_time: content.scheduled_time || '09:00'
     })),
     // Published content (use published_at date)
     ...publishedContent.map(content => ({
       ...content,
+      status: content.status || 'published' as const,
       scheduled_date: content.published_at ? content.published_at.split('T')[0] : getYesterdayDate(),
       scheduled_time: content.published_at ? content.published_at.split('T')[1]?.substring(0, 5) || '10:00' : '10:00'
     })),
     // Archived content that has dates
     ...archivedContent.filter(content => content.scheduled_date).map(content => ({
       ...content,
+      status: content.status || 'archived' as const,
       scheduled_date: content.scheduled_date!,
       scheduled_time: content.scheduled_time || '09:00'
     }))
