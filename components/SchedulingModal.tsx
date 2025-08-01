@@ -12,7 +12,7 @@ const TIME_SLOTS = [
 ]
 
 export default function SchedulingModal() {
-  const { selectedContent, showScheduleModal, setShowScheduleModal, scheduleContentItem, publishContent } = useContent()
+  const { selectedContent, showScheduleModal, setShowScheduleModal, scheduleContentItem, publishContent, refreshContent } = useContent()
   const { showToast } = useToast()
   
   const [selectedDate, setSelectedDate] = useState(
@@ -28,9 +28,10 @@ export default function SchedulingModal() {
     try {
       const success = await scheduleContentItem(selectedContent.id, selectedDate, selectedTime)
       if (success) {
-        showToast('success', `Content scheduled for ${selectedDate} at ${selectedTime}`)
-        setShowScheduleModal(false)
-      } else {
+  showToast('success', `Content scheduled for ${selectedDate} at ${selectedTime}`)
+  await refreshContent() // Refresh to sync with calendar
+  setShowScheduleModal(false)
+} else {
         showToast('error', 'Failed to schedule content')
       }
     } catch (error) {
