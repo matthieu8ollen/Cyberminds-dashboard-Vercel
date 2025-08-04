@@ -8,6 +8,7 @@ type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-co
 
 interface IdeasHubProps {
   onIdeationComplete?: (ideation: any) => void
+  onNavigateToCreate?: (mode: 'express' | 'standard' | 'power', ideationData: any) => void
 }
 
 // Placeholder components for now
@@ -59,7 +60,7 @@ const ContentFormulas = ({ onBack }: { onBack: () => void }) => (
   </div>
 )
 
-export default function IdeasHub({ onIdeationComplete }: IdeasHubProps = {}) {
+export default function IdeasHub({ onIdeationComplete, onNavigateToCreate }: IdeasHubProps = {}) {
   const [currentPage, setCurrentPage] = useState<IdeasPage>('welcome')
 
   const handleBackToWelcome = () => {
@@ -201,13 +202,14 @@ export default function IdeasHub({ onIdeationComplete }: IdeasHubProps = {}) {
   const renderPageContent = () => {
     switch (currentPage) {
       case 'talk-with-marcus':
-        return (
-          <TalkWithMarcus 
-            onIdeationComplete={(ideation) => {
-              if (onIdeationComplete) onIdeationComplete(ideation)
-            }} 
-          />
-        )
+  return (
+    <TalkWithMarcus 
+      onIdeationComplete={(ideation) => {
+        if (onIdeationComplete) onIdeationComplete(ideation)
+      }}
+      onNavigateToCreate={onNavigateToCreate}
+    />
+  )
 
       case 'ai-suggested':
         return <AISuggestedTopics onBack={handleBackToWelcome} />
