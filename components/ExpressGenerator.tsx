@@ -356,25 +356,26 @@ function ExpressResults({
             <div className="space-y-3">
 <button 
                 onClick={async () => {
-                  try {
-                    const saved = await saveDraft({
-                      content_text: drafts[selectedDraft].content,
-                      content_type: 'framework',
-                      tone_used: 'professional',
-                      prompt_input: topic,
-                      is_saved: true,
-                      title: `Express Mode - ${topic}`
-                    }, 'express')
-                    
-                    if (saved) {
-                      showToast('success', 'Content saved successfully!')
-                      setSelectedContent(saved)
-                      setShowScheduleModal(true)
-                    }
-                  } catch (error) {
-                    showToast('error', 'Failed to save content')
-                  }
-                }}
+  try {
+    const saved = await saveDraft({
+      content_text: drafts[selectedDraft].content,
+      content_type: 'framework',
+      tone_used: 'professional',
+      prompt_input: topic,
+      is_saved: true,
+      title: `Express Mode - ${topic}`,
+      status: 'draft',
+      ideation_session_id: ideationData?.session_id,
+      source_page: ideationData?.source_page
+    }, 'express')
+    
+    if (saved) {
+      showToast('success', 'Content saved to Production Pipeline!')
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save draft')
+  }
+}}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition"
               >
                 Save & Schedule
