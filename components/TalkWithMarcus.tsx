@@ -201,22 +201,20 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
     }
 
     const completionMessage = [
-      "🎉 Perfect! Your content foundation is ready:",
-      "",
-      `**Topic:** ${completedIdeation.topic}`,
-      `**Angle:** ${completedIdeation.angle}`,
-      `**Key Takeaways:** ${completedIdeation.takeaways.length} value points`,
-      "",
-      "You can now:",
-      "• Create content using Express Mode (quick generation)",
-      "• Use Standard Mode (full customization)",
-      "• Try Writer Suite Classic (comprehensive process)",
-      "",
-      "Ready to create content from this foundation?"
-    ].join('\n')
+  "🎉 Perfect! Your content foundation is ready:",
+  "",
+  `**Topic:** ${completedIdeation.topic}`,
+  `**Angle:** ${completedIdeation.angle}`,
+  `**Key Takeaways:** ${completedIdeation.takeaways.length} value points`,
+  "",
+  "Choose your creation mode below to get started!"
+].join('\n')
 
-    addMarcusMessage(completionMessage)
-    setConversationStage('complete')
+addMarcusMessage(completionMessage)
+setConversationStage('complete')
+
+// Set the completed ideation data for the action buttons
+setIdeationOutput(completedIdeation)
     
     // Update session first
     await createOrUpdateSession({ 
@@ -374,14 +372,14 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
           </div>
           <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-gradient-to-r from-slate-700 to-teal-600 h-2 rounded-full transition-all duration-500"
-              style={{ 
-                width: conversationStage === 'topic-clarification' ? '33%' : 
-                       conversationStage === 'angle-selection' ? '66%' : 
-                       conversationStage === 'takeaways' ? '90%' : 
-                       conversationStage === 'complete' ? '100%' : '0%'
-              }}
-            ></div>
+  className="bg-gradient-to-r from-slate-700 to-teal-600 h-2 rounded-full transition-all duration-500"
+  style={{ 
+    width: conversationStage === 'topic-clarification' ? '33%' : 
+           conversationStage === 'angle-selection' ? '66%' : 
+           conversationStage === 'takeaways' ? '100%' : 
+           conversationStage === 'complete' ? '100%' : '0%'
+  }}
+></div>
           </div>
         </div>
       )}
