@@ -3,15 +3,61 @@
 import { useState } from 'react'
 import { MessageCircle, Target, RotateCcw, BookOpen, ArrowRight } from 'lucide-react'
 import TalkWithMarcus from './TalkWithMarcus'
-import AISuggestedTopics from './AISuggestedTopics'
-import RepurposeContent from './RepurposeContent'
-import ContentFormulas from './ContentFormulas'
 
 type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-content' | 'content-formulas'
 
 interface IdeasHubProps {
   onIdeationComplete?: (ideation: any) => void
 }
+
+// Placeholder components for now
+const AISuggestedTopics = ({ onBack }: { onBack: () => void }) => (
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">AI Suggested Topics</h2>
+      <p className="text-gray-600 mb-8">Coming soon! This will show trending topics curated for your audience.</p>
+      <button
+        onClick={onBack}
+        className="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
+      >
+        Back to Ideas Hub
+      </button>
+    </div>
+  </div>
+)
+
+const RepurposeContent = ({ onBack }: { onBack: () => void }) => (
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <RotateCcw className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">Repurpose Content</h2>
+      <p className="text-gray-600 mb-8">Coming soon! Transform existing content into LinkedIn posts.</p>
+      <button
+        onClick={onBack}
+        className="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
+      >
+        Back to Ideas Hub
+      </button>
+    </div>
+  </div>
+)
+
+const ContentFormulas = ({ onBack }: { onBack: () => void }) => (
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Formulas</h2>
+      <p className="text-gray-600 mb-8">Coming soon! Browse proven content templates and frameworks.</p>
+      <button
+        onClick={onBack}
+        className="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
+      >
+        Back to Ideas Hub
+      </button>
+    </div>
+  </div>
+)
 
 export default function IdeasHub({ onIdeationComplete }: IdeasHubProps = {}) {
   const [currentPage, setCurrentPage] = useState<IdeasPage>('welcome')
@@ -136,7 +182,7 @@ export default function IdeasHub({ onIdeationComplete }: IdeasHubProps = {}) {
                 </div>
               </div>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
