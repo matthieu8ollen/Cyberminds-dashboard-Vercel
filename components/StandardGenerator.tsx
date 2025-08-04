@@ -339,7 +339,7 @@ function StandardResults({
   topic: string
   contentType: string
   tone: string
-  ideationData?: { topic: string; angle: string; takeaways: string[] }
+  ideationData?: { topic: string; angle: string; takeaways: string[]; source_page?: string; session_id?: string }
   onBack: () => void
   onSwitchMode: (mode: 'express' | 'power') => void
 }) {
