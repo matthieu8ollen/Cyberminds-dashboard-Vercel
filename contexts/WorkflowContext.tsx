@@ -208,10 +208,19 @@ export const WorkflowProvider: React.FC<WorkflowProviderProps> = ({ children }) 
   }
 
   const clearProgress = async () => {
-    setWorkflowState(null)
-    setIdeationData(null)
-    setCurrentStage('ideas')
+  try {
+    // Could delete from database if needed
+    if (workflowState?.id) {
+      // await deleteWorkflowState(workflowState.id)
+    }
+  } catch (error) {
+    console.error('Error clearing workflow state:', error)
   }
+  
+  setWorkflowState(null)
+  setIdeationData(null)
+  setCurrentStage('ideas')
+}
 
   const contextValue: WorkflowContextType = {
     workflowState,
