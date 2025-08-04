@@ -60,7 +60,7 @@ interface UserProfile {
 export default function Dashboard() {
   // State Management
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const { workflowState, ideationData: workflowIdeationData } = useWorkflow()
+  const { workflowState, ideationData: workflowIdeationData, clearProgress } = useWorkflow()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
   
   // UI States
