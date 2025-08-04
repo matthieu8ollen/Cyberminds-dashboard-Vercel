@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { User, ArrowRight, Send, Lightbulb, Target, TrendingUp } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useWorkflow } from '../contexts/WorkflowContext'
 import { 
   createIdeationSession, 
   updateIdeationSession, 
@@ -23,6 +24,7 @@ interface TalkWithMarcusProps {
 
 export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusProps = {}) {
   const { user } = useAuth()
+  const { startIdeation } = useWorkflow()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -220,7 +222,10 @@ export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusPro
         angle: completedIdeation.angle,
         takeaways: completedIdeation.takeaways
       })
-
+      
+// Save to workflow system
+await startIdeation(completedIdeation)
+      
       // Trigger completion callback if provided
       if (onIdeationComplete) {
         onIdeationComplete(completedIdeation)
