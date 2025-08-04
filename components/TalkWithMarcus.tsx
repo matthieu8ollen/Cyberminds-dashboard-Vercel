@@ -97,21 +97,21 @@ export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusPro
   }
 
   const processUserInput = async (input: string) => {
-    switch (conversationStage) {
-      case 'initial':
-        handleInitialTopic(input)
-        break
-      case 'topic-clarification':
-        handleTopicClarification(input)
-        break
-      case 'angle-selection':
-        handleAngleSelection(input)
-        break
-      case 'takeaways':
-        handleTakeawaysConfirmation(input)
-        break
-    }
+  switch (conversationStage) {
+    case 'initial':
+      handleInitialTopic(input)
+      break
+    case 'topic-clarification':
+      handleTopicClarification(input)
+      break
+    case 'angle-selection':
+      handleAngleSelection(input)
+      break
+    case 'takeaways':
+      await handleTakeawaysConfirmation(input)
+      break
   }
+}
 
   const handleInitialTopic = (input: string) => {
     // Extract topic from user input
@@ -188,52 +188,58 @@ export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusPro
     setConversationStage('takeaways')
   }
 
-  const handleTakeawaysConfirmation = (input: string) => {
-    if (input.toLowerCase().includes('yes') || input.toLowerCase().includes('looks good') || input.toLowerCase().includes('perfect')) {
-      // Complete ideation
-      const completedIdeation: IdeationOutput = {
-        topic: ideationOutput.topic || '',
-        angle: ideationOutput.angle || '',
-        takeaways: ideationOutput.takeaways || [],
-        source_page: 'talk_with_marcus',
-        session_id: currentSession?.id || ''
-      }
-
-      const completionMessage = [
-        "🎉 Perfect! Your content foundation is ready:",
-        "",
-        `**Topic:** ${completedIdeation.topic}`,
-        `**Angle:** ${completedIdeation.angle}`,
-        `**Key Takeaways:** ${completedIdeation.takeaways.length} value points`,
-        "",
-        "You can now:",
-        "• Create content using Express Mode (quick generation)",
-        "• Use Standard Mode (full customization)",
-        "• Try Writer Suite Classic (comprehensive process)",
-        "",
-        "Ready to create content from this foundation?"
-      ].join('\n')
-
-      addMarcusMessage(completionMessage)
-      setConversationStage('complete')
-      createOrUpdateSession({ 
-        status: 'completed',
-        topic: completedIdeation.topic,
-        angle: completedIdeation.angle,
-        takeaways: completedIdeation.takeaways
-      })
-      
-// Save to workflow system
-await startIdeation(completedIdeation)
-      
-      // Trigger completion callback if provided
-      if (onIdeationComplete) {
-        onIdeationComplete(completedIdeation)
-      }
-    } else {
-      addMarcusMessage("No problem! What would you like to adjust? I can help you refine the topic, explore a different angle, or modify the takeaways.")
+  const handleTakeawaysConfirmation = async (input: string) => {
+  if (input.toLowerCase().includes('yes') || input.toLowerCase().includes('looks good') || input.toLowerCase().includes('perfect')) {
+    // Complete ideation
+    const completedIdeation: IdeationOutput = {
+      topic: ideationOutput.topic || '',
+      angle: ideationOutput.angle || '',
+      takeaways: ideationOutput.takeaways || [],
+      source_page: 'talk_with_marcus',
+      session_id: currentSession?.id || ''
     }
+
+    const completionMessage = [
+      "🎉 Perfect! Your content foundation is ready:",
+      "",
+      `**Topic:** ${completedIdeation.topic}`,
+      `**Angle:** ${completedIdeation.angle}`,
+      `**Key Takeaways:** ${completedIdeation.takeaways.length} value points`,
+      "",
+      "You can now:",
+      "• Create content using Express Mode (quick generation)",
+      "• Use Standard Mode (full customization)",
+      "• Try Writer Suite Classic (comprehensive process)",
+      "",
+      "Ready to create content from this foundation?"
+    ].join('\n')
+
+    addMarcusMessage(completionMessage)
+    setConversationStage('complete')
+    
+    // Update session first
+    await createOrUpdateSession({ 
+      status: 'completed',
+      topic: completedIdeation.topic,
+      angle: completedIdeation.angle,
+      takeaways: completedIdeation.takeaways
+    })
+
+    // Save to workflow system
+    try {
+      await startIdeation(completedIdeation)
+    } catch (error) {
+      console.error('Error saving to workflow:', error)
+    }
+
+    // Trigger completion callback if provided
+    if (onIdeationComplete) {
+      onIdeationComplete(completedIdeation)
+    }
+  } else {
+    addMarcusMessage("No problem! What would you like to adjust? I can help you refine the topic, explore a different angle, or modify the takeaways.")
   }
+}
 
   // Mock functions - in real implementation, these would call Marcus RAG
   const generateAngles = (topic: string, context: string) => [
