@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Zap, Sparkles, Clock, Calendar, ArrowRight } from 'lucide-react'
+import { Zap, Sparkles, Clock, Calendar, ArrowRight, Camera } from 'lucide-react'
 import { useContent } from '../contexts/ContentContext'
 import { useToast } from './ToastNotifications'
 import { useWorkflow } from '../contexts/WorkflowContext'
@@ -355,62 +355,89 @@ function ExpressResults({
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
             
             <div className="space-y-3">
-<button 
-                onClick={async () => {
-  try {
-    const saved = await saveDraft({
-      content_text: drafts[selectedDraft].content,
-      content_type: 'framework',
-      tone_used: 'professional',
-      prompt_input: topic,
-      is_saved: true,
-      title: `Express Mode - ${topic}`,
-      status: 'draft',
-      ideation_session_id: ideationData?.session_id,
-      source_page: ideationData?.source_page
-    }, 'express')
-    
-    if (saved) {
-      showToast('success', 'Content saved to Production Pipeline!')
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save draft')
-  }
-}}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition"
-              >
-                Save & Schedule
-              </button>
-              <button 
-  onClick={async () => {
-    try {
-      const saved = await saveDraft({
-        content_text: drafts[selectedDraft].content,
-        content_type: 'framework',
-        tone_used: 'professional',
-        prompt_input: topic,
-        is_saved: true,
-        title: `Express Mode - ${topic}`,
-        status: 'draft',
-        ideation_session_id: ideationData?.session_id,
-        source_page: ideationData?.source_page
-      }, 'express')
-      
-      if (saved) {
-        showToast('success', 'Content saved to Production Pipeline!')
+  <button 
+    onClick={async () => {
+      try {
+        const saved = await saveDraft({
+          content_text: drafts[selectedDraft].content,
+          content_type: 'framework',
+          tone_used: 'professional',
+          prompt_input: topic,
+          is_saved: true,
+          title: `Express Mode - ${topic}`,
+          status: 'draft',
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'express')
+        
+        if (saved) {
+          showToast('success', 'Content saved to Production Pipeline!')
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save draft')
       }
-    } catch (error) {
-      showToast('error', 'Failed to save draft')
-    }
-  }}
-  className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
->
-  Save as Draft
-</button>
-              <button className="w-full text-blue-600 py-2 px-4 rounded-lg font-medium hover:bg-blue-50 transition">
-                Edit in Standard Mode
-              </button>
-            </div>
+    }}
+    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition"
+  >
+    Save & Schedule
+  </button>
+  <button 
+    onClick={async () => {
+      try {
+        const saved = await saveDraft({
+          content_text: drafts[selectedDraft].content,
+          content_type: 'framework',
+          tone_used: 'professional',
+          prompt_input: topic,
+          is_saved: true,
+          title: `Express Mode - ${topic}`,
+          status: 'draft',
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'express')
+        
+        if (saved) {
+          // Store content for image generation and open images page
+          localStorage.setItem('selectedContentForImage', JSON.stringify(saved))
+          window.open('/images', '_blank')
+          showToast('success', 'Content saved! Opening image generation...')
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save draft')
+      }
+    }}
+    className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center space-x-2"
+  >
+    <Camera className="w-4 h-4" />
+    <span>Save & Add Image</span>
+  </button>
+  <button 
+    onClick={async () => {
+      try {
+        const saved = await saveDraft({
+          content_text: drafts[selectedDraft].content,
+          content_type: 'framework',
+          tone_used: 'professional',
+          prompt_input: topic,
+          is_saved: true,
+          title: `Express Mode - ${topic}`,
+          status: 'draft',
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'express')
+        
+        if (saved) {
+          showToast('success', 'Content saved to Production Pipeline!')
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save draft')
+      }
+    }}
+    className="w-full text-blue-600 py-2 px-4 rounded-lg font-medium hover:bg-blue-50 transition"
+  >
+    Save as Draft Only
+  </button>
+</div>
           </div>
         </div>
       </div>
