@@ -26,7 +26,8 @@ import {
   Zap,
   FileText,
   Camera,
-  ChevronDown
+  ChevronDown,
+  ArrowRight
 } from 'lucide-react'
 
 type ContentFilterType = 'draft' | 'scheduled' | 'published' | 'archived'
