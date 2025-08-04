@@ -20,9 +20,10 @@ interface Message {
 
 interface TalkWithMarcusProps {
   onIdeationComplete?: (ideation: IdeationOutput) => void
+  onNavigateToCreate?: (mode: 'express' | 'standard' | 'power', ideationData: any) => void
 }
 
-export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusProps = {}) {
+export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps = {}) {
   const { user } = useAuth()
   const { startIdeation } = useWorkflow()
   const [messages, setMessages] = useState<Message[]>([])
@@ -390,27 +391,65 @@ export default function TalkWithMarcus({ onIdeationComplete }: TalkWithMarcusPro
         <div className="mt-6 bg-gradient-to-r from-slate-50 to-teal-50 rounded-lg border border-slate-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Ready to Create Content!</h3>
           <div className="grid gap-3 md:grid-cols-3">
-            <button className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors">
-              <Lightbulb className="w-5 h-5 text-yellow-600" />
-              <div className="text-left">
-                <div className="font-medium text-gray-900">Express Mode</div>
-                <div className="text-sm text-gray-600">Quick generation</div>
-              </div>
-            </button>
-            <button className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors">
-              <Target className="w-5 h-5 text-blue-600" />
-              <div className="text-left">
-                <div className="font-medium text-gray-900">Standard Mode</div>
-                <div className="text-sm text-gray-600">Full customization</div>
-              </div>
-            </button>
-            <button className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              <div className="text-left">
-                <div className="font-medium text-gray-900">Writer Suite</div>
-                <div className="text-sm text-gray-600">Comprehensive</div>
-              </div>
-            </button>
+            <button 
+  onClick={() => {
+    if (onNavigateToCreate && ideationOutput.topic) {
+      onNavigateToCreate('express', {
+        topic: ideationOutput.topic,
+        angle: ideationOutput.angle,
+        takeaways: ideationOutput.takeaways,
+        source_page: 'talk_with_marcus'
+      })
+    }
+  }}
+  className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
+>
+  <Lightbulb className="w-5 h-5 text-yellow-600" />
+  <div className="text-left">
+    <div className="font-medium text-gray-900">Express Mode</div>
+    <div className="text-sm text-gray-600">Quick generation</div>
+  </div>
+</button>
+
+<button 
+  onClick={() => {
+    if (onNavigateToCreate && ideationOutput.topic) {
+      onNavigateToCreate('standard', {
+        topic: ideationOutput.topic,
+        angle: ideationOutput.angle,
+        takeaways: ideationOutput.takeaways,
+        source_page: 'talk_with_marcus'
+      })
+    }
+  }}
+  className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
+>
+  <Target className="w-5 h-5 text-blue-600" />
+  <div className="text-left">
+    <div className="font-medium text-gray-900">Standard Mode</div>
+    <div className="text-sm text-gray-600">Full customization</div>
+  </div>
+</button>
+
+<button 
+  onClick={() => {
+    if (onNavigateToCreate && ideationOutput.topic) {
+      onNavigateToCreate('power', {
+        topic: ideationOutput.topic,
+        angle: ideationOutput.angle,
+        takeaways: ideationOutput.takeaways,
+        source_page: 'talk_with_marcus'
+      })
+    }
+  }}
+  className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
+>
+  <TrendingUp className="w-5 h-5 text-green-600" />
+  <div className="text-left">
+    <div className="font-medium text-gray-900">Writer Suite</div>
+    <div className="text-sm text-gray-600">Comprehensive</div>
+  </div>
+</button>
           </div>
         </div>
       )}
