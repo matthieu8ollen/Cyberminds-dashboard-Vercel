@@ -395,11 +395,12 @@ setIdeationOutput(completedIdeation)
   onClick={() => {
     if (onNavigateToCreate && ideationOutput.topic) {
       onNavigateToCreate('express', {
-        topic: ideationOutput.topic,
-        angle: ideationOutput.angle,
-        takeaways: ideationOutput.takeaways,
-        source_page: 'talk_with_marcus'
-      })
+  topic: ideationOutput.topic,
+  angle: ideationOutput.angle,
+  takeaways: ideationOutput.takeaways,
+  source_page: 'talk_with_marcus',
+  session_id: currentSession?.id
+})
     }
   }}
   className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
