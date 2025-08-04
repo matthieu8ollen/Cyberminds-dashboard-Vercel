@@ -455,30 +455,32 @@ function StandardResults({
                   <span>{editingDraft === selectedDraft ? 'View' : 'Edit'}</span>
                 </button>
                <button 
-                  onClick={async () => {
-                    try {
-                      const currentDraft = drafts.find(d => d.type === selectedDraft)
-                      const saved = await saveDraft({
-                        content_text: currentDraft?.content || '',
-                        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-                        tone_used: tone,
-                        prompt_input: topic,
-                        is_saved: true,
-                        title: `Standard Mode - ${topic}`,
-                        status: 'draft'
-                      }, 'standard')
-                      
-                      if (saved) {
-                        showToast('success', 'Content saved as draft!')
-                      }
-                    } catch (error) {
-                      showToast('error', 'Failed to save draft')
-                    }
-                  }}
-                  className="px-3 py-2 text-sm bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
-                >
-                  💾 Save Draft
-                </button>
+  onClick={async () => {
+    try {
+      const currentDraft = drafts.find(d => d.type === selectedDraft)
+      const saved = await saveDraft({
+        content_text: currentDraft?.content || '',
+        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        tone_used: tone,
+        prompt_input: topic,
+        is_saved: true,
+        title: `Standard Mode - ${topic}`,
+        status: 'draft',
+        ideation_session_id: ideationData?.session_id,
+        source_page: ideationData?.source_page
+      }, 'standard')
+      
+      if (saved) {
+        showToast('success', 'Content saved to Production Pipeline!')
+      }
+    } catch (error) {
+      showToast('error', 'Failed to save draft')
+    }
+  }}
+  className="px-3 py-2 text-sm bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+>
+  💾 Save Draft
+</button>
               </div>
             </div>
 
@@ -534,56 +536,60 @@ function StandardResults({
             
             <div className="space-y-3">
               <button 
-                onClick={async () => {
-                  try {
-                    const currentDraft = drafts.find(d => d.type === selectedDraft)
-                    const saved = await saveDraft({
-                      content_text: currentDraft?.content || '',
-                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-                      tone_used: tone,
-                      prompt_input: topic,
-                      is_saved: true,
-                      title: `Standard Mode - ${topic}`
-                    }, 'standard')
-                    
-                    if (saved) {
-                      showToast('success', 'Content saved successfully!')
-                      setSelectedContent(saved)
-                      setShowScheduleModal(true)
-                    }
-                  } catch (error) {
-                    showToast('error', 'Failed to save content')
-                  }
-                }}
-                className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
-              >
-                Schedule Post
-              </button>
+  onClick={async () => {
+    try {
+      const currentDraft = drafts.find(d => d.type === selectedDraft)
+      const saved = await saveDraft({
+        content_text: currentDraft?.content || '',
+        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        tone_used: tone,
+        prompt_input: topic,
+        is_saved: true,
+        title: `Standard Mode - ${topic}`,
+        ideation_session_id: ideationData?.session_id,
+        source_page: ideationData?.source_page
+      }, 'standard')
+      
+      if (saved) {
+        showToast('success', 'Content saved to Production Pipeline!')
+        setSelectedContent(saved)
+        setShowScheduleModal(true)
+      }
+    } catch (error) {
+      showToast('error', 'Failed to save content')
+    }
+  }}
+  className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
+>
+  Schedule Post
+</button>
               <button 
-                onClick={async () => {
-                  try {
-                    const currentDraft = drafts.find(d => d.type === selectedDraft)
-                    const saved = await saveDraft({
-                      content_text: currentDraft?.content || '',
-                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-                      tone_used: tone,
-                      prompt_input: topic,
-                      is_saved: true,
-                      title: `Standard Mode - ${topic}`,
-                      status: 'draft'
-                    }, 'standard')
-                    
-                    if (saved) {
-                      showToast('success', 'Content saved as draft!')
-                    }
-                  } catch (error) {
-                    showToast('error', 'Failed to save draft')
-                  }
-                }}
-                className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
-              >
-                Save as Draft
-              </button>
+  onClick={async () => {
+    try {
+      const currentDraft = drafts.find(d => d.type === selectedDraft)
+      const saved = await saveDraft({
+        content_text: currentDraft?.content || '',
+        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+        tone_used: tone,
+        prompt_input: topic,
+        is_saved: true,
+        title: `Standard Mode - ${topic}`,
+        status: 'draft',
+        ideation_session_id: ideationData?.session_id,
+        source_page: ideationData?.source_page
+      }, 'standard')
+      
+      if (saved) {
+        showToast('success', 'Content saved to Production Pipeline!')
+      }
+    } catch (error) {
+      showToast('error', 'Failed to save draft')
+    }
+  }}
+  className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
+>
+  Save as Draft
+</button>
               <button 
                 onClick={() => onSwitchMode('power')}
                 className="w-full text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition flex items-center justify-center space-x-2"
