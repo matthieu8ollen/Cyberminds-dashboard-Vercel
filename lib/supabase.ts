@@ -62,6 +62,10 @@ export interface GeneratedContent {
   scheduled_date?: string
   scheduled_time?: string
   image_url?: string
+  // NEW IDEATION HUB COLUMNS
+  ideation_session_id?: string
+  workflow_state_id?: string
+  source_page?: string
   created_at: string
 }
 
@@ -110,6 +114,43 @@ export interface GeneratedImage {
   optimized_prompt?: string
   openai_image_id?: string
   created_at: string
+}
+
+// ========================================
+// IDEATION HUB INTERFACES
+// ========================================
+
+export interface IdeationSession {
+  id: string
+  user_id: string
+  page_type: 'talk_with_marcus' | 'ai_suggested' | 'repurpose_content' | 'content_formulas'
+  session_data: any
+  status: 'in_progress' | 'completed' | 'abandoned'
+  topic?: string
+  angle?: string
+  takeaways?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface WorkflowState {
+  id: string
+  user_id: string
+  session_id?: string
+  current_stage: 'ideas' | 'create' | 'image' | 'pipeline'
+  stage_data: any
+  continuation_route?: string
+  last_save: string
+  created_at: string
+}
+
+// Enhanced ideation output format (for passing between components)
+export interface IdeationOutput {
+  topic: string
+  angle: string
+  takeaways: string[]
+  source_page: 'talk_with_marcus' | 'ai_suggested' | 'repurpose_content' | 'content_formulas'
+  session_id: string
 }
 
 // Auth helpers
@@ -386,4 +427,120 @@ export const deleteGeneratedImage = async (imageId: string) => {
     .eq('id', imageId)
   
   return { error }
+}
+
+// ========================================
+// IDEATION HUB HELPER FUNCTIONS
+// ========================================
+
+// Ideation Sessions
+export const createIdeationSession = async (session: Omit<IdeationSession, 'id' | 'created_at' | 'updated_at'>) => {
+  const { data, error } = await supabase
+    .from('ideation_sessions')
+    .insert(session)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const updateIdeationSession = async (sessionId: string, updates: Partial<IdeationSession>) => {
+  const { data, error } = await supabase
+    .from('ideation_sessions')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', sessionId)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const getIdeationSession = async (sessionId: string) => {
+  const { data, error } = await supabase
+    .from('ideation_sessions')
+    .select('*')
+    .eq('id', sessionId)
+    .single()
+  
+  return { data, error }
+}
+
+export const getUserIdeationSessions = async (userId: string, limit: number = 10) => {
+  const { data, error } = await supabase
+    .from('ideation_sessions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(limit)
+  
+  return { data, error }
+}
+
+// Workflow States
+export const saveWorkflowState = async (state: Omit<WorkflowState, 'id' | 'created_at'>) => {
+  const { data, error } = await supabase
+    .from('workflow_states')
+    .insert(state)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const updateWorkflowState = async (stateId: string, updates: Partial<WorkflowState>) => {
+  const { data, error } = await supabase
+    .from('workflow_states')
+    .update({
+      ...updates,
+      last_save: new Date().toISOString()
+    })
+    .eq('id', stateId)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const getUserWorkflowState = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('workflow_states')
+    .select('*')
+    .eq('user_id', userId)
+    .order('last_save', { ascending: false })
+    .limit(1)
+    .single()
+  
+  return { data, error }
+}
+
+export const deleteWorkflowState = async (stateId: string) => {
+  const { error } = await supabase
+    .from('workflow_states')
+    .delete()
+    .eq('id', stateId)
+  
+  return { error }
+}
+
+// Enhanced content creation with ideation integration
+export const saveGeneratedContentWithIdeation = async (
+  content: Omit<GeneratedContent, 'id' | 'created_at'>,
+  ideationData?: IdeationOutput
+) => {
+  const contentData = {
+    ...content,
+    ideation_session_id: ideationData?.session_id,
+    source_page: ideationData?.source_page
+  }
+  
+  const { data, error } = await supabase
+    .from('generated_content')
+    .insert(contentData)
+    .select()
+    .single()
+  
+  return { data, error }
 }
