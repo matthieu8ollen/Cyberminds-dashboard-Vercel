@@ -4,21 +4,29 @@ import { useState, useEffect } from 'react'
 import { Zap, Sparkles, Clock, Calendar, ArrowRight } from 'lucide-react'
 import { useContent } from '../contexts/ContentContext'
 import { useToast } from './ToastNotifications'
+import { useWorkflow } from '../contexts/WorkflowContext'
 import { GeneratedContent } from '../lib/supabase'
 
 interface ExpressGeneratorProps {
   onSwitchMode: (mode: 'standard' | 'power') => void
   onBack: () => void
+  ideationData?: {
+    topic: string
+    angle: string
+    takeaways: string[]
+    source_page: string
+  }
 }
 
-export default function ExpressGenerator({ onSwitchMode, onBack }: ExpressGeneratorProps) {
-  const [topic, setTopic] = useState('')
+export default function ExpressGenerator({ onSwitchMode, onBack, ideationData }: ExpressGeneratorProps) {
+  const [topic, setTopic] = useState(ideationData?.topic || '')
   const [contentType, setContentType] = useState('auto')
   const [tone, setTone] = useState('auto')
   const [urgency, setUrgency] = useState('this_week')
   const [isGenerating, setIsGenerating] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0)
+  const { moveToCreate } = useWorkflow()
 
   // Rotating placeholder suggestions
   const placeholders = [
@@ -37,19 +45,35 @@ export default function ExpressGenerator({ onSwitchMode, onBack }: ExpressGenera
   }, [])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) return
-    
-    setIsGenerating(true)
-    // Simulate AI generation
-    setTimeout(() => {
-      setIsGenerating(false)
-      setShowResults(true)
-    }, 2500)
+  if (!topic.trim()) return
+  
+  setIsGenerating(true)
+  
+  // Track workflow progression if coming from ideation
+  if (ideationData) {
+    try {
+      await moveToCreate('express')
+    } catch (error) {
+      console.error('Error tracking workflow:', error)
+    }
   }
+  
+  // Simulate AI generation
+  setTimeout(() => {
+    setIsGenerating(false)
+    setShowResults(true)
+  }, 2500)
+}
 
   if (showResults) {
-    return <ExpressResults topic={topic} onBack={() => setShowResults(false)} />
-  }
+  return (
+    <ExpressResults 
+      topic={topic} 
+      ideationData={ideationData}
+      onBack={() => setShowResults(false)} 
+    />
+  )
+}
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -63,14 +87,32 @@ export default function ExpressGenerator({ onSwitchMode, onBack }: ExpressGenera
         </button>
         
         <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Express Mode</h1>
-            <p className="text-gray-600">Quick & smart content creation</p>
-          </div>
-        </div>
+  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+    <Zap className="w-5 h-5 text-white" />
+  </div>
+  <div>
+    <h1 className="text-2xl font-bold text-gray-900">Express Mode</h1>
+    <p className="text-gray-600">
+      {ideationData ? 'Creating content from your ideation' : 'Quick & smart content creation'}
+    </p>
+  </div>
+</div>
+
+{/* Ideation Context Display */}
+{ideationData && (
+  <div className="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
+    <div className="flex items-center space-x-2 mb-3">
+      <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center">
+        <Sparkles className="w-4 h-4 text-teal-600" />
+      </div>
+      <h3 className="font-semibold text-gray-900">From Your Ideation Session</h3>
+    </div>
+    <div className="space-y-2 text-sm">
+      <div><span className="font-medium text-gray-700">Angle:</span> <span className="text-gray-600">{ideationData.angle}</span></div>
+      <div><span className="font-medium text-gray-700">Key Points:</span> <span className="text-gray-600">{ideationData.takeaways.length} takeaways ready to use</span></div>
+    </div>
+  </div>
+)}
       </div>
 
       {/* Main Form */}
@@ -78,15 +120,17 @@ export default function ExpressGenerator({ onSwitchMode, onBack }: ExpressGenera
         {/* Topic Input */}
         <div className="mb-8">
           <label className="block text-lg font-semibold text-gray-900 mb-3">
-            What do you want to write about?
-          </label>
+  {ideationData ? 'Your topic (from ideation)' : 'What do you want to write about?'}
+</label>
           <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder={placeholders[currentPlaceholder]}
-            className="w-full px-4 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          />
+  type="text"
+  value={topic}
+  onChange={(e) => setTopic(e.target.value)}
+  placeholder={ideationData ? ideationData.topic : placeholders[currentPlaceholder]}
+  className={`w-full px-4 py-4 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+    ideationData ? 'border-teal-300 bg-teal-50' : 'border-gray-300'
+  }`}
+/>
         </div>
 
         {/* Quick Options */}
@@ -191,7 +235,15 @@ export default function ExpressGenerator({ onSwitchMode, onBack }: ExpressGenera
 }
 
 // Results component
-function ExpressResults({ topic, onBack }: { topic: string; onBack: () => void }) {
+function ExpressResults({ 
+  topic, 
+  ideationData, 
+  onBack 
+}: { 
+  topic: string; 
+  ideationData?: { topic: string; angle: string; takeaways: string[] }; 
+  onBack: () => void 
+}) {
   const [selectedDraft, setSelectedDraft] = useState(0)
   const [schedulingMode, setSchedulingMode] = useState<'quick' | 'custom'>('quick')
   const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
