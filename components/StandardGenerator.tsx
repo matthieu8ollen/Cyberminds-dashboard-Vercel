@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Clock, Sparkles, Eye, Edit3, Calendar, ArrowRight, Settings } from 'lucide-react'
+import { Clock, Sparkles, Eye, Edit3, Calendar, ArrowRight, Settings, Camera } from 'lucide-react'
 import RichTextEditor from './RichTextEditor'
 import LinkedInPreview from './LinkedInPreview'
 import { useContent } from '../contexts/ContentContext'
@@ -536,69 +536,93 @@ function StandardResults({
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
             
             <div className="space-y-3">
-              <button 
-  onClick={async () => {
-    try {
-      const currentDraft = drafts.find(d => d.type === selectedDraft)
-      const saved = await saveDraft({
-        content_text: currentDraft?.content || '',
-        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-        tone_used: tone,
-        prompt_input: topic,
-        is_saved: true,
-        title: `Standard Mode - ${topic}`,
-        ideation_session_id: ideationData?.session_id,
-        source_page: ideationData?.source_page
-      }, 'standard')
-      
-      if (saved) {
-        showToast('success', 'Content saved to Production Pipeline!')
-        setSelectedContent(saved)
-        setShowScheduleModal(true)
+  <button 
+    onClick={async () => {
+      try {
+        const currentDraft = drafts.find(d => d.type === selectedDraft)
+        const saved = await saveDraft({
+          content_text: currentDraft?.content || '',
+          content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+          tone_used: tone,
+          prompt_input: topic,
+          is_saved: true,
+          title: `Standard Mode - ${topic}`,
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'standard')
+        
+        if (saved) {
+          showToast('success', 'Content saved to Production Pipeline!')
+          setSelectedContent(saved)
+          setShowScheduleModal(true)
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save content')
       }
-    } catch (error) {
-      showToast('error', 'Failed to save content')
-    }
-  }}
-  className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
->
-  Schedule Post
-</button>
-              <button 
-  onClick={async () => {
-    try {
-      const currentDraft = drafts.find(d => d.type === selectedDraft)
-      const saved = await saveDraft({
-        content_text: currentDraft?.content || '',
-        content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-        tone_used: tone,
-        prompt_input: topic,
-        is_saved: true,
-        title: `Standard Mode - ${topic}`,
-        status: 'draft',
-        ideation_session_id: ideationData?.session_id,
-        source_page: ideationData?.source_page
-      }, 'standard')
-      
-      if (saved) {
-        showToast('success', 'Content saved to Production Pipeline!')
+    }}
+    className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
+  >
+    Schedule Post
+  </button>
+  <button 
+    onClick={async () => {
+      try {
+        const currentDraft = drafts.find(d => d.type === selectedDraft)
+        const saved = await saveDraft({
+          content_text: currentDraft?.content || '',
+          content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+          tone_used: tone,
+          prompt_input: topic,
+          is_saved: true,
+          title: `Standard Mode - ${topic}`,
+          status: 'draft',
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'standard')
+        
+        if (saved) {
+          // Store content for image generation and open images page
+          localStorage.setItem('selectedContentForImage', JSON.stringify(saved))
+          window.open('/images', '_blank')
+          showToast('success', 'Content saved! Opening image generation...')
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save draft')
       }
-    } catch (error) {
-      showToast('error', 'Failed to save draft')
-    }
-  }}
-  className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
->
-  Save as Draft
-</button>
-              <button 
-                onClick={() => onSwitchMode('power')}
-                className="w-full text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition flex items-center justify-center space-x-2"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Open in Writer Suite</span>
-              </button>
-            </div>
+    }}
+    className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center space-x-2"
+  >
+    <Camera className="w-4 h-4" />
+    <span>Save & Add Image</span>
+  </button>
+  <button 
+    onClick={async () => {
+      try {
+        const currentDraft = drafts.find(d => d.type === selectedDraft)
+        const saved = await saveDraft({
+          content_text: currentDraft?.content || '',
+          content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+          tone_used: tone,
+          prompt_input: topic,
+          is_saved: true,
+          title: `Standard Mode - ${topic}`,
+          status: 'draft',
+          ideation_session_id: ideationData?.session_id,
+          source_page: ideationData?.source_page
+        }, 'standard')
+        
+        if (saved) {
+          showToast('success', 'Content saved to Production Pipeline!')
+        }
+      } catch (error) {
+        showToast('error', 'Failed to save draft')
+      }
+    }}
+    className="w-full text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition"
+  >
+    Save as Draft Only
+  </button>
+</div>
           </div>
 
           {/* Mode Switch */}
