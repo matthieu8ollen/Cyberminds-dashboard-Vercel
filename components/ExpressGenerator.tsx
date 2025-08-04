@@ -11,11 +11,12 @@ interface ExpressGeneratorProps {
   onSwitchMode: (mode: 'standard' | 'power') => void
   onBack: () => void
   ideationData?: {
-    topic: string
-    angle: string
-    takeaways: string[]
-    source_page: string
-  }
+  topic: string
+  angle: string
+  takeaways: string[]
+  source_page: string
+  session_id?: string
+}
 }
 
 export default function ExpressGenerator({ onSwitchMode, onBack, ideationData }: ExpressGeneratorProps) {
