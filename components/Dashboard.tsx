@@ -414,10 +414,21 @@ useEffect(() => {
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-  return <IdeasHub onIdeationComplete={(ideation) => {
-    console.log('Ideation completed:', ideation)
-    // Could navigate to create mode with pre-filled data
-  }} />
+  return <IdeasHub 
+    onIdeationComplete={(ideation) => {
+      console.log('Ideation completed:', ideation)
+      setIdeationData(ideation)
+    }} 
+    onNavigateToCreate={(mode, ideationData) => {
+      setIdeationData(ideationData)
+      if (mode === 'power') {
+        setActivePage('writer-suite')
+      } else {
+        setActivePage('create')
+        setCreateSubPage(mode)
+      }
+    }}
+  />
       
       case 'writer-suite':
         return <WriterSuite onComplete={(data) => {
