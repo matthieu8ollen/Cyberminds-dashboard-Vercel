@@ -623,63 +623,6 @@ useEffect(() => {
       </div>
     </div>
   )
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Writer Suite</h2>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Your AI-powered LinkedIn content creation platform. Start with an idea or jump straight to creation.
-        </p>
-        
-        {/* Quick Start Options */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
-          <button
-            onClick={() => setActivePage('ideas')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-200 transition-colors">
-              <Lightbulb className="w-6 h-6 text-teal-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Start with Ideas</h3>
-            <p className="text-sm text-gray-600">Develop topics with Marcus</p>
-          </button>
-          
-          <button
-            onClick={() => {
-              setActivePage('create')
-              setCreateSubPage('express')
-            }}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-              <Zap className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Express Create</h3>
-            <p className="text-sm text-gray-600">Quick content generation</p>
-          </button>
-          
-          <button
-            onClick={() => setActivePage('writer-suite')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
-              <Sparkles className="w-6 h-6 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Writer Suite</h3>
-            <p className="text-sm text-gray-600">Comprehensive process</p>
-          </button>
-          
-          <button
-            onClick={() => setActivePage('production')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-green-500 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-              <BarChart3 className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">View Pipeline</h3>
-            <p className="text-sm text-gray-600">Manage your content</p>
-          </button>
-        </div>
-      </div>
-    </div>
-  )
     }
   }
 
