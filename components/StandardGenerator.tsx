@@ -6,22 +6,34 @@ import RichTextEditor from './RichTextEditor'
 import LinkedInPreview from './LinkedInPreview'
 import { useContent } from '../contexts/ContentContext'
 import { useToast } from './ToastNotifications'
+import { useWorkflow } from '../contexts/WorkflowContext'
 import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
   onBack: () => void
+  ideationData?: {
+    topic: string
+    angle: string
+    takeaways: string[]
+    source_page: string
+  }
 }
 
-export default function StandardGenerator({ onSwitchMode, onBack }: StandardGeneratorProps) {
-  const [topic, setTopic] = useState('')
-  const [contentType, setContentType] = useState('framework')
-  const [tone, setTone] = useState('insightful_cfo')
-  const [points, setPoints] = useState('5')
-  const [context, setContext] = useState('')
+export default function StandardGenerator({ onSwitchMode, onBack, ideationData }: StandardGeneratorProps) {
+  const [topic, setTopic] = useState(ideationData?.topic || '')
+const [contentType, setContentType] = useState('framework')
+const [tone, setTone] = useState('insightful_cfo')
+const [points, setPoints] = useState('5')
+const [context, setContext] = useState(
+  ideationData ? 
+    `Angle: ${ideationData.angle}\n\nKey Takeaways:\n${ideationData.takeaways.map((t, i) => `${i + 1}. ${t}`).join('\n')}` 
+    : ''
+)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0)
+  const { moveToCreate } = useWorkflow()
 
   // Rotating placeholder suggestions
   const placeholders = [
@@ -55,15 +67,25 @@ export default function StandardGenerator({ onSwitchMode, onBack }: StandardGene
   }, [])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) return
-    
-    setIsGenerating(true)
-    // Simulate AI generation
-    setTimeout(() => {
-      setIsGenerating(false)
-      setShowResults(true)
-    }, 3000)
+  if (!topic.trim()) return
+  
+  setIsGenerating(true)
+  
+  // Track workflow progression if coming from ideation
+  if (ideationData) {
+    try {
+      await moveToCreate('standard')
+    } catch (error) {
+      console.error('Error tracking workflow:', error)
+    }
   }
+  
+  // Simulate AI generation
+  setTimeout(() => {
+    setIsGenerating(false)
+    setShowResults(true)
+  }, 3000)
+}
 
   const handleAIImprovement = async (text: string, type: 'bold' | 'improve' | 'expand'): Promise<string> => {
     // Mock AI improvement - in real app, this would call your AI service
@@ -72,16 +94,17 @@ export default function StandardGenerator({ onSwitchMode, onBack }: StandardGene
   }
 
   if (showResults) {
-    return (
-      <StandardResults 
-        topic={topic}
-        contentType={contentType}
-        tone={tone}
-        onBack={() => setShowResults(false)}
-        onSwitchMode={onSwitchMode}
-      />
-    )
-  }
+  return (
+    <StandardResults 
+      topic={topic}
+      contentType={contentType}
+      tone={tone}
+      ideationData={ideationData}
+      onBack={() => setShowResults(false)}
+      onSwitchMode={onSwitchMode}
+    />
+  )
+}
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -95,14 +118,32 @@ export default function StandardGenerator({ onSwitchMode, onBack }: StandardGene
         </button>
         
         <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg flex items-center justify-center">
-            <Clock className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Standard Mode</h1>
-            <p className="text-gray-600">Balanced control with smart defaults</p>
-          </div>
-        </div>
+  <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg flex items-center justify-center">
+    <Clock className="w-5 h-5 text-white" />
+  </div>
+  <div>
+    <h1 className="text-2xl font-bold text-gray-900">Standard Mode</h1>
+    <p className="text-gray-600">
+      {ideationData ? 'Creating content from your ideation' : 'Balanced control with smart defaults'}
+    </p>
+  </div>
+</div>
+
+{/* Ideation Context Display */}
+{ideationData && (
+  <div className="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-4 mb-6">
+    <div className="flex items-center space-x-2 mb-3">
+      <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center">
+        <Sparkles className="w-4 h-4 text-teal-600" />
+      </div>
+      <h3 className="font-semibold text-gray-900">From Your Ideation Session</h3>
+    </div>
+    <div className="space-y-2 text-sm">
+      <div><span className="font-medium text-gray-700">Angle:</span> <span className="text-gray-600">{ideationData.angle}</span></div>
+      <div><span className="font-medium text-gray-700">Key Points:</span> <span className="text-gray-600">{ideationData.takeaways.length} takeaways pre-loaded in context</span></div>
+    </div>
+  </div>
+)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -113,17 +154,19 @@ export default function StandardGenerator({ onSwitchMode, onBack }: StandardGene
             
             {/* Topic Input */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                What do you want to write about?
-              </label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder={placeholders[currentPlaceholder]}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-colors"
-              />
-            </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    {ideationData ? 'Your topic (from ideation)' : 'What do you want to write about?'}
+  </label>
+  <input
+    type="text"
+    value={topic}
+    onChange={(e) => setTopic(e.target.value)}
+    placeholder={ideationData ? ideationData.topic : placeholders[currentPlaceholder]}
+    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-colors ${
+      ideationData ? 'border-teal-300 bg-teal-50' : 'border-gray-300'
+    }`}
+  />
+</div>
 
             {/* Content Type Selection */}
             <div className="mb-6">
@@ -288,12 +331,14 @@ function StandardResults({
   topic, 
   contentType, 
   tone, 
+  ideationData,
   onBack, 
   onSwitchMode 
 }: { 
   topic: string
   contentType: string
   tone: string
+  ideationData?: { topic: string; angle: string; takeaways: string[] }
   onBack: () => void
   onSwitchMode: (mode: 'express' | 'power') => void
 }) {
