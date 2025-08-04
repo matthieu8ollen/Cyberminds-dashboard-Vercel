@@ -28,7 +28,7 @@ import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
-import TalkWithMarcus from './TalkWithMarcus'
+import IdeasHub from './IdeasHub'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -404,11 +404,9 @@ export default function Dashboard() {
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-  return <TalkWithMarcus onIdeationComplete={(ideation) => {
-    // Handle completed ideation - could navigate to create mode with pre-filled data
+  return <IdeasHub onIdeationComplete={(ideation) => {
     console.log('Ideation completed:', ideation)
-    // Optionally switch to create mode with the ideation data
-    // setActivePage('create')
+    // Could navigate to create mode with pre-filled data
   }} />
       
       case 'writer-suite':
