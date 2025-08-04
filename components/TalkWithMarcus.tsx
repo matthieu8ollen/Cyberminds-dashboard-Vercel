@@ -385,7 +385,7 @@ setIdeationOutput(completedIdeation)
       )}
 
       {/* Completion Actions */}
-      {conversationStage === 'complete' && ideationOutput.topic && (
+{conversationStage === 'complete' && (
         <div className="mt-6 bg-gradient-to-r from-slate-50 to-teal-50 rounded-lg border border-slate-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Ready to Create Content!</h3>
           <div className="grid gap-3 md:grid-cols-3">
