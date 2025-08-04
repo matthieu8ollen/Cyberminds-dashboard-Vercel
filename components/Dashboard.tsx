@@ -404,7 +404,12 @@ export default function Dashboard() {
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-        return <IdeasPage onWritePost={handleWriteFromIdea} />
+  return <TalkWithMarcus onIdeationComplete={(ideation) => {
+    // Handle completed ideation - could navigate to create mode with pre-filled data
+    console.log('Ideation completed:', ideation)
+    // Optionally switch to create mode with the ideation data
+    // setActivePage('create')
+  }} />
       
       case 'writer-suite':
         return <WriterSuite onComplete={(data) => {
