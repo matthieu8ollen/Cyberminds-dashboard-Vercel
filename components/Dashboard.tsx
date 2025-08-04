@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useWorkflow } from '../contexts/WorkflowContext'
 import { 
   getTrendingTopics, 
   saveGeneratedContent, 
@@ -59,6 +60,7 @@ interface UserProfile {
 export default function Dashboard() {
   // State Management
   const { user, profile, signOut, refreshProfile } = useAuth()
+  const { workflowState, ideationData: workflowIdeationData } = useWorkflow()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
   
   // UI States
@@ -83,6 +85,7 @@ export default function Dashboard() {
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([])
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
+  const [ideationData, setIdeationData] = useState<any>(null)
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -103,6 +106,13 @@ export default function Dashboard() {
       setFormData(prev => ({ ...prev, tone: profile.preferred_tone as ToneType }))
     }
   }, [profile])
+
+  // Load ideation data from workflow if available
+useEffect(() => {
+  if (workflowIdeationData) {
+    setIdeationData(workflowIdeationData)
+  }
+}, [workflowIdeationData])
 
   // Click outside handler for profile menu
   useEffect(() => {
@@ -427,20 +437,21 @@ export default function Dashboard() {
   return <ImageGeneration />
       
       case 'create':
-        // Handle Create tab with sub-navigation
-        if (createSubPage === 'express') {
-          return (
-            <ExpressGenerator
-              onSwitchMode={(mode) => {
-                if (mode === 'power') {
-                  setActivePage('writer-suite')
-                } else {
-                  setCreateSubPage(mode)
-                }
-              }}
-              onBack={() => setCreateSubPage('mode-selection')}
-            />
-          )
+  // Handle Create tab with sub-navigation
+  if (createSubPage === 'express') {
+    return (
+      <ExpressGenerator
+        onSwitchMode={(mode) => {
+          if (mode === 'power') {
+            setActivePage('writer-suite')
+          } else {
+            setCreateSubPage(mode)
+          }
+        }}
+        onBack={() => setCreateSubPage('mode-selection')}
+        ideationData={ideationData}
+      />
+    )
         } else if (createSubPage === 'standard') {
           return (
             <StandardGenerator
