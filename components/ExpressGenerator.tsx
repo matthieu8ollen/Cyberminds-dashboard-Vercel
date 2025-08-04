@@ -242,7 +242,7 @@ function ExpressResults({
   onBack 
 }: { 
   topic: string; 
-  ideationData?: { topic: string; angle: string; takeaways: string[] }; 
+  ideationData?: { topic: string; angle: string; takeaways: string[]; source_page?: string; session_id?: string }; 
   onBack: () => void 
 }) {
   const [selectedDraft, setSelectedDraft] = useState(0)
