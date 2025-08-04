@@ -175,14 +175,16 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
     const takeaways = generateTakeaways(ideationOutput.topic || '', selectedAngle)
     
     const takeawaysPresentation = [
-      `Excellent choice! Here are the key takeaways for your "${selectedAngle}" approach:`,
-      "",
-      ...takeaways.map((takeaway, index) => `${index + 1}. ${takeaway}`),
-      "",
-      "These takeaways are designed to provide immediate value to your audience.",
-      "",
-      "Does this capture what you want to communicate? Say 'yes' to proceed with this content foundation, or let me know what you'd like to adjust!"
-    ].join('\n')
+  `Excellent choice! Here are the key takeaways for your "${selectedAngle}" approach:`,
+  "",
+  ...takeaways.map((takeaway, index) => `${index + 1}. ${takeaway}`),
+  "",
+  "These takeaways are designed to provide immediate value to your audience.",
+  "",
+  "✅ **Type 'yes' below** to proceed with this content foundation and unlock creation modes!",
+  "",
+  "Or let me know what you'd like to adjust."
+].join('\n')
 
     addMarcusMessage(takeawaysPresentation)
     setIdeationOutput(prev => ({ ...prev, takeaways }))
