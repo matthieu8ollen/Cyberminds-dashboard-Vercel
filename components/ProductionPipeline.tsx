@@ -299,17 +299,17 @@ export default function ProductionPipeline() {
   }
 
   const getContinueButtonText = (content: any): string => {
-    const variationsData = content.variations_data
-    const creationMode = variationsData?.creation_mode
+  const variationsData = content.variations_data
+  const creationMode = variationsData?.creation_mode
 
-    switch (creationMode) {
-      case 'marcus': return 'Continue in Marcus'
-      case 'classic': return 'Continue in Writer Suite Classic'  
-      case 'express': return 'Continue in Express Mode'
-      case 'standard': return 'Continue in Standard Mode'
-      default: return 'Edit Content'
-    }
+  switch (creationMode) {
+    case 'marcus': return 'Continue in Marcus'
+    case 'classic': return 'Continue in Writer Suite'  
+    case 'express': return 'Continue in Express'
+    case 'standard': return 'Continue in Standard'
+    default: return 'Continue Editing'
   }
+}
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -471,15 +471,15 @@ const getSmartDateDisplay = (item: any): string => {
           <div className="p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="flex justify-between items-center">
               <button 
-                onClick={() => {
-                  setShowPreview(false)
-                  handleContinueEditing(selectedContentItem)
-                }}
-                className="flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>{getContinueButtonText(selectedContentItem)}</span>
-              </button>
+  onClick={() => {
+    setShowPreview(false)
+    handleContinueEditing(selectedContentItem)
+  }}
+  className="flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+>
+  <ArrowRight className="w-4 h-4" />
+  <span>{getContinueButtonText(selectedContentItem)}</span>
+</button>
               
               <div className="flex space-x-3">
                 {selectedContentItem.status === 'draft' && (
@@ -702,12 +702,12 @@ const getSmartDateDisplay = (item: any): string => {
                   </button>
                   
                   <button 
-                    onClick={() => handleContinueEditing(item)}
-                    className="flex items-center space-x-1 px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 transition"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Edit</span>
-                  </button>
+  onClick={() => handleContinueEditing(item)}
+  className="flex items-center space-x-1 px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 transition"
+>
+  <ArrowRight className="w-3 h-3" />
+  <span>Continue</span>
+</button>
                 </div>
                 
                 {/* Right Side: Secondary Actions with Consistent Layout */}
