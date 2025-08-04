@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { AuthProvider } from '../contexts/AuthContext'
 import { ContentProvider } from '../contexts/ContentContext'
+import { WorkflowProvider } from '../contexts/WorkflowContext'
 import { ToastProvider } from '../components/ToastNotifications'
 import Login from '../components/Login'
 import Dashboard from '../components/Dashboard'
@@ -61,9 +62,11 @@ export default function Home() {
   return (
     <AuthProvider>
       <ContentProvider>
-        <ToastProvider>
-          <MainApp />
-        </ToastProvider>
+        <WorkflowProvider>
+          <ToastProvider>
+            <MainApp />
+          </ToastProvider>
+        </WorkflowProvider>
       </ContentProvider>
     </AuthProvider>
   )
