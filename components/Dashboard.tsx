@@ -28,6 +28,7 @@ import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
+import TalkWithMarcus from './TalkWithMarcus'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -377,15 +378,15 @@ export default function Dashboard() {
   ]
 
   const navigationItems = [
-    { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
-    { id: 'create' as ActivePage, label: 'Create', icon: Zap },
-    { id: 'images' as ActivePage, label: 'Images', icon: Camera },
-    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
-    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
-    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
-    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
-  ]
+  { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+  { id: 'create' as ActivePage, label: 'Create', icon: Zap },
+  { id: 'images' as ActivePage, label: 'Images', icon: Camera },
+  { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+  { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+  { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+  { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+]
 
   // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
