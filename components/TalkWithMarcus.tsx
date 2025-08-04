@@ -419,7 +419,7 @@ setIdeationOutput(completedIdeation)
         topic: ideationOutput.topic,
         angle: ideationOutput.angle,
         takeaways: ideationOutput.takeaways,
-        source_page: 'talk_with_marcus'
+        source_page: 'talk_with_marcus',
         session_id: currentSession?.id
       })
     }
@@ -440,7 +440,7 @@ setIdeationOutput(completedIdeation)
         topic: ideationOutput.topic,
         angle: ideationOutput.angle,
         takeaways: ideationOutput.takeaways,
-        source_page: 'talk_with_marcus'
+        source_page: 'talk_with_marcus',
         session_id: currentSession?.id
       })
     }
