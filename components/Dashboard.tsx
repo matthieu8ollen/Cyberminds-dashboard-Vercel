@@ -464,18 +464,19 @@ useEffect(() => {
       />
     )
         } else if (createSubPage === 'standard') {
-          return (
-            <StandardGenerator
-              onSwitchMode={(mode) => {
-                if (mode === 'power') {
-                  setActivePage('writer-suite')
-                } else {
-                  setCreateSubPage(mode)
-                }
-              }}
-              onBack={() => setCreateSubPage('mode-selection')}
-            />
-          )
+  return (
+    <StandardGenerator
+      onSwitchMode={(mode) => {
+        if (mode === 'power') {
+          setActivePage('writer-suite')
+        } else {
+          setCreateSubPage(mode)
+        }
+      }}
+      onBack={() => setCreateSubPage('mode-selection')}
+      ideationData={ideationData}
+    />
+  )
         } else {
           // Default to mode selection
           return (
