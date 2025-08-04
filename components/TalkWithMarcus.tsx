@@ -420,6 +420,7 @@ setIdeationOutput(completedIdeation)
         angle: ideationOutput.angle,
         takeaways: ideationOutput.takeaways,
         source_page: 'talk_with_marcus'
+        session_id: currentSession?.id
       })
     }
   }}
@@ -440,6 +441,7 @@ setIdeationOutput(completedIdeation)
         angle: ideationOutput.angle,
         takeaways: ideationOutput.takeaways,
         source_page: 'talk_with_marcus'
+        session_id: currentSession?.id
       })
     }
   }}
