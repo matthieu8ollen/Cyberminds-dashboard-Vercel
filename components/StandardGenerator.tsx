@@ -240,21 +240,17 @@ const [context, setContext] = useState(
 
           {/* Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-sm text-gray-600">
-                Want faster creation?{' '}
-              </div>
-              
-              <div className="text-sm text-gray-600">
-                Need more control?{' '}
-                <button
-                  onClick={() => onSwitchMode('power')}
-                  className="text-purple-600 hover:text-purple-700 font-medium underline"
-                >
-                  Enter Writer Suite
-                </button>
-              </div>
-            </div>
+            <div className="flex justify-center items-center mb-4">
+  <div className="text-sm text-gray-600">
+    Need more control?{' '}
+    <button
+      onClick={() => onSwitchMode('power')}
+      className="text-purple-600 hover:text-purple-700 font-medium underline"
+    >
+      Enter Writer Suite
+    </button>
+  </div>
+</div>
 
             <button
               onClick={handleGenerate}
