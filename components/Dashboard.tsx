@@ -30,6 +30,7 @@ import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
 import IdeasHub from './IdeasHub'
+import WriterSuiteSelection from './WriterSuiteSelection'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -455,9 +456,38 @@ const navigationItems = getNavigationItems()
   />
       
       case 'writer-suite':
-        return <WriterSuite onComplete={(data) => {
-          console.log('Writer Suite completed:', data)
-        }} />
+  return (
+    <WriterSuiteSelection
+      onModeSelect={(mode) => {
+        if (mode === 'writer-suite') {
+          // Stay in Writer Suite, but show Marcus mode
+          setActivePage('writer-suite')
+          // TODO: Set a state to show Marcus mode instead of selection
+        } else if (mode === 'standard') {
+          // Enter Standard Mode
+          setInStandardMode(true)
+          setActivePage('standard')
+        }
+      }}
+    />
+  )
+
+        case 'standard':
+  return (
+    <StandardGenerator
+      onSwitchMode={(mode) => {
+        if (mode === 'power') {
+          setInStandardMode(false)
+          setActivePage('writer-suite')
+        }
+      }}
+      onBack={() => {
+        setInStandardMode(false)
+        setActivePage('writer-suite')
+      }}
+      ideationData={ideationData}
+    />
+  )
         
       case 'production':
         return <ProductionPipeline />
