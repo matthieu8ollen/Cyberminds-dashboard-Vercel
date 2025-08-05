@@ -42,7 +42,11 @@ const [conversationState, setConversationState] = useState({
 })
 
 const [showClarificationQuestions, setShowClarificationQuestions] = useState(false)
-const [clarificationData, setClarificationData] = useState(null)
+const [clarificationData, setClarificationData] = useState<{
+  questions?: string[];
+  suggestions?: string[];
+  message?: string;
+} | null>(null)
 const [showTopics, setShowTopics] = useState(false)
 const [topicsData, setTopicsData] = useState([])
 const [contentCategory, setContentCategory] = useState('')
