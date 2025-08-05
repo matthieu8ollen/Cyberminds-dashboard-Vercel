@@ -84,7 +84,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user])
 
-  const saveDraft = async (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>, mode?: 'marcus' | 'classic' | 'express' | 'standard') => {
+  const saveDraft = async (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>, mode?: 'marcus' | 'standard') => {
     if (!user) return null
     
     try {
