@@ -142,7 +142,54 @@ const [contentCategory, setContentCategory] = useState('')
     }, 1500)
   }
 
-  const processUserInput = async (input: string) => {
+  const handleUserInput = async (userInput: string) => {
+  setIsTyping(true);
+  
+  const conversationContext = {
+    previous_messages: conversationState.context,
+    current_stage: conversationState.stage,
+    topic_focus: conversationState.currentTopic,
+    user_preferences: {}
+  };
+
+  try {
+    const response = await callMarcusAI(
+      userInput, 
+      conversationContext, 
+      conversationState.contentPreference
+    );
+
+    switch (response.response_type) {
+      case 'clarification':
+        handleClarificationResponse(response);
+        break;
+      case 'content_ready':
+        handleContentResponse(response);
+        break;
+      case 'error':
+        handleErrorResponse(response);
+        break;
+      default:
+        // Fallback to old mock system
+        processUserInputMock(userInput);
+    }
+    
+    setConversationState(prev => ({
+      ...prev,
+      context: [...prev.context, { user: userInput, marcus: response }],
+      stage: response.conversation_stage || prev.stage
+    }));
+
+  } catch (error) {
+    // Fallback to old mock system
+    processUserInputMock(userInput);
+  } finally {
+    setIsTyping(false);
+  }
+};
+
+// Rename existing function as fallback
+const processUserInputMock = async (input: string) => {
   switch (conversationStage) {
     case 'initial':
       handleInitialTopic(input)
@@ -314,6 +361,42 @@ setIdeationOutput(completedIdeation)
     `Action item for next week`
   ]
 
+// NEW: AI Response Handlers
+const handleClarificationResponse = (response: any) => {
+  addMessage('marcus', response.message);
+  setShowClarificationQuestions(true);
+  setClarificationData({
+    questions: response.questions,
+    suggestions: response.suggested_inputs,
+    message: response.message
+  });
+};
+
+const handleContentResponse = (response: any) => {
+  addMessage('marcus', "I've got some great topic ideas for you! Check them out below:");
+  setShowTopics(true);
+  setTopicsData(response.topics);
+  setContentCategory(response.content_category);
+};
+
+const handleErrorResponse = (response: any) => {
+  addMessage('marcus', response.message);
+};
+
+const sendToWritersSuite = (topic: any) => {
+  console.log('Sending to Writer Suite:', topic);
+  // TODO: Implement routing to Writer Suite with selected topic
+  if (onNavigateToCreate) {
+    onNavigateToCreate('power', {
+      topic: topic.title,
+      angle: topic.structure?.opening || '',
+      takeaways: topic.supporting_points || [],
+      source_page: 'talk_with_marcus_ai',
+      session_id: currentSession?.id
+    });
+  }
+};
+  
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
