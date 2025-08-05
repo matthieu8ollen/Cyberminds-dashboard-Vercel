@@ -485,6 +485,11 @@ const navigationItems = getNavigationItems()
         setInStandardMode(false)
         setActivePage('writer-suite')
       }}
+      onComplete={() => {
+        // Standard mode work completed - return to normal sidebar
+        setInStandardMode(false)
+        setActivePage('production')
+      }}
       ideationData={ideationData}
     />
   )
