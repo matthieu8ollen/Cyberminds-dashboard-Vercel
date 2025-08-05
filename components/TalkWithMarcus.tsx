@@ -497,7 +497,7 @@ const sendToWritersSuite = (topic: any) => {
           <div className="bg-blue-50 p-4 rounded-lg mb-4">
             <p className="font-medium mb-3">Quick options:</p>
             <div className="space-y-2">
-              {clarificationData.suggestions.map((suggestion: string, index: number) => (
+              {clarificationData.suggestions?.map((suggestion: string, index: number) => (
                 <button 
                   key={index}
                   onClick={() => {
