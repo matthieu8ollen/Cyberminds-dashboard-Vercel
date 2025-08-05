@@ -242,13 +242,14 @@ const handleAIResponse = (response: any) => {
       handleClarificationResponse(response);
       break;
     case 'content_ready':
+    case 'topic_ready':  // Add this line to handle the AI's response type
       handleContentResponse(response);
       break;
     case 'error':
       handleErrorResponse(response);
       break;
     default:
-      console.log('⚠️ Unknown response type, using fallback');
+      console.log('⚠️ Unknown response type:', response.response_type, 'using fallback');
       // Will use fallback in calling function
   }
 };
