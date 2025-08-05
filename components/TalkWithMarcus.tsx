@@ -575,25 +575,41 @@ const sendToWritersSuite = (topic: any) => {
         )}
 
         {/* NEW: Topic Suggestions UI */}
-        {showTopics && topicsData.length > 0 && (
-          <div className="space-y-4 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Marcus suggests these topics:</h3>
-            {topicsData.map((topic: any, index: number) => (
-              <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">{topic.title}</h4>
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
-                  {topic.hooks?.map((hook: string, i: number) => (
-                    <div key={i} className="bg-gray-50 p-3 rounded-md mb-2 text-sm text-gray-800">
-                      "{hook}"
-                    </div>
-                  ))}
-                  {topic.key_takeaways && (
-  <div className="mb-4">
-    <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
-    {topic.key_takeaways.map((takeaway: string, i: number) => (
-      <div key={i} className="bg-green-50 p-3 rounded-md mb-2 text-sm text-green-800">
-        • {takeaway}
+{showTopics && topicsData.length > 0 && (
+  <div className="space-y-4 mb-6">
+    <h3 className="text-lg font-semibold text-gray-900">Marcus suggests these topics:</h3>
+    {topicsData.map((topic: any, index: number) => (
+      <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h4 className="font-semibold text-gray-900 mb-3">{topic.title}</h4>
+        
+        {/* Hook options */}
+        <div className="mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
+          {topic.hooks?.map((hook: string, i: number) => (
+            <div key={i} className="bg-gray-50 p-3 rounded-md mb-2 text-sm text-gray-800">
+              "{hook}"
+            </div>
+          ))}
+        </div>
+        
+        {/* Key takeaways */}
+        {topic.key_takeaways && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
+            {topic.key_takeaways.map((takeaway: string, i: number) => (
+              <div key={i} className="bg-green-50 p-3 rounded-md mb-2 text-sm text-green-800">
+                • {takeaway}
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <button 
+          onClick={() => sendToWritersSuite(topic)}
+          className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+        >
+          Use This Topic
+        </button>
       </div>
     ))}
   </div>
