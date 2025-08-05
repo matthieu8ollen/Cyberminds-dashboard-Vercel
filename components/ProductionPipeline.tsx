@@ -252,12 +252,7 @@ export default function ProductionPipeline() {
       case 'marcus':
         showToast('info', 'Opening content in Marcus Mode...')
         break
-      
-      case 'classic':
-        showToast('info', 'Opening content in Writer Suite Classic...')
-        break
-      
-      case 'express':
+        
       case 'standard':
         setEditingContent(content)
         setShowUniversalEditor(true)
@@ -301,7 +296,6 @@ export default function ProductionPipeline() {
 
   switch (creationMode) {
     case 'marcus': return 'Continue in Marcus'
-    case 'classic': return 'Continue in Writer Suite'  
     case 'standard': return 'Continue in Standard'
     default: return 'Continue Editing'
   }
