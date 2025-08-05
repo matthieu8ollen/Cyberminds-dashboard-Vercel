@@ -210,7 +210,6 @@ export default function ImageGeneration() {
     switch (mode) {
       case 'marcus': return <User className="w-4 h-4" />
       case 'classic': return <Sparkles className="w-4 h-4" />
-      case 'express': return <Zap className="w-4 h-4" />
       case 'standard': return <Clock className="w-4 h-4" />
       default: return <FileText className="w-4 h-4" />
     }
