@@ -23,6 +23,30 @@ interface TalkWithMarcusProps {
   onNavigateToCreate?: (mode: 'express' | 'standard' | 'power', ideationData: any) => void
 }
 
+export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps = {}) {
+  const { user } = useAuth()
+  const { startIdeation } = useWorkflow()
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputText, setInputText] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [currentSession, setCurrentSession] = useState<IdeationSession | null>(null)
+  const [ideationOutput, setIdeationOutput] = useState<Partial<IdeationOutput>>({})
+  const [conversationStage, setConversationStage] = useState<'initial' | 'topic-clarification' | 'angle-selection' | 'takeaways' | 'complete'>('initial')
+
+  // NEW: Add these state variables for AI agent responses
+const [conversationState, setConversationState] = useState({
+  stage: 'initial',
+  context: [],
+  currentTopic: null,
+  contentPreference: 'auto'
+})
+
+const [showClarificationQuestions, setShowClarificationQuestions] = useState(false)
+const [clarificationData, setClarificationData] = useState(null)
+const [showTopics, setShowTopics] = useState(false)
+const [topicsData, setTopicsData] = useState([])
+const [contentCategory, setContentCategory] = useState('')
+
 // Webhook integration functions
 const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string) => {
   const N8N_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook-test/74cc6b41-dc95-4bb4-b0ea-adc8f6fa56b1';
@@ -53,30 +77,6 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
     return { error: 'Marcus is thinking too hard, try again' };
   }
 };
-
-export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps = {}) {
-  const { user } = useAuth()
-  const { startIdeation } = useWorkflow()
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputText, setInputText] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
-  const [currentSession, setCurrentSession] = useState<IdeationSession | null>(null)
-  const [ideationOutput, setIdeationOutput] = useState<Partial<IdeationOutput>>({})
-  const [conversationStage, setConversationStage] = useState<'initial' | 'topic-clarification' | 'angle-selection' | 'takeaways' | 'complete'>('initial')
-
-  // NEW: Add these state variables for AI agent responses
-const [conversationState, setConversationState] = useState({
-  stage: 'initial',
-  context: [],
-  currentTopic: null,
-  contentPreference: 'auto'
-})
-
-const [showClarificationQuestions, setShowClarificationQuestions] = useState(false)
-const [clarificationData, setClarificationData] = useState(null)
-const [showTopics, setShowTopics] = useState(false)
-const [topicsData, setTopicsData] = useState([])
-const [contentCategory, setContentCategory] = useState('')
 
   useEffect(() => {
     // Initialize conversation
