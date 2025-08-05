@@ -36,9 +36,9 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   // NEW: Add these state variables for AI agent responses
 const [conversationState, setConversationState] = useState({
   stage: 'initial',
-  context: [],
-  currentTopic: null,
-  contentPreference: 'auto'
+  context: [] as Array<{ user: string; marcus: any }>,
+  currentTopic: null as string | null,
+  contentPreference: 'auto' as string
 })
 
 const [showClarificationQuestions, setShowClarificationQuestions] = useState(false)
