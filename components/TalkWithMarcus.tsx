@@ -614,7 +614,7 @@ const sendToWritersSuite = (topic: any) => {
     ))}
   </div>
 )}
-                </div>
+               
                 <button 
                   onClick={() => sendToWritersSuite(topic)}
                   className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
