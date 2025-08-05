@@ -20,7 +20,6 @@ import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
 import ModeSelection from './ModeSelection'
-import ExpressGenerator from './ExpressGenerator'
 import StandardGenerator from './StandardGenerator'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
@@ -77,6 +76,7 @@ export default function Dashboard() {
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('ideas')
 const [inStandardMode, setInStandardMode] = useState(false)
+  const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
   const [createSubPage, setCreateSubPage] = useState<CreateSubPage>('mode-selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -456,21 +456,37 @@ const navigationItems = getNavigationItems()
   />
       
       case 'writer-suite':
-  return (
-    <WriterSuiteSelection
-      onModeSelect={(mode) => {
-        if (mode === 'writer-suite') {
-          // Stay in Writer Suite, but show Marcus mode
-          setActivePage('writer-suite')
-          // TODO: Set a state to show Marcus mode instead of selection
-        } else if (mode === 'standard') {
-          // Enter Standard Mode
-          setInStandardMode(true)
-          setActivePage('standard')
-        }
-      }}
-    />
-  )
+  if (writerSuiteMode === 'selection') {
+    return (
+      <WriterSuiteSelection
+        onModeSelect={(mode) => {
+          if (mode === 'writer-suite') {
+            // Enter Marcus mode within Writer Suite
+            setWriterSuiteMode('marcus')
+          } else if (mode === 'standard') {
+            // Enter Standard Mode
+            setInStandardMode(true)
+            setActivePage('standard')
+          }
+        }}
+      />
+    )
+  } else {
+    // Show Marcus mode
+    return (
+      <WriterSuite 
+        onComplete={(data) => {
+          console.log('Writer Suite completed:', data)
+          // Reset back to selection after completion
+          setWriterSuiteMode('selection')
+        }}
+        onBack={() => {
+          // Return to mode selection
+          setWriterSuiteMode('selection')
+        }}
+      />
+    )
+  }
 
         case 'standard':
   return (
