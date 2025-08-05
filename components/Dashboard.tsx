@@ -19,7 +19,6 @@ import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
 import ContentCalendar from './ContentCalendar'
 import RichTextEditor from './RichTextEditor'
-import ModeSelection from './ModeSelection'
 import StandardGenerator from './StandardGenerator'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
@@ -34,7 +33,6 @@ import WriterSuiteSelection from './WriterSuiteSelection'
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
 type ActivePage = 'ideas' | 'writer-suite' | 'standard' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
-type CreateSubPage = 'mode-selection' | 'express' | 'standard'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
@@ -77,7 +75,6 @@ export default function Dashboard() {
   const [activePage, setActivePage] = useState<ActivePage>('ideas')
 const [inStandardMode, setInStandardMode] = useState(false)
   const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
-  const [createSubPage, setCreateSubPage] = useState<CreateSubPage>('mode-selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -518,52 +515,6 @@ const navigationItems = getNavigationItems()
         case 'images':
   return <ImageGeneration />
       
-      case 'create':
-  // Handle Create tab with sub-navigation
-  if (createSubPage === 'express') {
-    return (
-      <ExpressGenerator
-        onSwitchMode={(mode) => {
-          if (mode === 'power') {
-            setActivePage('writer-suite')
-          } else {
-            setCreateSubPage(mode)
-          }
-        }}
-        onBack={() => setCreateSubPage('mode-selection')}
-        ideationData={ideationData}
-      />
-    )
-        } else if (createSubPage === 'standard') {
-  return (
-    <StandardGenerator
-      onSwitchMode={(mode) => {
-        if (mode === 'power') {
-          setActivePage('writer-suite')
-        } else {
-          setCreateSubPage(mode)
-        }
-      }}
-      onBack={() => setCreateSubPage('mode-selection')}
-      ideationData={ideationData}
-    />
-  )
-        } else {
-          // Default to mode selection
-          return (
-            <ModeSelection
-              onModeSelect={(mode) => {
-                if (mode === 'power') {
-                  setActivePage('writer-suite')
-                } else {
-                  setCreateSubPage(mode)
-                }
-              }}
-              onBack={() => setActivePage('writer-suite')}
-            />
-          )
-        }
-      
       case 'analytics':
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -650,18 +601,18 @@ const navigationItems = getNavigationItems()
           </button>
           
           <button
-            onClick={() => {
-              setActivePage('create')
-              setCreateSubPage('express')
-            }}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-              <Zap className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Express Create</h3>
-            <p className="text-sm text-gray-600">Quick content generation</p>
-          </button>
+  onClick={() => {
+    setInStandardMode(true)
+    setActivePage('standard')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
+>
+  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+    <Zap className="w-6 h-6 text-blue-600" />
+  </div>
+  <h3 className="font-semibold text-gray-900 mb-2">Standard Mode</h3>
+  <p className="text-sm text-gray-600">Quick customization</p>
+</button>
           
           <button
             onClick={() => setActivePage('writer-suite')}
