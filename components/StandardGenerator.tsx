@@ -12,13 +12,14 @@ import { GeneratedContent } from '../lib/supabase'
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'power') => void
   onBack: () => void
+  onComplete?: () => void
   ideationData?: {
-  topic: string
-  angle: string
-  takeaways: string[]
-  source_page: string
-  session_id?: string
-}
+    topic: string
+    angle: string
+    takeaways: string[]
+    source_page: string
+    session_id?: string
+  }
 }
 
 export default function StandardGenerator({ onSwitchMode, onBack, onComplete, ideationData }: StandardGeneratorProps) {
@@ -241,12 +242,6 @@ const [context, setContext] = useState(
             <div className="flex justify-between items-center mb-4">
               <div className="text-sm text-gray-600">
                 Want faster creation?{' '}
-                <button
-                  onClick={() => onSwitchMode('express')}
-                  className="text-blue-600 hover:text-blue-700 font-medium underline"
-                >
-                  Try Express Mode
-                </button>
               </div>
               
               <div className="text-sm text-gray-600">
