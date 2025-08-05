@@ -52,7 +52,7 @@ const [topicsData, setTopicsData] = useState([])
 const [contentCategory, setContentCategory] = useState('')
 
 // Webhook integration functions
-const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string) => {
+const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string, sessionId: string) => {
   const N8N_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook-test/74cc6b41-dc95-4bb4-b0ea-adc8f6fa56b1';
   
   try {
@@ -68,7 +68,7 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
         conversation_context: conversationContext,
         user_id: user?.id,
         content_type_preference: contentPreference,
-        session_id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        session_id: sessionId,
         timestamp: new Date().toISOString()
       })
     });
@@ -82,6 +82,39 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   }
 };
 
+// Poll for AI response from callback
+  const pollForAIResponse = async (sessionId: string) => {
+    const maxAttempts = 20; // 20 attempts = 30 seconds max wait
+    let attempts = 0;
+    
+    const poll = async (): Promise<any> => {
+      try {
+        const response = await fetch(`/api/marcus/callback?session_id=${sessionId}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          console.log('📨 Received AI response from callback:', result.data);
+          return result.data;
+        }
+        
+        attempts++;
+        if (attempts >= maxAttempts) {
+          console.log('⏱️ AI response timeout, using fallback');
+          return null;
+        }
+        
+        // Wait 1.5 seconds before next poll
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return poll();
+      } catch (error) {
+        console.error('❌ Error polling for AI response:', error);
+        return null;
+      }
+    };
+    
+    return poll();
+  };
+  
   useEffect(() => {
     // Initialize conversation
     addMarcusMessage("👋 Hi! I'm Marcus, your ideation partner. I'm here to help you develop compelling LinkedIn content ideas.\n\nWhat would you like to write about today? You can be as specific or as general as you'd like - I'll help you refine it!")
@@ -157,38 +190,66 @@ setTimeout(() => {
   };
 
   try {
-    const response = await callMarcusAI(
-      userInput, 
-      conversationContext, 
-      conversationState.contentPreference
-    );
-
-    switch (response.response_type) {
-      case 'clarification':
-        handleClarificationResponse(response);
-        break;
-      case 'content_ready':
-        handleContentResponse(response);
-        break;
-      case 'error':
-        handleErrorResponse(response);
-        break;
-      default:
-        // Fallback to old mock system
-        processUserInputMock(userInput);
-    }
+    // Generate unique session ID for this request
+    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     
-    setConversationState(prev => ({
-      ...prev,
-      context: [...prev.context, { user: userInput, marcus: response }],
-      stage: response.conversation_stage || prev.stage
-    }));
+    // Send to N8N webhook
+    const response = await callMarcusAI(userInput, conversationContext, conversationState.contentPreference, sessionId);
+    
+    if (response.message === "Workflow was started") {
+      console.log('🔄 Workflow started, polling for AI response...');
+      
+      // Poll for the actual AI response
+      const aiResponse = await pollForAIResponse(sessionId);
+      
+      if (aiResponse) {
+        // Process the AI response
+        handleAIResponse(aiResponse);
+        
+        setConversationState(prev => ({
+          ...prev,
+          context: [...prev.context, { user: userInput, marcus: aiResponse }],
+          stage: aiResponse.conversation_stage || prev.stage
+        }));
+      } else {
+        // Timeout or error, use fallback
+        console.log('⚠️ No AI response received, using fallback');
+        processUserInputMock(userInput);
+      }
+    } else {
+      // Direct response (shouldn't happen with new setup, but just in case)
+      handleAIResponse(response);
+      
+      setConversationState(prev => ({
+        ...prev,
+        context: [...prev.context, { user: userInput, marcus: response }],
+        stage: response.conversation_stage || prev.stage
+      }));
+    }
 
   } catch (error) {
-    // Fallback to old mock system
+    console.log('❌ Error with AI webhook, using fallback');
     processUserInputMock(userInput);
   } finally {
     setIsTyping(false);
+  }
+};
+
+// New function to handle AI responses
+const handleAIResponse = (response: any) => {
+  switch (response.response_type) {
+    case 'clarification':
+      handleClarificationResponse(response);
+      break;
+    case 'content_ready':
+      handleContentResponse(response);
+      break;
+    case 'error':
+      handleErrorResponse(response);
+      break;
+    default:
+      console.log('⚠️ Unknown response type, using fallback');
+      // Will use fallback in calling function
   }
 };
 
