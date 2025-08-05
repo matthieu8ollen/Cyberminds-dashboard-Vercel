@@ -107,8 +107,6 @@ function getCreationModeDisplay(content: any): string {
   const mode = variationsData.creation_mode
   switch (mode) {
     case 'marcus': return 'Marcus Mode'
-    case 'classic': return 'Writer Suite Classic'
-    case 'express': return 'Express Mode'
     case 'standard': return 'Standard Mode'
     default: return 'Unknown Mode'
   }
@@ -124,10 +122,8 @@ function getCreationModeIcon(content: any) {
   const mode = variationsData.creation_mode
   switch (mode) {
     case 'marcus': return <User className="w-4 h-4" />
-    case 'classic': return <Sparkles className="w-4 h-4" />
-    case 'express': return <Zap className="w-4 h-4" />
-    case 'standard': return <Clock className="w-4 h-4" />
-    default: return <FileText className="w-4 h-4" />
+    case 'standard': return <Zap className="w-4 h-4" />
+    default: return <FileText className="w-4 h-4" />  
   }
 }
 
