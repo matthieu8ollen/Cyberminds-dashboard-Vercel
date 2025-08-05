@@ -8,7 +8,7 @@ type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-co
 
 interface IdeasHubProps {
   onIdeationComplete?: (ideation: any) => void
-  onNavigateToCreate?: (mode: 'express' | 'standard' | 'power', ideationData: any) => void
+  onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
 }
 
 // Placeholder components for now
