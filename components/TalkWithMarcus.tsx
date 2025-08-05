@@ -23,6 +23,37 @@ interface TalkWithMarcusProps {
   onNavigateToCreate?: (mode: 'express' | 'standard' | 'power', ideationData: any) => void
 }
 
+// Webhook integration functions
+const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string) => {
+  const N8N_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook-test/74cc6b41-dc95-4bb4-b0ea-adc8f6fa56b1';
+  
+  try {
+    console.log('🚀 Calling Marcus AI webhook:', { userInput, conversationContext, contentPreference });
+    
+    const response = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_input: userInput,
+        conversation_context: conversationContext,
+        user_id: user?.id,
+        content_type_preference: contentPreference,
+        session_id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toISOString()
+      })
+    });
+
+    const data = await response.json();
+    console.log('✅ Marcus AI response:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Marcus AI Error:', error);
+    return { error: 'Marcus is thinking too hard, try again' };
+  }
+};
+
 export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps = {}) {
   const { user } = useAuth()
   const { startIdeation } = useWorkflow()
