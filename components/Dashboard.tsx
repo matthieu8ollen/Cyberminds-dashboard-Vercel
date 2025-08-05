@@ -142,17 +142,17 @@ useEffect(() => {
   }
 
   // Content Generation Functions
-  const handleWriteFromIdea = (idea: ContentIdea) => {
-    // Open Create tab with pre-filled topic
-    setFormData(prev => ({
-      ...prev,
-      topic: idea.title,
-      context: idea.description || ''
-    }))
-    setSelectedIdea(idea)
-    setActivePage('create')
-    setCreateSubPage('mode-selection')
-  }
+ const handleWriteFromIdea = (idea: ContentIdea) => {
+  // Open Writer Suite with pre-filled topic for mode selection
+  setFormData(prev => ({
+    ...prev,
+    topic: idea.title,
+    context: idea.description || ''
+  }))
+  setSelectedIdea(idea)
+  setActivePage('writer-suite')
+  setWriterSuiteMode('selection')
+}
 
   const handleGenerate = async () => {
     if (!formData.topic.trim()) return
