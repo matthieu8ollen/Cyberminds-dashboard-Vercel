@@ -137,9 +137,9 @@ const [contentCategory, setContentCategory] = useState('')
     setIsTyping(true)
 
     // Process message based on conversation stage
-    setTimeout(() => {
-      processUserInput(userMessage)
-    }, 1500)
+setTimeout(() => {
+  handleUserInput(userMessage)
+}, 1500)
   }
 
   const handleUserInput = async (userInput: string) => {
@@ -487,6 +487,54 @@ const sendToWritersSuite = (topic: any) => {
           </div>
         </div>
       </div>
+
+      {/* NEW: Clarification Questions UI */}
+        {showClarificationQuestions && clarificationData && (
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="font-medium mb-3">Quick options:</p>
+            <div className="space-y-2">
+              {clarificationData.suggestions.map((suggestion: string, index: number) => (
+                <button 
+                  key={index}
+                  onClick={() => {
+                    setInputText(suggestion);
+                    setShowClarificationQuestions(false);
+                    handleUserInput(suggestion);
+                  }}
+                  className="block w-full text-left p-3 bg-white border rounded-lg hover:bg-gray-50 transition"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Topic Suggestions UI */}
+        {showTopics && topicsData.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Marcus suggests these topics:</h3>
+            {topicsData.map((topic: any, index: number) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">{topic.title}</h4>
+                <div className="mb-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
+                  {topic.hooks?.map((hook: string, i: number) => (
+                    <div key={i} className="bg-gray-50 p-3 rounded-md mb-2 text-sm text-gray-800">
+                      "{hook}"
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  onClick={() => sendToWritersSuite(topic)}
+                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+                >
+                  Use This Topic
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
       {/* Progress Indicator */}
       {conversationStage !== 'initial' && (
