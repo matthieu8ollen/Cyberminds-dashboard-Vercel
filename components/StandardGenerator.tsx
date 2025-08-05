@@ -632,13 +632,6 @@ function StandardResults({
             
             <div className="space-y-2">
               <button
-                onClick={() => onSwitchMode('express')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition"
-              >
-                <div className="font-medium text-blue-600">Express Mode</div>
-                <div className="text-sm text-gray-600">Faster, simpler creation</div>
-              </button>
-              <button
                 onClick={() => onSwitchMode('power')}
                 className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition"
               >
