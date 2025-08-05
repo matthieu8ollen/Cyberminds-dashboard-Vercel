@@ -430,12 +430,16 @@ setIdeationOutput(completedIdeation)
 // NEW: AI Response Handlers
 const handleClarificationResponse = (response: any) => {
   addMessage('marcus', response.message);
-  setShowClarificationQuestions(true);
-  setClarificationData({
-    questions: response.questions,
-    suggestions: response.suggested_inputs,
-    message: response.message
-  });
+  
+  // Handle both old format (suggested_inputs) and new format (questions)
+  if (response.questions && response.questions.length > 0) {
+    setShowClarificationQuestions(true);
+    setClarificationData({
+      questions: response.questions,
+      suggestions: response.questions, // Use questions as suggestions for clicking
+      message: response.message
+    });
+  }
 };
 
 const handleContentResponse = (response: any) => {
