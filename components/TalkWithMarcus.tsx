@@ -33,6 +33,20 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   const [ideationOutput, setIdeationOutput] = useState<Partial<IdeationOutput>>({})
   const [conversationStage, setConversationStage] = useState<'initial' | 'topic-clarification' | 'angle-selection' | 'takeaways' | 'complete'>('initial')
 
+  // NEW: Add these state variables for AI agent responses
+const [conversationState, setConversationState] = useState({
+  stage: 'initial',
+  context: [],
+  currentTopic: null,
+  contentPreference: 'auto'
+})
+
+const [showClarificationQuestions, setShowClarificationQuestions] = useState(false)
+const [clarificationData, setClarificationData] = useState(null)
+const [showTopics, setShowTopics] = useState(false)
+const [topicsData, setTopicsData] = useState([])
+const [contentCategory, setContentCategory] = useState('')
+
   useEffect(() => {
     // Initialize conversation
     addMarcusMessage("👋 Hi! I'm Marcus, your ideation partner. I'm here to help you develop compelling LinkedIn content ideas.\n\nWhat would you like to write about today? You can be as specific or as general as you'd like - I'll help you refine it!")
