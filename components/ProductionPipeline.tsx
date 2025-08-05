@@ -302,7 +302,6 @@ export default function ProductionPipeline() {
   switch (creationMode) {
     case 'marcus': return 'Continue in Marcus'
     case 'classic': return 'Continue in Writer Suite'  
-    case 'express': return 'Continue in Express'
     case 'standard': return 'Continue in Standard'
     default: return 'Continue Editing'
   }
