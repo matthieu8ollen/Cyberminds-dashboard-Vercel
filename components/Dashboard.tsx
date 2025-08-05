@@ -441,16 +441,12 @@ const navigationItems = getNavigationItems()
     onNavigateToCreate={(mode, ideationData) => {
   setIdeationData(ideationData)
   
-  // Smart mode detection - if ideation data suggests a specific approach
-  if (ideationData.angle?.toLowerCase().includes('quick') || ideationData.angle?.toLowerCase().includes('fast')) {
-    mode = 'express'
-  }
-  
   if (mode === 'power') {
     setActivePage('writer-suite')
-  } else {
-    setActivePage('create')
-    setCreateSubPage(mode)
+    setWriterSuiteMode('selection')
+  } else if (mode === 'standard') {
+    setInStandardMode(true)
+    setActivePage('standard')
   }
 }}
   />
