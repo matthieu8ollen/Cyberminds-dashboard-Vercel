@@ -33,7 +33,7 @@ import IdeasHub from './IdeasHub'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'ideas' | 'writer-suite' | 'create' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type ActivePage = 'ideas' | 'writer-suite' | 'standard' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
 type CreateSubPage = 'mode-selection' | 'express' | 'standard'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
@@ -74,7 +74,8 @@ export default function Dashboard() {
   const showProfileMenu = profileMenuHoverActive || profileMenuClickActive
 
   // Page and Content States
-  const [activePage, setActivePage] = useState<ActivePage>('writer-suite')
+  const [activePage, setActivePage] = useState<ActivePage>('ideas')
+const [inStandardMode, setInStandardMode] = useState(false)
   const [createSubPage, setCreateSubPage] = useState<CreateSubPage>('mode-selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -387,16 +388,33 @@ useEffect(() => {
     { id: 'metrics' as ContentType, label: '📊 Metrics', icon: '📊' }
   ]
 
-  const navigationItems = [
-  { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
-  { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-  { id: 'create' as ActivePage, label: 'Create', icon: Zap },
-  { id: 'images' as ActivePage, label: 'Images', icon: Camera },
-  { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
-  { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
-  { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
-  { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
-]
+  const getNavigationItems = () => {
+  const baseItems = [
+    { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+    { id: 'images' as ActivePage, label: 'Images', icon: Camera },
+    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+  ]
+
+  // Inject Standard Mode after Writer Suite when active
+  if (inStandardMode) {
+    const writerSuiteIndex = baseItems.findIndex(item => item.id === 'writer-suite')
+    baseItems.splice(writerSuiteIndex + 1, 0, {
+      id: 'standard' as ActivePage,
+      label: 'Standard Mode',
+      icon: Zap,
+      premium: false,
+      isTemporary: true
+    })
+  }
+
+  return baseItems
+}
+
+const navigationItems = getNavigationItems()
 
   // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
@@ -662,17 +680,23 @@ useEffect(() => {
                   <button
                     onClick={() => setActivePage(item.id)}
                     className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
-                      sidebarExpanded ? 'space-x-3' : 'justify-center'
-                    } ${
-                      isActive
-                        ? 'bg-slate-700 text-white shadow-lg'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
+  sidebarExpanded ? 'space-x-3' : 'justify-center'
+} ${
+  isActive
+    ? item.id === 'standard' 
+      ? 'bg-blue-600 text-white shadow-lg' 
+      : 'bg-slate-700 text-white shadow-lg'
+    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+}`}
                   >
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-teal-600 rounded-r-full"></div>
-                    )}
+  <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full ${
+    item.id === 'standard' 
+      ? 'bg-gradient-to-b from-blue-400 to-blue-600'
+      : 'bg-gradient-to-b from-teal-400 to-teal-600'
+  }`}></div>
+)}
                     
                     <Icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
                       isActive ? 'text-teal-400' : 'group-hover:scale-110'
