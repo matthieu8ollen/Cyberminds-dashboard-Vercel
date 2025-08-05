@@ -404,8 +404,7 @@ useEffect(() => {
       id: 'standard' as ActivePage,
       label: 'Standard Mode',
       icon: Zap,
-      premium: false,
-      isTemporary: true
+      premium: false
     })
   }
 
