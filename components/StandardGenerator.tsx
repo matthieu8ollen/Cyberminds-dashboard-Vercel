@@ -10,7 +10,7 @@ import { useWorkflow } from '../contexts/WorkflowContext'
 import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
-  onSwitchMode: (mode: 'power') => void
+  onSwitchMode: (mode: 'express' | 'power') => void
   onBack: () => void
   onComplete?: () => void
   ideationData?: {
