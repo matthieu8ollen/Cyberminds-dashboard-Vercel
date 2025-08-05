@@ -450,12 +450,11 @@ const handleErrorResponse = (response: any) => {
 
 const sendToWritersSuite = (topic: any) => {
   console.log('Sending to Writer Suite:', topic);
-  // TODO: Implement routing to Writer Suite with selected topic
   if (onNavigateToCreate) {
     onNavigateToCreate('power', {
       topic: topic.title,
-      angle: topic.structure?.opening || '',
-      takeaways: topic.supporting_points || [],
+      angle: topic.hooks?.[0] || '',
+      takeaways: topic.key_takeaways || [],
       source_page: 'talk_with_marcus_ai',
       session_id: currentSession?.id
     });
@@ -589,6 +588,16 @@ const sendToWritersSuite = (topic: any) => {
                       "{hook}"
                     </div>
                   ))}
+                  {topic.key_takeaways && (
+  <div className="mb-4">
+    <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
+    {topic.key_takeaways.map((takeaway: string, i: number) => (
+      <div key={i} className="bg-green-50 p-3 rounded-md mb-2 text-sm text-green-800">
+        • {takeaway}
+      </div>
+    ))}
+  </div>
+)}
                 </div>
                 <button 
                   onClick={() => sendToWritersSuite(topic)}
