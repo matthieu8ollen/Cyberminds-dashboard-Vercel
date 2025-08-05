@@ -590,7 +590,7 @@ const sendToWritersSuite = (topic: any) => {
               "{hook}"
             </div>
           ))}
-        </div>
+       </div>
         
         {/* Key takeaways */}
         {topic.key_takeaways && (
@@ -606,17 +606,6 @@ const sendToWritersSuite = (topic: any) => {
         
         <button 
           onClick={() => sendToWritersSuite(topic)}
-          className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
-        >
-          Use This Topic
-        </button>
-      </div>
-    ))}
-  </div>
-)}
-               
-                <button 
-                  onClick={() => sendToWritersSuite(topic)}
                   className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
                 >
                   Use This Topic
