@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🎯 Received AI response from N8N:', body)
     
-    const { session_id, response_type, message, questions, suggested_inputs, topics, content_category } = body
+    const { session_id, response_type, topics, content_category, user_id, tools_used, conversation_stage } = body
     
     if (!session_id) {
       return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
@@ -17,13 +17,12 @@ export async function POST(request: NextRequest) {
     // Store the response for the frontend to pick up
     pendingResponses.set(session_id, {
       response_type,
-      message,
-      questions,
-      suggested_inputs,
       topics,
       content_category,
-      conversation_stage: body.conversation_stage,
-      timestamp: Date.now()
+      user_id,
+      tools_used,
+      conversation_stage,
+      timestamp: body.timestamp || Date.now()
     })
     
     console.log('✅ Stored AI response for session:', session_id)
