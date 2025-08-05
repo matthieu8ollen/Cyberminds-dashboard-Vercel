@@ -97,15 +97,16 @@ const [context, setContext] = useState(
 
   if (showResults) {
   return (
-    <StandardResults 
-      topic={topic}
-      contentType={contentType}
-      tone={tone}
-      ideationData={ideationData}
-      onBack={() => setShowResults(false)}
-      onSwitchMode={onSwitchMode}
-    />
-  )
+  <StandardResults 
+    topic={topic}
+    contentType={contentType}
+    tone={tone}
+    ideationData={ideationData}
+    onBack={() => setShowResults(false)}
+    onSwitchMode={onSwitchMode}
+    onComplete={onComplete}
+  />
+)
 }
 
   return (
@@ -329,7 +330,8 @@ function StandardResults({
   tone, 
   ideationData,
   onBack, 
-  onSwitchMode 
+  onSwitchMode,
+  onComplete
 }: { 
   topic: string
   contentType: string
@@ -337,6 +339,7 @@ function StandardResults({
   ideationData?: { topic: string; angle: string; takeaways: string[]; source_page?: string; session_id?: string }
   onBack: () => void
   onSwitchMode: (mode: 'express' | 'power') => void
+  onComplete?: () => void
 }) {
   const [selectedDraft, setSelectedDraft] = useState('bold')
   const [showPreview, setShowPreview] = useState(true)
