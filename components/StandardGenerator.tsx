@@ -630,7 +630,7 @@ function StandardResults({
                 className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition"
               >
                 <div className="font-medium text-purple-600">Writer Suite</div>
-                <div className="text-sm text-gray-600">Advanced 5-step process</div>
+<div className="text-sm text-gray-600">Advanced Marcus AI guidance</div>
               </button>
             </div>
           </div>
