@@ -50,6 +50,8 @@ const [clarificationData, setClarificationData] = useState<{
 const [showTopics, setShowTopics] = useState(false)
 const [topicsData, setTopicsData] = useState([])
 const [contentCategory, setContentCategory] = useState('')
+const [showRetryButton, setShowRetryButton] = useState(false)
+const [lastUserInput, setLastUserInput] = useState('')
 
 // Webhook integration functions
 const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string, sessionId: string) => {
