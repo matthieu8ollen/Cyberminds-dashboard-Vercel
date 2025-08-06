@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { MessageCircle, Target, RotateCcw, BookOpen, ArrowRight } from 'lucide-react'
 import TalkWithMarcus from './TalkWithMarcus'
+import RepurposeHub from './repurpose/RepurposeHub'
 
 type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-content' | 'content-formulas'
 
