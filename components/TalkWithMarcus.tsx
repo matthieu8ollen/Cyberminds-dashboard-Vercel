@@ -594,8 +594,9 @@ const sendToWritersSuite = (topic: any) => {
   if (onNavigateToCreate) {
     onNavigateToCreate('power', {
       topic: topic.title,
-      angle: topic.hooks?.[0] || '',
+      angle: topic.selectedHook || topic.hooks?.[0] || '',
       takeaways: topic.key_takeaways || [],
+      selectedHookIndex: topic.selectedHookIndex,
       source_page: 'talk_with_marcus_ai',
       session_id: currentSession?.id
     });
@@ -696,12 +697,12 @@ const sendToWritersSuite = (topic: any) => {
 
       {/* Topic Selection Overlay */}
       {showTopicOverlay && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
-          <div className="bg-white rounded-t-xl w-full max-w-4xl max-h-[70vh] overflow-y-auto shadow-2xl transform transition-transform duration-300 ease-out">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-5xl max-h-[80vh] overflow-y-auto shadow-2xl">
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">Choose Your Topic</h3>
+                <h3 className="text-xl font-semibold text-gray-900">Choose Your Content Hook</h3>
                 <button
                   onClick={() => setShowTopicOverlay(false)}
                   className="text-gray-400 hover:text-gray-600 p-2"
@@ -711,70 +712,91 @@ const sendToWritersSuite = (topic: any) => {
                   </svg>
                 </button>
               </div>
-              <p className="text-gray-600 mt-2">Select the topic that resonates most with your goals:</p>
+              <p className="text-gray-600 mt-2">Select the hook that resonates most with your message:</p>
             </div>
 
-            {/* Options */}
-            <div className="p-6 space-y-4">
-              {topicsData.map((topic: any, index: number) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-6 hover:border-teal-500 transition-colors">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                        Option {index + 1}: {topic.title}
-                      </h4>
-                      
-                      {/* Hook Options */}
-                      <div className="mb-4">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
-                        <div className="space-y-2">
-                          {topic.hooks?.map((hook: string, i: number) => (
-                            <div key={i} className="bg-blue-50 p-3 rounded-md text-sm text-blue-800 border border-blue-200">
+            {/* Content */}
+            <div className="p-6">
+              {topicsData.map((topic: any, topicIndex: number) => (
+                <div key={topicIndex} className="mb-8">
+                  {/* Topic Title */}
+                  <h4 className="text-lg font-semibold text-gray-900 mb-6">
+                    {topic.title}
+                  </h4>
+
+                  {/* Hook Options */}
+                  <div className="space-y-4 mb-6">
+                    <h5 className="text-sm font-medium text-gray-700">Choose your hook:</h5>
+                    {topic.hooks?.map((hook: string, hookIndex: number) => (
+                      <div key={hookIndex} className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 hover:bg-teal-50 transition-colors cursor-pointer group">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0 w-8 h-8 bg-teal-100 group-hover:bg-teal-200 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-semibold text-teal-700">
+                              {hookIndex + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-gray-800 font-medium mb-2">
+                              Option {hookIndex + 1}
+                            </p>
+                            <p className="text-gray-700 text-sm leading-relaxed">
                               "{hook}"
-                            </div>
-                          ))}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              // Create modified topic with selected hook
+                              const selectedTopic = {
+                                ...topic,
+                                selectedHook: hook,
+                                selectedHookIndex: hookIndex
+                              };
+                              sendToWritersSuite(selectedTopic);
+                              setShowTopicOverlay(false);
+                            }}
+                            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition font-medium opacity-0 group-hover:opacity-100"
+                          >
+                            Select
+                          </button>
                         </div>
                       </div>
+                    ))}
+                  </div>
 
-                      {/* Key Takeaways */}
-                      {topic.key_takeaways && (
-                        <div className="mb-4">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
-                          <div className="space-y-2">
-                            {topic.key_takeaways.map((takeaway: string, i: number) => (
-                              <div key={i} className="bg-green-50 p-3 rounded-md text-sm text-green-800 border border-green-200">
-                                • {takeaway}
-                              </div>
-                            ))}
+                  {/* Key Takeaways (Read-only) */}
+                  {topic.key_takeaways && (
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <h5 className="text-sm font-medium text-gray-700 mb-3">Key takeaways for this topic:</h5>
+                      <div className="space-y-2">
+                        {topic.key_takeaways.map((takeaway: string, i: number) => (
+                          <div key={i} className="flex items-start space-x-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <p className="text-sm text-gray-700">{takeaway}</p>
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => {
-                        sendToWritersSuite(topic);
-                        setShowTopicOverlay(false);
-                      }}
-                      className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
-                    >
-                      Use This Topic
-                    </button>
-                  </div>
+                  {/* Separator for multiple topics */}
+                  {topicIndex < topicsData.length - 1 && (
+                    <hr className="mt-8 border-gray-200" />
+                  )}
                 </div>
               ))}
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-4">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-4 rounded-b-xl">
               <div className="flex justify-center">
                 <button
                   onClick={() => setShowTopicOverlay(false)}
-                  className="text-gray-600 hover:text-gray-800 font-medium"
+                  className="text-gray-600 hover:text-gray-800 font-medium flex items-center space-x-2"
                 >
-                  ← Back to Chat
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  <span>Back to Chat</span>
                 </button>
               </div>
             </div>
