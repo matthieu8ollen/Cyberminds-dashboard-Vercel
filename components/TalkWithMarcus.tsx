@@ -32,6 +32,7 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   const [currentSession, setCurrentSession] = useState<IdeationSession | null>(null)
   const [ideationOutput, setIdeationOutput] = useState<Partial<IdeationOutput>>({})
   const [conversationStage, setConversationStage] = useState<'initial' | 'topic-clarification' | 'angle-selection' | 'takeaways' | 'complete'>('initial')
+  const [showTopicOverlay, setShowTopicOverlay] = useState(false)
 
   // NEW: Add these state variables for AI agent responses
 const [conversationState, setConversationState] = useState({
@@ -131,6 +132,16 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   return poll();
 };
 
+  const [questionFlow, setQuestionFlow] = useState<{
+  stage: 'none' | 'q1' | 'q2' | 'processing';
+  questions: string[];
+  answers: string[];
+}>({
+  stage: 'none',
+  questions: [],
+  answers: []
+});
+  
   const handleRetry = () => {
   setShowRetryButton(false);
   if (lastUserInput) {
@@ -206,6 +217,86 @@ setTimeout(() => {
   setIsTyping(true);
   setShowRetryButton(false);
   setLastUserInput(userInput);
+
+  // Handle sequential question flow
+  if (questionFlow.stage === 'q1') {
+    // Store answer to question 1, ask question 2
+    setQuestionFlow(prev => ({
+      ...prev,
+      stage: 'q2',
+      answers: [userInput]
+    }));
+    
+    setTimeout(() => {
+      addMessage('marcus', questionFlow.questions[1]);
+      setIsTyping(false);
+    }, 1000);
+    
+    return; // Exit early, don't process as normal input
+  }
+  
+  if (questionFlow.stage === 'q2') {
+    // Store answer to question 2, send to backend
+    const bothAnswers = [...questionFlow.answers, userInput];
+    
+    setQuestionFlow(prev => ({
+      ...prev,
+      stage: 'processing',
+      answers: bothAnswers
+    }));
+    
+    // Send conversation history + answers to backend
+    const conversationContext = {
+      previous_messages: conversationState.context,
+      current_stage: 'clarification_answered',
+      topic_focus: conversationState.currentTopic,
+      user_preferences: {},
+      clarification_answers: bothAnswers
+    };
+
+    // Generate unique session ID for this request
+    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    
+    // Send to N8N webhook
+    const response = await callMarcusAI(
+      `Clarification complete. Q1: "${questionFlow.questions[0]}" A1: "${bothAnswers[0]}" Q2: "${questionFlow.questions[1]}" A2: "${bothAnswers[1]}"`,
+      conversationContext,
+      conversationState.contentPreference,
+      sessionId
+    );
+    
+    if (response.message === "Workflow was started") {
+      console.log('🔄 Processing clarification answers...');
+      setCurrentStatus('Processing your answers...');
+      
+      const aiResponse = await pollForAIResponse(sessionId);
+      
+      if (aiResponse === 'TIMEOUT') {
+        setCurrentStatus('');
+        addMessage('marcus', "I'm having trouble processing your answers right now. Please try again.");
+        setShowRetryButton(true);
+        setQuestionFlow({ stage: 'none', questions: [], answers: [] });
+      } else if (aiResponse === 'ERROR') {
+        setCurrentStatus('');
+        addMessage('marcus', "Something went wrong while processing your answers. Please try again.");
+        setShowRetryButton(true);
+        setQuestionFlow({ stage: 'none', questions: [], answers: [] });
+      } else if (aiResponse) {
+        setCurrentStatus('');
+        setQuestionFlow({ stage: 'none', questions: [], answers: [] });
+        handleAIResponse(aiResponse);
+        
+        setConversationState(prev => ({
+          ...prev,
+          context: [...prev.context, { user: `Q&A Complete: ${bothAnswers.join(', ')}`, marcus: aiResponse }],
+          stage: 'clarification_answered'
+        }));
+      }
+    }
+    
+    setIsTyping(false);
+    return; // Exit early, don't process as normal input
+  }
   
   const conversationContext = {
     previous_messages: conversationState.context,
@@ -472,20 +563,24 @@ setIdeationOutput(completedIdeation)
 const handleClarificationResponse = (response: any) => {
   addMessage('marcus', response.message);
   
-  // Handle both old format (suggested_inputs) and new format (questions)
+  // Start sequential question flow
   if (response.questions && response.questions.length > 0) {
-    setShowClarificationQuestions(true);
-    setClarificationData({
+    setQuestionFlow({
+      stage: 'q1',
       questions: response.questions,
-      suggestions: response.questions, // Use questions as suggestions for clicking
-      message: response.message
+      answers: []
     });
+    
+    // Ask first question immediately
+    setTimeout(() => {
+      addMessage('marcus', response.questions[0]);
+    }, 1000);
   }
 };
 
 const handleContentResponse = (response: any) => {
-  addMessage('marcus', "I've got some great topic ideas for you! Check them out below:");
-  setShowTopics(true);
+  addMessage('marcus', "I've got some great topic ideas for you! Check them out:");
+  setShowTopicOverlay(true);
   setTopicsData(response.topics);
   setContentCategory(response.content_category);
 };
@@ -549,28 +644,24 @@ const sendToWritersSuite = (topic: any) => {
             </div>
           ))}
           
-          {/* Status Indicator */}
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 px-4 py-3 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
-                    <User className="w-3 h-3 text-white" />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600 ml-2">
-                      {currentStatus || 'Marcus is thinking...'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Status Indicator with Circular Loader */}
+{isTyping && (
+  <div className="flex justify-start">
+    <div className="bg-gray-100 px-4 py-3 rounded-lg">
+      <div className="flex items-center space-x-2">
+        <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
+          <User className="w-3 h-3 text-white" />
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-4 h-4 border-2 border-gray-300 border-t-teal-600 rounded-full animate-spin"></div>
+          <span className="text-sm text-gray-600">
+            {currentStatus || 'Marcus is thinking...'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
         </div>
 
         {/* Input Area */}
@@ -603,68 +694,93 @@ const sendToWritersSuite = (topic: any) => {
         </div>
       </div>
 
-      {/* NEW: Clarification Questions UI */}
-        {showClarificationQuestions && clarificationData && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="font-medium mb-3">Quick options:</p>
-            <div className="space-y-2">
-              {clarificationData.suggestions?.map((suggestion: string, index: number) => (
-                <button 
-                  key={index}
-                  onClick={() => {
-                    setInputText(suggestion);
-                    setShowClarificationQuestions(false);
-                    handleUserInput(suggestion);
-                  }}
-                  className="block w-full text-left p-3 bg-white border rounded-lg hover:bg-gray-50 transition"
+      {/* Topic Selection Overlay */}
+      {showTopicOverlay && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
+          <div className="bg-white rounded-t-xl w-full max-w-4xl max-h-[70vh] overflow-y-auto shadow-2xl transform transition-transform duration-300 ease-out">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Choose Your Topic</h3>
+                <button
+                  onClick={() => setShowTopicOverlay(false)}
+                  className="text-gray-400 hover:text-gray-600 p-2"
                 >
-                  {suggestion}
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
+              </div>
+              <p className="text-gray-600 mt-2">Select the topic that resonates most with your goals:</p>
+            </div>
+
+            {/* Options */}
+            <div className="p-6 space-y-4">
+              {topicsData.map((topic: any, index: number) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-6 hover:border-teal-500 transition-colors">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                        Option {index + 1}: {topic.title}
+                      </h4>
+                      
+                      {/* Hook Options */}
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
+                        <div className="space-y-2">
+                          {topic.hooks?.map((hook: string, i: number) => (
+                            <div key={i} className="bg-blue-50 p-3 rounded-md text-sm text-blue-800 border border-blue-200">
+                              "{hook}"
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Key Takeaways */}
+                      {topic.key_takeaways && (
+                        <div className="mb-4">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
+                          <div className="space-y-2">
+                            {topic.key_takeaways.map((takeaway: string, i: number) => (
+                              <div key={i} className="bg-green-50 p-3 rounded-md text-sm text-green-800 border border-green-200">
+                                • {takeaway}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => {
+                        sendToWritersSuite(topic);
+                        setShowTopicOverlay(false);
+                      }}
+                      className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+                    >
+                      Use This Topic
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-        )}
 
-        {/* NEW: Topic Suggestions UI */}
-{showTopics && topicsData.length > 0 && (
-  <div className="space-y-4 mb-6">
-    <h3 className="text-lg font-semibold text-gray-900">Marcus suggests these topics:</h3>
-    {topicsData.map((topic: any, index: number) => (
-      <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h4 className="font-semibold text-gray-900 mb-3">{topic.title}</h4>
-        
-        {/* Hook options */}
-        <div className="mb-4">
-          <p className="text-sm font-medium text-gray-700 mb-2">Hook options:</p>
-          {topic.hooks?.map((hook: string, i: number) => (
-            <div key={i} className="bg-gray-50 p-3 rounded-md mb-2 text-sm text-gray-800">
-              "{hook}"
-            </div>
-          ))}
-       </div>
-        
-        {/* Key takeaways */}
-        {topic.key_takeaways && (
-          <div className="mb-4">
-            <p className="text-sm font-medium text-gray-700 mb-2">Key takeaways:</p>
-            {topic.key_takeaways.map((takeaway: string, i: number) => (
-              <div key={i} className="bg-green-50 p-3 rounded-md mb-2 text-sm text-green-800">
-                • {takeaway}
-              </div>
-            ))}
-          </div>
-        )}
-        
-        <button 
-          onClick={() => sendToWritersSuite(topic)}
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-4">
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowTopicOverlay(false)}
+                  className="text-gray-600 hover:text-gray-800 font-medium"
                 >
-                  Use This Topic
+                  ← Back to Chat
                 </button>
               </div>
-            ))}
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Retry Button */}
       {showRetryButton && (
