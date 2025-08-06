@@ -84,7 +84,7 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
 
 // Poll for AI response from callback
   const pollForAIResponse = async (sessionId: string) => {
-    const maxAttempts = 20; // 20 attempts = 30 seconds max wait
+    const maxAttempts = 40; // 40 attempts = 60 seconds max wait
     let attempts = 0;
     
     const poll = async (): Promise<any> => {
