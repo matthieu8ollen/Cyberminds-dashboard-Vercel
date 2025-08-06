@@ -52,6 +52,7 @@ const [topicsData, setTopicsData] = useState([])
 const [contentCategory, setContentCategory] = useState('')
 const [showRetryButton, setShowRetryButton] = useState(false)
 const [lastUserInput, setLastUserInput] = useState('')
+const [currentStatus, setCurrentStatus] = useState('')
 
 // Webhook integration functions
 const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string, sessionId: string) => {
@@ -101,8 +102,7 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
           return result.data;
         } else if (result.type === 'status') {
           console.log('📝 Status update:', result.data);
-          // Show status message in chat
-          addMessage('marcus', result.data.message);
+          setCurrentStatus(result.data.message);
         }
       }
       
@@ -129,6 +129,13 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   };
   
   return poll();
+};
+
+  const handleRetry = () => {
+  setShowRetryButton(false);
+  if (lastUserInput) {
+    handleUserInput(lastUserInput);
+  }
 };
   
   useEffect(() => {
@@ -217,21 +224,25 @@ setTimeout(() => {
     if (response.message === "Workflow was started") {
   console.log('🔄 Workflow started, polling for AI response...');
   
-  // Add initial analyzing message
-  addMessage('marcus', 'Analyzing your request...');
+  // Set initial status
+  setCurrentStatus('Analyzing your request...');
   
   // Poll for the actual AI response
   const aiResponse = await pollForAIResponse(sessionId);
   
   if (aiResponse === 'TIMEOUT') {
-    // Show timeout error with retry button
+    // Clear status and show timeout error with retry button
+    setCurrentStatus('');
     addMessage('marcus', "I'm having trouble processing your request right now. This might be due to high demand or a temporary issue.");
     setShowRetryButton(true);
   } else if (aiResponse === 'ERROR') {
-    // Show error with retry button
+    // Clear status and show error with retry button
+    setCurrentStatus('');
     addMessage('marcus', "Something went wrong while processing your request. Please try again.");
     setShowRetryButton(true);
   } else if (aiResponse) {
+    // Clear status
+    setCurrentStatus('');
     // Process the successful AI response
     handleAIResponse(aiResponse);
     
@@ -241,7 +252,8 @@ setTimeout(() => {
       stage: aiResponse.conversation_stage || prev.stage
     }));
   } else {
-    // Fallback error
+    // Clear status and show fallback error
+    setCurrentStatus('');
     addMessage('marcus', "I'm experiencing some technical difficulties. Please try again in a moment.");
     setShowRetryButton(true);
   }
@@ -537,7 +549,7 @@ const sendToWritersSuite = (topic: any) => {
             </div>
           ))}
           
-          {/* Typing Indicator */}
+          {/* Status Indicator */}
           {isTyping && (
             <div className="flex justify-start">
               <div className="bg-gray-100 px-4 py-3 rounded-lg">
@@ -545,10 +557,15 @@ const sendToWritersSuite = (topic: any) => {
                   <div className="w-6 h-6 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
                     <User className="w-3 h-3 text-white" />
                   </div>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-sm text-gray-600 ml-2">
+                      {currentStatus || 'Marcus is thinking...'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -648,6 +665,29 @@ const sendToWritersSuite = (topic: any) => {
             ))}
           </div>
         )}
+
+      {/* Retry Button */}
+      {showRetryButton && (
+        <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="text-center">
+            <p className="text-yellow-800 mb-4">Would you like to try again?</p>
+            <div className="space-x-3">
+              <button
+                onClick={handleRetry}
+                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => setShowRetryButton(false)}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress Indicator */}
       {conversationStage !== 'initial' && (
