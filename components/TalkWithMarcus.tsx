@@ -781,7 +781,7 @@ const sendToWritersSuite = (topic: any) => {
       {/* Topic Selection Overlay */}
       {showTopicOverlay && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] shadow-2xl flex flex-col">
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-900">Choose Your Content Hook</h3>
@@ -819,19 +819,19 @@ const sendToWritersSuite = (topic: any) => {
                   </div>
 
                   {/* Main Content Area */}
-                  <div className="flex-1 flex space-x-6 min-h-0">
-                    {/* LinkedIn Preview - Left Side */}
-                    <div className="flex-1">
-                      <h5 className="text-lg font-semibold text-gray-900 mb-4">LinkedIn Preview</h5>
-                      <LinkedInPreviewCard 
-                        hook={selectedHook || topic.hooks?.[0]}
-                        topic={topic.title}
-                      />
-                    </div>
+<div className="flex-1 flex space-x-6 min-h-0">
+  {/* LinkedIn Preview - Left Side */}
+  <div className="w-80">
+    <h5 className="text-lg font-semibold text-gray-900 mb-4">LinkedIn Preview</h5>
+    <LinkedInPreviewCard 
+      hook={selectedHook || topic.hooks?.[0]}
+      topic={topic.title}
+    />
+  </div>
 
-                    {/* Hook Selection - Right Side */}
-                    <div className="w-80">
-                      <h5 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Hook</h5>
+  {/* Hook Selection - Right Side */}
+  <div className="flex-1">
+    <h5 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Hook</h5>
                       <div className="space-y-3">
                         {topic.hooks?.map((hook: string, hookIndex: number) => (
                           <div 
@@ -856,7 +856,7 @@ const sendToWritersSuite = (topic: any) => {
                               </div>
                               <div className="flex-1">
                                 <p className="font-medium text-gray-900 mb-1">Option {hookIndex + 1}</p>
-                                <p className="text-sm text-gray-600 line-clamp-3">"{hook}"</p>
+                                <p className="text-sm text-gray-600">"{hook}"</p>
                               </div>
                             </div>
                           </div>
@@ -866,7 +866,7 @@ const sendToWritersSuite = (topic: any) => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200">
+<div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 bg-white">
                     <button
                       onClick={() => setShowTopicOverlay(false)}
                       className="text-gray-600 hover:text-gray-800 font-medium flex items-center space-x-2"
