@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { createIdeationSession, updateIdeationSession, IdeationSession } from '../../lib/supabase'
+import BlogInput from './BlogInput'
+import VoiceUpload from './VoiceUpload'
+import YouTubeInput from './YouTubeInput'
+import LinkedInInput from './LinkedInInput'
 import { 
   FileText, 
   Mic, 
   Youtube, 
   Linkedin,
-  Upload,
-  Link,
   Loader2,
   CheckCircle,
   AlertCircle
@@ -80,18 +82,11 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   })
   
   // Input states
-  const [textInput, setTextInput] = useState('')
-  const [urlInput, setUrlInput] = useState('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [dragActive, setDragActive] = useState(false)
-  const [urlError, setUrlError] = useState('')
+  const [currentError, setCurrentError] = useState('')
 
   // Reset state when changing tabs
   useEffect(() => {
-    setTextInput('')
-    setUrlInput('')
-    setSelectedFile(null)
-    setUrlError('')
+    setCurrentError('')
     setProcessingStage('input')
     setSessionData(prev => ({
       ...prev,
@@ -104,131 +99,33 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     }))
   }, [activeType])
 
-  const validateUrl = (url: string, type: RepurposeType): boolean => {
-    setUrlError('')
-    
-    if (!url.trim()) {
-      setUrlError('Please enter a URL')
-      return false
-    }
-
-    try {
-      const urlObj = new URL(url)
-      
-      if (type === 'youtube') {
-        const isYoutube = urlObj.hostname.includes('youtube.com') || 
-                         urlObj.hostname.includes('youtu.be')
-        if (!isYoutube) {
-          setUrlError('Please enter a valid YouTube URL')
-          return false
-        }
-      }
-      
-      if (type === 'linkedin') {
-        const isLinkedIn = urlObj.hostname.includes('linkedin.com')
-        if (!isLinkedIn) {
-          setUrlError('Please enter a valid LinkedIn URL')
-          return false
-        }
-      }
-      
-      return true
-    } catch {
-      setUrlError('Please enter a valid URL')
-      return false
-    }
-  }
-
-  const handleFileUpload = (file: File) => {
-    const validTypes = ['audio/mpeg', 'audio/wav', 'audio/m4a', 'audio/ogg']
-    const maxSize = 25 * 1024 * 1024 // 25MB
-
-    if (!validTypes.includes(file.type)) {
-      setUrlError('Please upload MP3, WAV, M4A, or OGG files only')
-      return
-    }
-
-    if (file.size > maxSize) {
-      setUrlError('File size must be less than 25MB')
-      return
-    }
-
-    setSelectedFile(file)
-    setUrlError('')
-  }
-
-  const handleDragEvents = {
-    onDragEnter: (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(true)
-    },
-    onDragLeave: (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-    },
-    onDragOver: (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-    },
-    onDrop: (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-      
-      const files = Array.from(e.dataTransfer.files)
-      if (files.length > 0) {
-        handleFileUpload(files[0])
-      }
-    }
-  }
-
-  const handleProcess = async () => {
+  const handleProcessContent = async (input: string | File) => {
     if (!user) return
 
-    // Validate input based on type
-    let isValid = false
-    let sessionUpdate: Partial<RepurposeSession> = {
-      repurpose_type: activeType,
-      processing_status: 'processing'
-    }
-
-    switch (activeType) {
-      case 'blog':
-        if (textInput.trim().length < 50) {
-          setUrlError('Please enter at least 50 characters of content')
-          return
-        }
-        sessionUpdate.original_content = textInput.trim()
-        isValid = true
-        break
-        
-      case 'voice':
-        if (!selectedFile) {
-          setUrlError('Please select an audio file to upload')
-          return
-        }
-        sessionUpdate.file_reference = selectedFile.name
-        sessionUpdate.source_title = selectedFile.name
-        isValid = true
-        break
-        
-      case 'youtube':
-      case 'linkedin':
-        if (!validateUrl(urlInput, activeType)) {
-          return
-        }
-        sessionUpdate.source_url = urlInput.trim()
-        isValid = true
-        break
-    }
-
-    if (!isValid) return
-
+    setCurrentError('')
+    
     try {
       setProcessingStage('processing')
       
+      // Prepare session data based on input type
+      let sessionUpdate: Partial<RepurposeSession> = {
+        repurpose_type: activeType,
+        processing_status: 'processing'
+      }
+
+      if (typeof input === 'string') {
+        // Text input (blog content or URLs)
+        if (activeType === 'blog') {
+          sessionUpdate.original_content = input
+        } else {
+          sessionUpdate.source_url = input
+        }
+      } else {
+        // File input (voice recording)
+        sessionUpdate.file_reference = input.name
+        sessionUpdate.source_title = input.name
+      }
+
       // Create ideation session
       const { data: session, error } = await createIdeationSession({
         user_id: user.id,
@@ -267,6 +164,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     } catch (error) {
       console.error('Error processing content:', error)
       setProcessingStage('error')
+      setCurrentError('Failed to process content. Please try again.')
       setSessionData(prev => ({
         ...prev,
         processing_status: 'error',
@@ -278,92 +176,43 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   const currentType = REPURPOSE_TYPES.find(t => t.id === activeType)!
 
   const renderInput = () => {
+    const isProcessing = processingStage === 'processing'
+    
     switch (activeType) {
       case 'blog':
         return (
-          <div className="space-y-4">
-            <textarea
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              placeholder={currentType.placeholder}
-              className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
-              disabled={processingStage === 'processing'}
-            />
-            <div className="text-sm text-gray-500">
-              {textInput.length}/50 characters minimum
-            </div>
-          </div>
+          <BlogInput
+            onProcess={handleProcessContent}
+            isProcessing={isProcessing}
+            error={currentError}
+          />
         )
 
       case 'voice':
         return (
-          <div className="space-y-4">
-            <div
-              {...handleDragEvents}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                dragActive
-                  ? 'border-teal-500 bg-teal-50'
-                  : 'border-gray-300 hover:border-gray-400'
-              } ${processingStage === 'processing' ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <div className="space-y-2">
-                <p className="text-lg font-medium text-gray-900">
-                  {selectedFile ? selectedFile.name : 'Drop your audio file here'}
-                </p>
-                <p className="text-gray-600">
-                  {selectedFile 
-                    ? `${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB - Ready to process`
-                    : 'or click to browse files'
-                  }
-                </p>
-                <input
-                  type="file"
-                  accept="audio/mpeg,audio/wav,audio/m4a,audio/ogg"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleFileUpload(file)
-                  }}
-                  className="hidden"
-                  id="audio-upload"
-                  disabled={processingStage === 'processing'}
-                />
-                <label
-                  htmlFor="audio-upload"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                >
-                  Choose File
-                </label>
-              </div>
-              <div className="text-xs text-gray-500 mt-4">
-                Supported: MP3, WAV, M4A, OGG (Max 25MB)
-              </div>
-            </div>
-          </div>
+          <VoiceUpload
+            onProcess={handleProcessContent}
+            isProcessing={isProcessing}
+            error={currentError}
+          />
         )
 
       case 'youtube':
+        return (
+          <YouTubeInput
+            onProcess={handleProcessContent}
+            isProcessing={isProcessing}
+            error={currentError}
+          />
+        )
+
       case 'linkedin':
         return (
-          <div className="space-y-4">
-            <div className="relative">
-              <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="url"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder={currentType.placeholder}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                disabled={processingStage === 'processing'}
-              />
-            </div>
-            <div className="text-sm text-gray-600">
-              {activeType === 'youtube' 
-                ? 'Paste the full YouTube video URL to extract content ideas'
-                : 'Paste the LinkedIn post URL to generate new content formulas and ideas'
-              }
-            </div>
-          </div>
+          <LinkedInInput
+            onProcess={handleProcessContent}
+            isProcessing={isProcessing}
+            error={currentError}
+          />
         )
 
       default:
@@ -416,10 +265,13 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
               Processing Failed
             </h3>
             <p className="text-red-800 mb-4">
-              {sessionData.error_message || 'Something went wrong. Please try again.'}
+              {currentError || 'Something went wrong. Please try again.'}
             </p>
             <button
-              onClick={() => setProcessingStage('input')}
+              onClick={() => {
+                setProcessingStage('input')
+                setCurrentError('')
+              }}
               className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
             >
               Try Again
@@ -433,17 +285,8 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   }
 
   const canProcess = () => {
-    switch (activeType) {
-      case 'blog':
-        return textInput.trim().length >= 50
-      case 'voice':
-        return selectedFile !== null
-      case 'youtube':
-      case 'linkedin':
-        return urlInput.trim().length > 0
-      default:
-        return false
-    }
+    // This is now handled by individual input components
+    return true
   }
 
   return (
@@ -489,42 +332,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
 
       {/* Content Area */}
       <div className="space-y-6">
-        {processingStage === 'input' && (
-          <>
-            {/* Input Description */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-2">
-                {currentType.name}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {currentType.description}
-              </p>
-            </div>
-
-            {/* Input Component */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              {renderInput()}
-              
-              {/* Error Message */}
-              {urlError && (
-                <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                  {urlError}
-                </div>
-              )}
-
-              {/* Process Button */}
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={handleProcess}
-                  disabled={!canProcess() || processingStage === 'processing'}
-                  className="bg-teal-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Generate Ideas
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+        {processingStage === 'input' && renderInput()}
 
         {/* Processing States */}
         {processingStage !== 'input' && renderProcessingState()}
