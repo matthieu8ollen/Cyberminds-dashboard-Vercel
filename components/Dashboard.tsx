@@ -29,6 +29,7 @@ import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
 import IdeasHub from './IdeasHub'
 import WriterSuiteSelection from './WriterSuiteSelection'
+import RepurposeHub from './repurpose/RepurposeHub'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
