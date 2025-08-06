@@ -86,36 +86,50 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
 
 // Poll for AI response from callback
   const pollForAIResponse = async (sessionId: string) => {
-    const maxAttempts = 40; // 40 attempts = 60 seconds max wait
-    let attempts = 0;
-    
-    const poll = async (): Promise<any> => {
-      try {
-        const response = await fetch(`/api/marcus/callback?session_id=${sessionId}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-          console.log('📨 Received AI response from callback:', result.data);
+  const maxAttempts = 40; // 40 attempts = 60 seconds max wait
+  let attempts = 0;
+  let fallbackMessageSent = false;
+  
+  const poll = async (): Promise<any> => {
+    try {
+      const response = await fetch(`/api/marcus/callback?session_id=${sessionId}`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        if (result.type === 'final') {
+          console.log('📨 Received final AI response:', result.data);
           return result.data;
+        } else if (result.type === 'status') {
+          console.log('📝 Status update:', result.data);
+          // Show status message in chat
+          addMessage('marcus', result.data.message);
         }
-        
-        attempts++;
-        if (attempts >= maxAttempts) {
-          console.log('⏱️ AI response timeout, using fallback');
-          return null;
-        }
-        
-        // Wait 1.5 seconds before next poll
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return poll();
-      } catch (error) {
-        console.error('❌ Error polling for AI response:', error);
-        return null;
       }
-    };
-    
-    return poll();
+      
+      attempts++;
+      
+      // Show fallback message after 40 seconds (26-27 attempts)
+      if (attempts >= 26 && !fallbackMessageSent) {
+        addMessage('marcus', 'This is taking longer than usual...');
+        fallbackMessageSent = true;
+      }
+      
+      if (attempts >= maxAttempts) {
+        console.log('⏱️ AI response timeout');
+        return 'TIMEOUT';
+      }
+      
+      // Wait 1.5 seconds before next poll
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      return poll();
+    } catch (error) {
+      console.error('❌ Error polling for AI response:', error);
+      return 'ERROR';
+    }
   };
+  
+  return poll();
+};
   
   useEffect(() => {
     // Initialize conversation
@@ -183,6 +197,8 @@ setTimeout(() => {
 
   const handleUserInput = async (userInput: string) => {
   setIsTyping(true);
+  setShowRetryButton(false);
+  setLastUserInput(userInput);
   
   const conversationContext = {
     previous_messages: conversationState.context,
@@ -199,26 +215,37 @@ setTimeout(() => {
     const response = await callMarcusAI(userInput, conversationContext, conversationState.contentPreference, sessionId);
     
     if (response.message === "Workflow was started") {
-      console.log('🔄 Workflow started, polling for AI response...');
-      
-      // Poll for the actual AI response
-      const aiResponse = await pollForAIResponse(sessionId);
-      
-      if (aiResponse) {
-        // Process the AI response
-        handleAIResponse(aiResponse);
-        
-        setConversationState(prev => ({
-          ...prev,
-          context: [...prev.context, { user: userInput, marcus: aiResponse }],
-          stage: aiResponse.conversation_stage || prev.stage
-        }));
-      } else {
-        // Timeout or error, use fallback
-        console.log('⚠️ No AI response received, using fallback');
-        processUserInputMock(userInput);
-      }
-    } else {
+  console.log('🔄 Workflow started, polling for AI response...');
+  
+  // Add initial analyzing message
+  addMessage('marcus', 'Analyzing your request...');
+  
+  // Poll for the actual AI response
+  const aiResponse = await pollForAIResponse(sessionId);
+  
+  if (aiResponse === 'TIMEOUT') {
+    // Show timeout error with retry button
+    addMessage('marcus', "I'm having trouble processing your request right now. This might be due to high demand or a temporary issue.");
+    setShowRetryButton(true);
+  } else if (aiResponse === 'ERROR') {
+    // Show error with retry button
+    addMessage('marcus', "Something went wrong while processing your request. Please try again.");
+    setShowRetryButton(true);
+  } else if (aiResponse) {
+    // Process the successful AI response
+    handleAIResponse(aiResponse);
+    
+    setConversationState(prev => ({
+      ...prev,
+      context: [...prev.context, { user: userInput, marcus: aiResponse }],
+      stage: aiResponse.conversation_stage || prev.stage
+    }));
+  } else {
+    // Fallback error
+    addMessage('marcus', "I'm experiencing some technical difficulties. Please try again in a moment.");
+    setShowRetryButton(true);
+  }
+} else {
       // Direct response (shouldn't happen with new setup, but just in case)
       handleAIResponse(response);
       
