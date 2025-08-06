@@ -781,7 +781,7 @@ const sendToWritersSuite = (topic: any) => {
       {/* Topic Selection Overlay */}
       {showTopicOverlay && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-900">Choose Your Content Hook</h3>
@@ -796,9 +796,9 @@ const sendToWritersSuite = (topic: any) => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-6 overflow-hidden">
-              {topicsData.map((topic: any, topicIndex: number) => (
-                <div key={topicIndex} className="h-full flex flex-col">
+<div className="flex-1 overflow-y-auto">
+  {topicsData.map((topic: any, topicIndex: number) => (
+    <div key={topicIndex} className="p-6 flex flex-col">
                   {/* Key Takeaways - Teal Box at Top */}
                   <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
                     <div className="flex items-center space-x-2 mb-3">
@@ -818,10 +818,10 @@ const sendToWritersSuite = (topic: any) => {
                     </div>
                   </div>
 
-                  {/* Main Content Area */}
-<div className="flex-1 flex space-x-6 min-h-0">
+                 {/* Main Content Area */}
+<div className="flex space-x-6 mb-6">
   {/* LinkedIn Preview - Left Side */}
-  <div className="w-80">
+<div className="flex-1">
     <h5 className="text-lg font-semibold text-gray-900 mb-4">LinkedIn Preview</h5>
     <LinkedInPreviewCard 
       hook={selectedHook || topic.hooks?.[0]}
@@ -866,7 +866,7 @@ const sendToWritersSuite = (topic: any) => {
                   </div>
 
                   {/* Action Buttons */}
-<div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 bg-white">
+<div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex justify-between items-center">
                     <button
                       onClick={() => setShowTopicOverlay(false)}
                       className="text-gray-600 hover:text-gray-800 font-medium flex items-center space-x-2"
