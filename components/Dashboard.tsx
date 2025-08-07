@@ -431,7 +431,7 @@ const navigationItems = getNavigationItems()
 
   // Ideas Tab Logic
 const shouldShowIdeasTab = () => {
-  return activePage === 'ideas' && ideasWorkflowState === 'top-level'
+  return activePage === 'ideas'
 }
 
 const getVisibleIdeasTab = () => {
@@ -443,49 +443,53 @@ const getVisibleIdeasTab = () => {
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-  return <IdeasWrapper 
-    onNavigateToCreate={(mode, ideationData) => {
-      setIdeationData(ideationData)
-      
-      if (mode === 'power') {
-        setActivePage('writer-suite')
-        setWriterSuiteMode('selection')
-      } else if (mode === 'standard') {
-        setInStandardMode(true)
-        setActivePage('standard')
-      }
-    }}
-    onUseInStandardMode={(idea) => {
-      setIdeaFromLibrary(idea)
-      
-      // Convert idea to ideationData format
-      const ideationData = {
-        topic: idea.title,
-        angle: idea.description || '',
-        takeaways: idea.tags || [],
-        source_page: 'idea_library'
-      }
-      setIdeationData(ideationData)
-      
-      setInStandardMode(true)
-      setActivePage('standard')
-    }}
-    onUseInWriterSuite={(idea) => {
-      setIdeaFromLibrary(idea)
-      
-      // Convert idea to ideationData format  
-      const ideationData = {
-        topic: idea.title,
-        angle: idea.description || '',
-        takeaways: idea.tags || [],
-        source_page: 'idea_library'
-      }
-      setIdeationData(ideationData)
-      
+return <IdeasWrapper 
+  activeTab={ideasActiveTab}  // Add this required prop
+  onNavigateToCreate={(mode, ideationData) => {
+    setIdeationData(ideationData)
+    
+    if (mode === 'power') {
       setActivePage('writer-suite')
       setWriterSuiteMode('selection')
-    }}
-  />
+    } else if (mode === 'standard') {
+      setInStandardMode(true)
+      setActivePage('standard')
+    }
+  }}
+  onUseInStandardMode={(idea) => {
+    setIdeaFromLibrary(idea)
+    
+    // Convert idea to ideationData format
+    const ideationData = {
+      topic: idea.title,
+      angle: idea.description || '',
+      takeaways: idea.tags || [],
+      source_page: 'idea_library'
+    }
+    setIdeationData(ideationData)
+    
+    setInStandardMode(true)
+    setActivePage('standard')
+  }}
+  onUseInWriterSuite={(idea) => {
+    setIdeaFromLibrary(idea)
+    
+    // Convert idea to ideationData format  
+    const ideationData = {
+      topic: idea.title,
+      angle: idea.description || '',
+      takeaways: idea.tags || [],
+      source_page: 'idea_library'
+    }
+    setIdeationData(ideationData)
+    
+    setActivePage('writer-suite')
+    setWriterSuiteMode('selection')
+  }}
+  onWorkflowStateChange={(state) => {
+    setIdeasWorkflowState(state)
+  }}
+/>
       
       case 'writer-suite':
   if (writerSuiteMode === 'selection') {
