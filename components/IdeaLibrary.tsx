@@ -41,72 +41,78 @@ const CATEGORIES = [
 ]
 
 // Mock saved ideas - in real implementation, this would come from Supabase
-const MOCK_SAVED_IDEAS = [
+const MOCK_SAVED_IDEAS: ContentIdea[] = [
   {
     id: '1',
+    user_id: 'mock-user',
     title: 'The Hidden Cost of Poor Cash Flow Forecasting',
     description: 'Share a framework for improving cash flow predictions that saved a SaaS company $2M',
     tags: ['cash-flow', 'forecasting', 'framework'],
     content_pillar: 'case_studies',
     category: 'authority',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-15T10:00:00Z',
-    saved_at: '2024-01-15T10:05:00Z'
+    status: 'active',
+    created_at: '2024-01-15T10:00:00Z'
   },
   {
     id: '2',
+    user_id: 'mock-user',
     title: '5 SaaS Metrics Every Series A Startup Gets Wrong',
     description: 'Breakdown of common metric mistakes and how to fix them',
     tags: ['saas-metrics', 'startup', 'mistakes'],
     content_pillar: 'saas_metrics',
     category: 'educational',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-14T15:30:00Z',
-    saved_at: '2024-01-14T15:35:00Z'
+    status: 'active',
+    created_at: '2024-01-14T15:30:00Z'
   },
   {
     id: '3',
+    user_id: 'mock-user',
     title: 'Why I Stopped Using Traditional Budgets (And What I Do Instead)',
     description: 'Personal story about moving from annual budgets to rolling forecasts',
     tags: ['budgeting', 'personal-story', 'innovation'],
     content_pillar: 'personal_stories',
     category: 'personal',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-13T09:15:00Z',
-    saved_at: '2024-01-13T09:20:00Z'
+    status: 'active',
+    created_at: '2024-01-13T09:15:00Z'
   },
   {
     id: '4',
+    user_id: 'mock-user',
     title: 'The CFO\'s Guide to AI Tool Implementation',
     description: 'Step-by-step approach for evaluating and implementing finance AI tools',
     tags: ['ai', 'tools', 'implementation'],
     content_pillar: 'tools_tech',
     category: 'authority',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-12T14:20:00Z',
-    saved_at: '2024-01-12T14:25:00Z'
+    status: 'active',
+    created_at: '2024-01-12T14:20:00Z'
   },
   {
     id: '5',
+    user_id: 'mock-user',
     title: 'Market Volatility: 3 Strategies That Kept Our Runway Intact',
     description: 'How we navigated 2023\'s market uncertainty with specific financial strategies',
     tags: ['market-analysis', 'strategy', 'runway'],
     content_pillar: 'market_insights',
     category: 'growth',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-11T11:45:00Z',
-    saved_at: '2024-01-11T11:50:00Z'
+    status: 'active',
+    created_at: '2024-01-11T11:45:00Z'
   },
   {
     id: '6',
+    user_id: 'mock-user',
     title: 'Building Finance Team Culture in Remote-First Companies',
     description: 'Leadership insights on creating strong team dynamics across distributed finance teams',
     tags: ['leadership', 'remote-work', 'team-building'],
     content_pillar: 'leadership',
     category: 'authority',
     source_type: 'ai_generated' as const,
-    created_at: '2024-01-10T16:30:00Z',
-    saved_at: '2024-01-10T16:35:00Z'
+    status: 'active',
+    created_at: '2024-01-10T16:30:00Z'
   }
 ]
 
@@ -306,10 +312,10 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }:
                 </div>
                 
                 {/* Time Ago */}
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  {formatTimeAgo(idea.saved_at || idea.created_at)}
-                </div>
+<div className="flex items-center gap-1 text-xs text-gray-500">
+  <Clock className="w-3 h-3" />
+  {formatTimeAgo(idea.created_at)}
+</div>
               </div>
               
               {/* Title */}
