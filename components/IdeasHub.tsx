@@ -57,21 +57,21 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
   const renderWelcomeScreen = () => (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header */}
-      <div className="text-center mb-12">
-        <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-          <MessageCircle className="w-10 h-10 text-white" />
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          💡 Ideas Hub
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Your content ideation command center. Choose how you'd like to develop your next LinkedIn post idea.
-        </p>
+      <div className="text-center mb-8">
+        <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+  <MessageCircle className="w-6 h-6 text-white" />
+</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">
+  💡 Ideas Hub
+</h1>
+<p className="text-lg text-gray-600 max-w-2xl mx-auto">
+  Choose how you'd like to develop your next LinkedIn post idea.
+</p>
       </div>
 
       {/* Ideation Options */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6 text-center">
+      <div className="mb-6">
+  <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
           How would you like to start developing your content idea?
         </h2>
         
