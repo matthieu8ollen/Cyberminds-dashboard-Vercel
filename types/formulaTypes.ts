@@ -187,7 +187,7 @@ export interface FormulaAnalysisResponse {
 
 // Component prop interfaces
 export interface FormulaBuilderProps {
-  baseFormula?: EnhancedContentFormula
+  baseFormula?: EnhancedContentFormula | null
   onSave: (formula: EnhancedContentFormula) => Promise<void>
   onCancel: () => void
   onAnalyze?: (formula: EnhancedContentFormula) => Promise<FormulaAnalysisResponse>
