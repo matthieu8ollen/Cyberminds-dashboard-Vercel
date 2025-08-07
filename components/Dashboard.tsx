@@ -444,7 +444,8 @@ const getVisibleIdeasTab = () => {
     switch (activePage) {
       case 'ideas':
 return <IdeasWrapper 
-  activeTab={ideasActiveTab}  // Add this required prop
+  activeTab={ideasActiveTab}
+  onTabChange={(tab) => setIdeasActiveTab(tab)}
   onNavigateToCreate={(mode, ideationData) => {
     setIdeationData(ideationData)
     
