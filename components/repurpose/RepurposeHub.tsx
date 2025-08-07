@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { createIdeationSession, updateIdeationSession, IdeationSession } from '../../lib/supabase'
+import { REPURPOSE_CONFIG, isWebhookConfigured, getSourceBadge } from '../../lib/repurposeConfig'
 import BlogInput from './BlogInput'
 import VoiceUpload from './VoiceUpload'
 import YouTubeInput from './YouTubeInput'
@@ -84,9 +85,116 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   // Input states
   const [currentError, setCurrentError] = useState('')
 
+  // Backend integration states
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [currentStatus, setCurrentStatus] = useState('')
+  const [showRetryButton, setShowRetryButton] = useState(false)
+  const [lastProcessedInput, setLastProcessedInput] = useState<string | File | null>(null)
+
+  // Webhook integration functions
+  const callRepurposeAI = async (input: string | File, repurposeType: RepurposeType, sessionId: string) => {
+    // Check if webhook is configured
+    if (!isWebhookConfigured()) {
+      console.warn('⚠️ Webhook URL not configured, using fallback')
+      return { success: false, error: 'Backend not configured' }
+    }
+    
+    try {
+      console.log('🚀 Calling Repurpose AI webhook:', { input, repurposeType, sessionId });
+      
+      // Prepare payload based on input type
+      let payload: any = {
+        repurpose_type: repurposeType,
+        user_id: user?.id,
+        session_id: sessionId,
+        callback_url: REPURPOSE_CONFIG.CALLBACK_URL,
+        timestamp: new Date().toISOString()
+      };
+
+      if (typeof input === 'string') {
+        // Text input (blog content or URLs)
+        if (repurposeType === 'blog') {
+          payload.content = input;
+        } else {
+          payload.source_url = input;
+        }
+      } else {
+        // File input (voice recording)
+        payload.file_name = input.name;
+        payload.file_size = input.size;
+        // TODO: Handle file upload to storage and pass reference
+        payload.file_reference = `temp_${sessionId}_${input.name}`;
+      }
+
+      const response = await fetch(REPURPOSE_CONFIG.WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      console.log('✅ Repurpose AI response:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Repurpose AI Error:', error);
+      return { error: 'Processing failed, please try again' };
+    }
+  };
+
+  // Poll for AI response from callback
+  const pollForRepurposeResponse = async (sessionId: string) => {
+    const { MAX_ATTEMPTS, INTERVAL_MS, FALLBACK_MESSAGE_AFTER } = REPURPOSE_CONFIG.POLLING;
+    let attempts = 0;
+    let fallbackMessageSent = false;
+    
+    const poll = async (): Promise<any> => {
+      try {
+        const response = await fetch(`/api/repurpose/callback?session_id=${sessionId}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          if (result.type === 'final') {
+            console.log('📨 Received final repurpose response:', result.data);
+            return result.data;
+          } else if (result.type === 'status') {
+            console.log('📝 Status update:', result.data);
+            setCurrentStatus(result.data.message);
+          }
+        }
+        
+        attempts++;
+        
+        // Show fallback message after configured attempts
+        if (attempts >= FALLBACK_MESSAGE_AFTER && !fallbackMessageSent) {
+          setCurrentStatus('This is taking longer than usual...');
+          fallbackMessageSent = true;
+        }
+        
+        if (attempts >= MAX_ATTEMPTS) {
+          console.log('⏱️ Repurpose response timeout');
+          return 'TIMEOUT';
+        }
+        
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
+        return poll();
+      } catch (error) {
+        console.error('❌ Error polling for repurpose response:', error);
+        return 'ERROR';
+      }
+    };
+    
+    return poll();
+  };
+
   // Reset state when changing tabs
   useEffect(() => {
     setCurrentError('')
+    setCurrentStatus('')
+    setShowRetryButton(false)
+    setIsWaitingForResponse(false)
     setProcessingStage('input')
     setSessionData(prev => ({
       ...prev,
@@ -99,13 +207,27 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     }))
   }, [activeType])
 
+  const handleRetry = () => {
+    setShowRetryButton(false)
+    setCurrentError('')
+    setCurrentStatus('')
+    if (lastProcessedInput) {
+      handleProcessContent(lastProcessedInput)
+    }
+  }
+
   const handleProcessContent = async (input: string | File) => {
     if (!user) return
 
     setCurrentError('')
+    setLastProcessedInput(input)
     
     try {
       setProcessingStage('processing')
+      setIsWaitingForResponse(true)
+      
+      // Generate unique session ID for this request
+      const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       
       // Prepare session data based on input type
       let sessionUpdate: Partial<RepurposeSession> = {
@@ -139,37 +261,98 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
       setCurrentSession(session)
       setSessionData(prev => ({ ...prev, ...sessionUpdate }))
 
-      // TODO: Send to AI agent for processing
-      // For now, simulate processing
-      setTimeout(() => {
-        setProcessingStage('completed')
-        // Simulate successful processing
-        const mockResults = {
-          topic: `Content ideas from ${activeType}`,
-          angle: 'Repurposed content perspective',
-          takeaways: [
-            'Key insight from original content',
-            'Strategic takeaway for LinkedIn',
-            'Actionable advice for audience'
-          ],
-          source_page: 'repurpose_content',
-          session_id: session.id
-        }
+      // Call backend webhook
+      setCurrentStatus('Analyzing your content...')
+      const response = await callRepurposeAI(input, activeType, sessionId)
+      
+      if (response.message === "Workflow was started" || response.success) {
+        console.log('🔄 Processing workflow started, polling for response...')
         
-        if (onIdeationComplete) {
-          onIdeationComplete(mockResults)
+        // Poll for the actual AI response
+        const aiResponse = await pollForRepurposeResponse(sessionId)
+        
+        if (aiResponse === 'TIMEOUT') {
+          setCurrentStatus('')
+          setProcessingStage('error')
+          setCurrentError("Processing is taking longer than expected. Please try again.")
+          setShowRetryButton(true)
+        } else if (aiResponse === 'ERROR') {
+          setCurrentStatus('')
+          setProcessingStage('error')
+          setCurrentError("Something went wrong while processing your content. Please try again.")
+          setShowRetryButton(true)
+        } else if (aiResponse && aiResponse.content_ideas) {
+          setCurrentStatus('')
+          setProcessingStage('completed')
+          
+          // Transform AI response to ideation output format
+          const ideationResults = {
+            topic: aiResponse.topic || `Content ideas from ${activeType}`,
+            angle: aiResponse.angle || 'Repurposed content perspective',
+            takeaways: aiResponse.content_ideas || [
+              'Key insight from original content',
+              'Strategic takeaway for LinkedIn',
+              'Actionable advice for audience'
+            ],
+            source_page: 'repurpose_content',
+            session_id: session.id,
+            repurpose_type: activeType,
+            source_badges: getSourceBadge(activeType)
+          }
+          
+          // Update session with results
+          await updateIdeationSession(session.id, {
+            status: 'completed',
+            topic: ideationResults.topic,
+            angle: ideationResults.angle,
+            takeaways: ideationResults.takeaways
+          })
+          
+          if (onIdeationComplete) {
+            onIdeationComplete(ideationResults)
+          }
+        } else {
+          // Fallback for when webhook is not configured or response is incomplete
+          console.log('🔄 Using fallback processing...')
+          setTimeout(() => {
+            setCurrentStatus('')
+            setProcessingStage('completed')
+            const mockResults = {
+              topic: `Content ideas from ${activeType}`,
+              angle: 'Repurposed content perspective',
+              takeaways: [
+                'Key insight from original content',
+                'Strategic takeaway for LinkedIn',
+                'Actionable advice for audience'
+              ],
+              source_page: 'repurpose_content',
+              session_id: session.id,
+              repurpose_type: activeType,
+              source_badges: getSourceBadge(activeType)
+            }
+            
+            if (onIdeationComplete) {
+              onIdeationComplete(mockResults)
+            }
+          }, 2000)
         }
-      }, 3000)
+      } else {
+        throw new Error(response.error || 'Webhook call failed')
+      }
 
     } catch (error) {
       console.error('Error processing content:', error)
+      setCurrentStatus('')
       setProcessingStage('error')
       setCurrentError('Failed to process content. Please try again.')
+      setShowRetryButton(true)
       setSessionData(prev => ({
         ...prev,
         processing_status: 'error',
         error_message: 'Failed to process content. Please try again.'
       }))
+    } finally {
+      setIsWaitingForResponse(false)
     }
   }
 
@@ -229,9 +412,14 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
             <h3 className="text-lg font-semibold text-blue-900 mb-2">
               Processing Your Content
             </h3>
-            <p className="text-blue-800">
+            <p className="text-blue-800 mb-2">
               Marcus is analyzing your {currentType.name.toLowerCase()} and generating content ideas...
             </p>
+            {currentStatus && (
+              <p className="text-sm text-blue-700 italic">
+                {currentStatus}
+              </p>
+            )}
           </div>
         )
 
@@ -267,26 +455,30 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
             <p className="text-red-800 mb-4">
               {currentError || 'Something went wrong. Please try again.'}
             </p>
-            <button
-              onClick={() => {
-                setProcessingStage('input')
-                setCurrentError('')
-              }}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
-            >
-              Try Again
-            </button>
+            <div className="space-x-3">
+              <button
+                onClick={handleRetry}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => {
+                  setProcessingStage('input')
+                  setCurrentError('')
+                  setShowRetryButton(false)
+                }}
+                className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+              >
+                Start Over
+              </button>
+            </div>
           </div>
         )
 
       default:
         return null
     }
-  }
-
-  const canProcess = () => {
-    // This is now handled by individual input components
-    return true
   }
 
   return (
