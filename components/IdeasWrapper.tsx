@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { MessageCircle, Archive } from 'lucide-react'
 import IdeasHub from './IdeasHub'
 import IdeaLibrary from './IdeaLibrary'
 import { ContentIdea } from '../lib/supabase'
@@ -24,7 +25,50 @@ export default function IdeasWrapper({
   onUseInWriterSuite,
   onWorkflowStateChange
 }: IdeasWrapperProps) {
-  // ... existing state logic ...
+  const [workflowState, setWorkflowState] = useState<WorkflowState>('top-level')
+  const [hubSubPage, setHubSubPage] = useState<string>('welcome')
+  const [fromLibrary, setFromLibrary] = useState(false)
+
+  // Enhanced navigation handlers
+  const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
+    setWorkflowState('in-creation-flow')
+    setFromLibrary(false) // Coming from Hub
+    if (onNavigateToCreate) {
+      onNavigateToCreate(mode, ideationData)
+    }
+  }
+
+  const handleUseInStandardMode = (idea: ContentIdea) => {
+    setWorkflowState('in-creation-flow')
+    setFromLibrary(true) // Coming from Library
+    if (onUseInStandardMode) {
+      onUseInStandardMode(idea)
+    }
+  }
+
+  const handleUseInWriterSuite = (idea: ContentIdea) => {
+    setWorkflowState('in-creation-flow')
+    setFromLibrary(true) // Coming from Library
+    if (onUseInWriterSuite) {
+      onUseInWriterSuite(idea)
+    }
+  }
+
+  // Simulate IdeasHub sub-page detection
+  const handleHubPageChange = (page: string) => {
+    setHubSubPage(page)
+    if (page === 'welcome') {
+      setWorkflowState('top-level')
+    } else {
+      setWorkflowState('in-ideation-subpage')
+    }
+  }
+
+  // Reset function for when user completes workflows
+  const resetToTopLevel = () => {
+    setWorkflowState('top-level')
+    setFromLibrary(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
