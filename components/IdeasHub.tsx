@@ -10,6 +10,7 @@ type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-co
 interface IdeasHubProps {
   onIdeationComplete?: (ideation: any) => void
   onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
+  onPageChange?: (page: string) => void
 }
 
 // Placeholder components for now
@@ -45,11 +46,12 @@ const ContentFormulas = ({ onBack }: { onBack: () => void }) => (
   </div>
 )
 
-export default function IdeasHub({ onIdeationComplete, onNavigateToCreate }: IdeasHubProps = {}) {
+export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPageChange }: IdeasHubProps = {}) {
   const [currentPage, setCurrentPage] = useState<IdeasPage>('welcome')
 
   const handleBackToWelcome = () => {
     setCurrentPage('welcome')
+    if (onPageChange) onPageChange('welcome')
   }
 
   const renderWelcomeScreen = () => (
@@ -76,7 +78,8 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate }: Ide
         <div className="grid gap-6 md:grid-cols-2">
           {/* Talk with Marcus */}
           <button
-            onClick={() => setCurrentPage('talk-with-marcus')}
+            onClick={() => setCurrentPage('talk-with-marcus')
+if (onPageChange) onPageChange('talk-with-marcus')}
             className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
           >
             <div className="flex items-start space-x-4">
