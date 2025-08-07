@@ -2,7 +2,7 @@
 
 export const REPURPOSE_CONFIG = {
   // Main webhook URL for processing content
-  WEBHOOK_URL: process.env.NEXT_PUBLIC_REPURPOSE_WEBHOOK_URL || 'https://testcyber.app.n8n.cloud/webhook/43eff478-a00c-4ac3-815e-1d10ff20460e',
+  WEBHOOK_URL: process.env.NEXT_PUBLIC_REPURPOSE_WEBHOOK_URL || 'https://testcyber.app.n8n.cloud/webhook/bf05add7-f1b0-483d-8765-2c0475005645',
   
   // Callback URL where our API receives responses
   CALLBACK_URL: process.env.NEXT_PUBLIC_SITE_URL 
