@@ -45,7 +45,11 @@ export default function FormulaAnalyzer({
 
   const handleApplySuggestion = (suggestion: OptimizationSuggestion) => {
     onApplySuggestion(suggestion)
-    setAppliedSuggestions(prev => new Set([...prev, suggestion.id]))
+    setAppliedSuggestions(prev => {
+  const newSet = new Set(prev)
+  newSet.add(suggestion.id)
+  return newSet
+})
   }
 
   const getScoreColor = (score: number) => {
