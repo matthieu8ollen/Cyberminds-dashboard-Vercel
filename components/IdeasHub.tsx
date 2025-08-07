@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { MessageCircle, Target, RotateCcw, BookOpen, ArrowRight } from 'lucide-react'
 import TalkWithMarcus from './TalkWithMarcus'
 import RepurposeHub from './repurpose/RepurposeHub'
+import ContentFormulas from './ContentFormulas'
 
 type IdeasPage = 'welcome' | 'talk-with-marcus' | 'ai-suggested' | 'repurpose-content' | 'content-formulas'
 
@@ -223,7 +224,17 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
     />
   )
       case 'content-formulas':
-        return <ContentFormulas onBack={handleBackToWelcome} />
+  return <ContentFormulas 
+    onBack={handleBackToWelcome}
+    onCreateFormula={(baseFormula) => {
+      console.log('Create formula clicked', baseFormula)
+      // TODO: Tomorrow - implement formula wizard
+    }}
+    onUseFormula={(formula) => {
+      console.log('Use formula clicked', formula)
+      // TODO: Navigate to Writer Suite with this formula
+    }}
+  />
 
       default:
         return renderWelcomeScreen()
