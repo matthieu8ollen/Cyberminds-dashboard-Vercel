@@ -86,6 +86,8 @@ const [inStandardMode, setInStandardMode] = useState(false)
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
   const [ideationData, setIdeationData] = useState<any>(null)
   const [ideaFromLibrary, setIdeaFromLibrary] = useState<ContentIdea | null>(null)
+  const [ideasActiveTab, setIdeasActiveTab] = useState<'hub' | 'library'>('hub')
+  const [ideasWorkflowState, setIdeasWorkflowState] = useState<'top-level' | 'in-ideation-subpage' | 'in-creation-flow'>('top-level')
 
 
   // Form Data
@@ -426,6 +428,16 @@ const navigationItems = getNavigationItems()
   }
   
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
+
+  // Ideas Tab Logic
+const shouldShowIdeasTab = () => {
+  return activePage === 'ideas' && ideasWorkflowState === 'top-level'
+}
+
+const getVisibleIdeasTab = () => {
+  if (ideasWorkflowState === 'in-creation-flow') return ['library']
+  return ['hub', 'library']
+}
 
   // Page Content Rendering
   const renderPageContent = () => {
