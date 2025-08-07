@@ -10,17 +10,20 @@ type IdeasTab = 'hub' | 'library'
 type WorkflowState = 'top-level' | 'in-ideation-subpage' | 'in-creation-flow'
 
 interface IdeasWrapperProps {
+  activeTab: 'hub' | 'library'
   onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
   onUseInStandardMode?: (idea: ContentIdea) => void
   onUseInWriterSuite?: (idea: ContentIdea) => void
+  onWorkflowStateChange?: (state: 'top-level' | 'in-ideation-subpage' | 'in-creation-flow') => void
 }
 
 export default function IdeasWrapper({ 
+  activeTab,
   onNavigateToCreate, 
   onUseInStandardMode, 
-  onUseInWriterSuite 
+  onUseInWriterSuite,
+  onWorkflowStateChange
 }: IdeasWrapperProps) {
-  const [activeTab, setActiveTab] = useState<IdeasTab>('hub')
   const [workflowState, setWorkflowState] = useState<WorkflowState>('top-level')
   const [hubSubPage, setHubSubPage] = useState<string>('welcome')
   const [fromLibrary, setFromLibrary] = useState(false)
