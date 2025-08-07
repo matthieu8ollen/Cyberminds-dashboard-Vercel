@@ -31,22 +31,6 @@ const AISuggestedTopics = ({ onBack }: { onBack: () => void }) => (
   </div>
 )
 
-const ContentFormulas = ({ onBack }: { onBack: () => void }) => (
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center">
-      <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Formulas</h2>
-      <p className="text-gray-600 mb-8">Coming soon! Browse proven content templates and frameworks.</p>
-      <button
-        onClick={onBack}
-        className="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
-      >
-        Back to Ideas Hub
-      </button>
-    </div>
-  </div>
-)
-
 export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPageChange }: IdeasHubProps = {}) {
   const [currentPage, setCurrentPage] = useState<IdeasPage>('welcome')
 
