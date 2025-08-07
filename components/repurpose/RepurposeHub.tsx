@@ -119,18 +119,19 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
           payload.source_url = input;
         }
       } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
-        // Blog input with additional data
-        payload.content = input.content;
-        if (input.target_audience) {
-          payload.target_audience = input.target_audience;
-        }
-        if (input.content_preferences && input.content_preferences.length > 0) {
-          payload.content_preferences = input.content_preferences;
-        }
-        if (input.user_role) {
-          payload.user_role = input.user_role;
-        }
-      } else {
+  // Blog input with additional data
+  const blogData = input as { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string };
+  payload.content = blogData.content;
+  if (blogData.target_audience) {
+    payload.target_audience = blogData.target_audience;
+  }
+  if (blogData.content_preferences && blogData.content_preferences.length > 0) {
+    payload.content_preferences = blogData.content_preferences;
+  }
+  if (blogData.user_role) {
+    payload.user_role = blogData.user_role;
+  }
+} else {
         // File input (voice recording)
         payload.file_name = input.name;
         payload.file_size = input.size;
@@ -255,9 +256,10 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
           sessionUpdate.source_url = input
         }
       } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
-        // Blog input with additional data
-        sessionUpdate.original_content = input.content
-      } else {
+  // Blog input with additional data
+  const blogData = input as { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string };
+  sessionUpdate.original_content = blogData.content
+} else {
         // File input (voice recording)
         sessionUpdate.file_reference = input.name
         sessionUpdate.source_title = input.name
