@@ -386,11 +386,11 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   if (viewMode === 'builder') {
     return (
       <FormulaBuilder
-        baseFormula={builderFormula}
-        onSave={handleSaveFormula}
-        onCancel={handleCancelBuilder}
-        onAnalyze={handleAnalyzeFormula}
-      />
+  baseFormula={builderFormula || undefined}
+  onSave={handleSaveFormula}
+  onCancel={handleCancelBuilder}
+  onAnalyze={handleAnalyzeFormula}
+/>
     )
   }
 
