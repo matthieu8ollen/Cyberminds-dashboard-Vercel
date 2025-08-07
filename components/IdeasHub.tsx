@@ -78,8 +78,10 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
         <div className="grid gap-6 md:grid-cols-2">
           {/* Talk with Marcus */}
           <button
-            onClick={() => setCurrentPage('talk-with-marcus')
-if (onPageChange) onPageChange('talk-with-marcus')}
+            onClick={() => {
+  setCurrentPage('talk-with-marcus')
+  if (onPageChange) onPageChange('talk-with-marcus')
+}}
             className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
           >
             <div className="flex items-start space-x-4">
