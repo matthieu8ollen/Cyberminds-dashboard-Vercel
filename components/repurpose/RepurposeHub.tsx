@@ -115,7 +115,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
   const [currentStatus, setCurrentStatus] = useState('')
   const [showRetryButton, setShowRetryButton] = useState(false)
-  const [lastProcessedInput, setLastProcessedInput] = useState<string | File | null>(null)
+  const [lastProcessedInput, setLastProcessedInput] = useState<string | File | BlogInputData | null>(null)
 
   // Webhook integration functions
   const callRepurposeAI = async (input: string | File | BlogInputData, repurposeType: RepurposeType, sessionId: string) => {
