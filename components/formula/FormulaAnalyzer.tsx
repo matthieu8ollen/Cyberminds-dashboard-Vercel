@@ -179,6 +179,10 @@ export default function FormulaAnalyzer({
     )
   }
 
+  if (!analysis) {
+    return null
+  }
+
   return (
     <div className="space-y-6">
       {/* Overall Score Card */}
