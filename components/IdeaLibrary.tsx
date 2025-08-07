@@ -349,12 +349,12 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }:
                   Standard Mode
                 </button>
                 <button
-                  onClick={() => onUseInWriterSuite?.(idea)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-teal-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition"
-                >
-                  <Crown className="w-4 h-4" />
-                  Writer Suite
-                </button>
+  onClick={() => onUseInWriterSuite?.(idea)}
+  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition"
+>
+  <Crown className="w-4 h-4" />
+  Writer Suite
+</button>
               </div>
             </div>
           ))}
