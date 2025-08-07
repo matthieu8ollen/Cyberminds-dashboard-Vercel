@@ -13,7 +13,6 @@ import {
   ContentIdea
 } from '../lib/supabase'
 import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera, ArrowRight } from 'lucide-react'
-import IdeasPage from './IdeasPage'
 import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
@@ -27,7 +26,7 @@ import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
-import IdeasHub from './IdeasHub'
+import IdeasWrapper from './IdeasWrapper'
 import WriterSuiteSelection from './WriterSuiteSelection'
 import RepurposeHub from './repurpose/RepurposeHub'
 
@@ -86,6 +85,8 @@ const [inStandardMode, setInStandardMode] = useState(false)
   const [savedContent, setSavedContent] = useState<GeneratedContent[]>([])
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null)
   const [ideationData, setIdeationData] = useState<any>(null)
+  const [ideaFromLibrary, setIdeaFromLibrary] = useState<ContentIdea | null>(null)
+
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -430,22 +431,48 @@ const navigationItems = getNavigationItems()
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-  return <IdeasHub 
-    onIdeationComplete={(ideation) => {
-      console.log('Ideation completed:', ideation)
-      setIdeationData(ideation)
-    }} 
+  return <IdeasWrapper 
     onNavigateToCreate={(mode, ideationData) => {
-  setIdeationData(ideationData)
-  
-  if (mode === 'power') {
-    setActivePage('writer-suite')
-    setWriterSuiteMode('selection')
-  } else if (mode === 'standard') {
-    setInStandardMode(true)
-    setActivePage('standard')
-  }
-}}
+      setIdeationData(ideationData)
+      
+      if (mode === 'power') {
+        setActivePage('writer-suite')
+        setWriterSuiteMode('selection')
+      } else if (mode === 'standard') {
+        setInStandardMode(true)
+        setActivePage('standard')
+      }
+    }}
+    onUseInStandardMode={(idea) => {
+      setIdeaFromLibrary(idea)
+      
+      // Convert idea to ideationData format
+      const ideationData = {
+        topic: idea.title,
+        angle: idea.description || '',
+        takeaways: idea.tags || [],
+        source_page: 'idea_library'
+      }
+      setIdeationData(ideationData)
+      
+      setInStandardMode(true)
+      setActivePage('standard')
+    }}
+    onUseInWriterSuite={(idea) => {
+      setIdeaFromLibrary(idea)
+      
+      // Convert idea to ideationData format  
+      const ideationData = {
+        topic: idea.title,
+        angle: idea.description || '',
+        takeaways: idea.tags || [],
+        source_page: 'idea_library'
+      }
+      setIdeationData(ideationData)
+      
+      setActivePage('writer-suite')
+      setWriterSuiteMode('selection')
+    }}
   />
       
       case 'writer-suite':
