@@ -322,24 +322,24 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
           setProcessingStage('error')
           setCurrentError("Something went wrong while processing your content. Please try again.")
           setShowRetryButton(true)
-        } else if (aiResponse && (aiResponse["Key Themes"] || aiResponse.content_ideas)) {
+        } else if (aiResponse && aiResponse.key_themes) {
           setCurrentStatus('')
           setProcessingStage('completed')
           
           // Transform AI response to ideation output format
           const ideationResults = {
-            topic: (typeof aiResponse.topic === 'string' ? JSON.parse(aiResponse.topic) : aiResponse.topic) || `Content ideas from ${activeType}`,
-            angle: aiResponse.angle || 'Repurposed content perspective',
-            takeaways: aiResponse["Key Themes"] || aiResponse.content_ideas || [
-              'Key insight from original content',
-              'Strategic takeaway for LinkedIn',
-              'Actionable advice for audience'
-            ],
-            source_page: 'repurpose_content',
-            session_id: session.id,
-            repurpose_type: activeType,
-            source_badges: getSourceBadge(activeType)
-          }
+  topic: aiResponse.topics || `Content ideas from ${activeType}`,
+  angle: 'Repurposed content perspective',
+  takeaways: aiResponse.key_themes || [
+    'Key insight from original content',
+    'Strategic takeaway for LinkedIn', 
+    'Actionable advice for audience'
+  ],
+  source_page: 'repurpose_content',
+  session_id: session.id,
+  repurpose_type: activeType,
+  source_badges: getSourceBadge(activeType)
+}
           
           // Update session with results
           await updateIdeationSession(session.id, {
