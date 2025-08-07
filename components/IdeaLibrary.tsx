@@ -49,7 +49,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'Share a framework for improving cash flow predictions that saved a SaaS company $2M',
     tags: ['cash-flow', 'forecasting', 'framework'],
     content_pillar: 'case_studies',
-    category: 'authority',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-15T10:00:00Z'
@@ -61,7 +60,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'Breakdown of common metric mistakes and how to fix them',
     tags: ['saas-metrics', 'startup', 'mistakes'],
     content_pillar: 'saas_metrics',
-    category: 'educational',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-14T15:30:00Z'
@@ -73,7 +71,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'Personal story about moving from annual budgets to rolling forecasts',
     tags: ['budgeting', 'personal-story', 'innovation'],
     content_pillar: 'personal_stories',
-    category: 'personal',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-13T09:15:00Z'
@@ -85,7 +82,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'Step-by-step approach for evaluating and implementing finance AI tools',
     tags: ['ai', 'tools', 'implementation'],
     content_pillar: 'tools_tech',
-    category: 'authority',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-12T14:20:00Z'
@@ -97,7 +93,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'How we navigated 2023\'s market uncertainty with specific financial strategies',
     tags: ['market-analysis', 'strategy', 'runway'],
     content_pillar: 'market_insights',
-    category: 'growth',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-11T11:45:00Z'
@@ -109,7 +104,6 @@ const MOCK_SAVED_IDEAS: ContentIdea[] = [
     description: 'Leadership insights on creating strong team dynamics across distributed finance teams',
     tags: ['leadership', 'remote-work', 'team-building'],
     content_pillar: 'leadership',
-    category: 'authority',
     source_type: 'ai_generated' as const,
     status: 'active',
     created_at: '2024-01-10T16:30:00Z'
