@@ -383,7 +383,7 @@ class FormulaConverter implements LegacyFormulaConverter {
    * Generate tags from legacy formula
    */
   private generateTags(legacy: LegacyContentFormula): string[] {
-    const tags = [legacy.category, legacy.difficulty]
+    const tags: string[] = [legacy.category, legacy.difficulty]
     
     // Add category-specific tags
     if (legacy.category === 'story') {
