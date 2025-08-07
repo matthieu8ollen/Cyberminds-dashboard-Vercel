@@ -105,9 +105,12 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
 
           {/* AI Suggested Topics */}
           <button
-            onClick={() => setCurrentPage('ai-suggested')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
-          >
+  onClick={() => {
+    setCurrentPage('ai-suggested')
+    if (onPageChange) onPageChange('ai-suggested')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
+>
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                 <Target className="w-6 h-6 text-slate-600 group-hover:text-teal-600" />
@@ -129,9 +132,12 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
 
           {/* Repurpose Content */}
           <button
-            onClick={() => setCurrentPage('repurpose-content')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
-          >
+  onClick={() => {
+    setCurrentPage('repurpose-content')
+    if (onPageChange) onPageChange('repurpose-content')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
+>
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                 <RotateCcw className="w-6 h-6 text-slate-600 group-hover:text-teal-600" />
@@ -153,9 +159,12 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
 
           {/* Content Formulas */}
           <button
-            onClick={() => setCurrentPage('content-formulas')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
-          >
+  onClick={() => {
+    setCurrentPage('content-formulas')
+    if (onPageChange) onPageChange('content-formulas')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
+>
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                 <BookOpen className="w-6 h-6 text-slate-600 group-hover:text-teal-600" />
