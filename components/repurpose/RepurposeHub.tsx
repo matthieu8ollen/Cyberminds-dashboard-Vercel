@@ -118,7 +118,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
         } else {
           payload.source_url = input;
         }
-      } else if (typeof input === 'object' && 'content' in input) {
+      } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
         // Blog input with additional data
         payload.content = input.content;
         if (input.target_audience) {
@@ -228,7 +228,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     }
   }
 
-  const handleProcessContent = async (input: string | File) => {
+  const handleProcessContent = async (input: string | File | { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string }) => {
     if (!user) return
 
     setCurrentError('')
@@ -254,7 +254,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
         } else {
           sessionUpdate.source_url = input
         }
-      } else if (typeof input === 'object' && 'content' in input) {
+      } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
         // Blog input with additional data
         sessionUpdate.original_content = input.content
       } else {
