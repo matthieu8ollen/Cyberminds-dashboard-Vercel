@@ -101,6 +101,12 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     
     try {
       console.log('🚀 Calling Repurpose AI webhook:', { input, repurposeType, sessionId });
+
+// DEBUG: Check what we're actually sending
+console.log('🔍 DEBUG - Webhook URL:', REPURPOSE_CONFIG.WEBHOOK_URL)
+console.log('🔍 DEBUG - Callback URL:', REPURPOSE_CONFIG.CALLBACK_URL)
+console.log('🔍 DEBUG - User ID:', user?.id)
+console.log('🔍 DEBUG - Content length:', typeof input === 'string' ? input.length : 'File')
       
       // Prepare payload based on input type
       let payload: any = {
@@ -125,6 +131,13 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
         // TODO: Handle file upload to storage and pass reference
         payload.file_reference = `temp_${sessionId}_${input.name}`;
       }
+
+      // DEBUG: Log payload details
+console.log('🔍 DEBUG - Full payload size:', JSON.stringify(payload).length, 'bytes')
+console.log('🔍 DEBUG - Payload keys:', Object.keys(payload))
+if (payload.content) {
+  console.log('🔍 DEBUG - Content preview:', payload.content.substring(0, 100) + '...')
+}
 
       const response = await fetch(REPURPOSE_CONFIG.WEBHOOK_URL, {
         method: 'POST',
