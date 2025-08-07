@@ -12,7 +12,7 @@ import {
   GeneratedContent,
   ContentIdea
 } from '../lib/supabase'
-import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera, ArrowRight } from 'lucide-react'
+import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera, ArrowRight, MessageCircle, Archive } from 'lucide-react'
 import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
@@ -682,9 +682,54 @@ const getVisibleIdeasTab = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Premium Left Sidebar */}
-      <nav 
+  <div className="min-h-screen bg-gray-50 flex">
+    {/* Fixed Ideas Tabs */}
+    {shouldShowIdeasTab() && (
+      <div className={`bg-white border-b border-gray-200 fixed top-0 right-0 z-50 shadow-sm transition-all duration-300 ease-in-out ${
+        sidebarExpanded ? 'ml-60' : 'ml-16'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center space-x-8">
+            {/* Hub Tab */}
+            {getVisibleIdeasTab().includes('hub') && (
+              <button
+                onClick={() => setIdeasActiveTab('hub')}
+                className={`relative py-4 px-1 font-medium text-sm transition-colors border-b-2 ${
+                  ideasActiveTab === 'hub'
+                    ? 'text-teal-600 border-teal-600'
+                    : 'text-gray-500 hover:text-gray-700 border-transparent'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Ideas Hub</span>
+                </div>
+              </button>
+            )}
+
+            {/* Library Tab */}
+            {getVisibleIdeasTab().includes('library') && (
+              <button
+                onClick={() => setIdeasActiveTab('library')}
+                className={`relative py-4 px-1 font-medium text-sm transition-colors border-b-2 ${
+                  ideasActiveTab === 'library'
+                    ? 'text-teal-600 border-teal-600'
+                    : 'text-gray-500 hover:text-gray-700 border-transparent'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Archive className="w-4 h-4" />
+                  <span>Idea Library</span>
+                </div>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Premium Left Sidebar */}
+    <nav 
         className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
           sidebarExpanded ? 'w-60' : 'w-16'
         }`}
