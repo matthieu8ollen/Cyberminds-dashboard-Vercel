@@ -29,91 +29,101 @@ export default function IdeasWrapper({
   const [hubSubPage, setHubSubPage] = useState<string>('welcome')
   const [fromLibrary, setFromLibrary] = useState(false)
 
+  // Determine if header should be visible
+  const shouldShowHeader = () => {
+    if (activeTab === 'hub') {
+      return hubSubPage === 'welcome' // Only on Ideas Hub welcome page
+    } else {
+      return workflowState === 'top-level' // Only on Idea Library main page
+    }
+  }
+
   // Enhanced navigation handlers
   const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
     setWorkflowState('in-creation-flow')
-    setFromLibrary(false) // Coming from Hub
+    setFromLibrary(false)
     if (onNavigateToCreate) {
       onNavigateToCreate(mode, ideationData)
     }
   }
 
   const handleUseInStandardMode = (idea: ContentIdea) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(true) // Coming from Library
+    setWorkflowState('in-creation-flow') // This will hide header
+    setFromLibrary(true)
     if (onUseInStandardMode) {
       onUseInStandardMode(idea)
     }
   }
 
   const handleUseInWriterSuite = (idea: ContentIdea) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(true) // Coming from Library
+    setWorkflowState('in-creation-flow') // This will hide header
+    setFromLibrary(true)
     if (onUseInWriterSuite) {
       onUseInWriterSuite(idea)
     }
   }
 
-  // Simulate IdeasHub sub-page detection
   const handleHubPageChange = (page: string) => {
     setHubSubPage(page)
     if (page === 'welcome') {
       setWorkflowState('top-level')
     } else {
-      setWorkflowState('in-ideation-subpage')
+      setWorkflowState('in-ideation-subpage') // This will hide header
     }
   }
 
-  // Reset function for when user completes workflows
   const resetToTopLevel = () => {
     setWorkflowState('top-level')
     setFromLibrary(false)
+    setHubSubPage('welcome') // Reset to welcome page
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Full-width Header Bar */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            {/* Left: Tabs */}
-            <div className="flex items-center space-x-8">
-              <button
-                onClick={() => onTabChange?.('hub')}
-                className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
-                  activeTab === 'hub'
-                    ? 'text-teal-600 border-teal-600'
-                    : 'text-gray-500 hover:text-gray-700 border-transparent'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Ideas Hub</span>
-                </div>
-              </button>
+      {/* Conditional Header Bar */}
+      {shouldShowHeader() && (
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-4">
+              {/* Left: Tabs */}
+              <div className="flex items-center space-x-8">
+                <button
+                  onClick={() => onTabChange?.('hub')}
+                  className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
+                    activeTab === 'hub'
+                      ? 'text-teal-600 border-teal-600'
+                      : 'text-gray-500 hover:text-gray-700 border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Ideas Hub</span>
+                  </div>
+                </button>
 
-              <button
-                onClick={() => onTabChange?.('library')}
-                className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
-                  activeTab === 'library'
-                    ? 'text-teal-600 border-teal-600'
-                    : 'text-gray-500 hover:text-gray-700 border-transparent'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <Archive className="w-4 h-4" />
-                  <span>Idea Library</span>
-                </div>
-              </button>
-            </div>
+                <button
+                  onClick={() => onTabChange?.('library')}
+                  className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
+                    activeTab === 'library'
+                      ? 'text-teal-600 border-teal-600'
+                      : 'text-gray-500 hover:text-gray-700 border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Archive className="w-4 h-4" />
+                    <span>Idea Library</span>
+                  </div>
+                </button>
+              </div>
 
-            {/* Right: Optional actions/status */}
-            <div className="text-sm text-gray-500">
-              {/* Could add search, filters, or other actions here */}
+              {/* Right: Optional actions/status */}
+              <div className="text-sm text-gray-500">
+                {/* Could add search, filters, or other actions here */}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content Area */}
       <div>
