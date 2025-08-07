@@ -170,14 +170,11 @@ function EnhancedIdeasHub({ onNavigateToCreate, onPageChange, onResetToTopLevel 
   return (
     <IdeasHub
       onNavigateToCreate={onNavigateToCreate}
+      onPageChange={onPageChange}
       onIdeationComplete={(ideation) => {
         console.log('Ideation completed:', ideation)
         // Handle ideation completion
       }}
     />
   )
-  
-  // Note: In the real implementation, we would need to modify IdeasHub 
-  // to accept onPageChange callback and call it when internal page state changes
-  // For now, this serves as the interface structure
 }
