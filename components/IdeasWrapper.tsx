@@ -34,20 +34,6 @@ export default function IdeasWrapper({
     // For now, we'll simulate this logic
   }, [])
 
-  // Determine which tabs should be visible based on workflow state
-  const getVisibleTabs = (): IdeasTab[] => {
-    if (workflowState === 'in-creation-flow') {
-      return fromLibrary ? ['library'] : ['hub']
-    }
-    if (workflowState === 'in-ideation-subpage') {
-      return ['hub']
-    }
-    return ['hub', 'library'] // Top-level: show both
-  }
-
-  const visibleTabs = getVisibleTabs()
-  const showTabs = visibleTabs.length > 1 && workflowState === 'top-level'
-
   // Enhanced navigation handlers
   const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
     setWorkflowState('in-creation-flow')
@@ -84,13 +70,6 @@ export default function IdeasWrapper({
     }
   }
 
-  // Reset to top-level when switching tabs
-  const handleTabChange = (tab: IdeasTab) => {
-    setActiveTab(tab)
-    setWorkflowState('top-level')
-    setFromLibrary(false)
-  }
-
   // Reset function for when user completes workflows
   const resetToTopLevel = () => {
     setWorkflowState('top-level')
@@ -100,51 +79,9 @@ export default function IdeasWrapper({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Tab Navigation - Only show when multiple tabs are visible */}
-      {showTabs && (
-  <div className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center space-x-8">
-              {/* Hub Tab */}
-              {visibleTabs.includes('hub') && (
-                <button
-                  onClick={() => handleTabChange('hub')}
-                  className={`relative py-4 px-1 font-medium text-sm transition-colors border-b-2 ${
-                    activeTab === 'hub'
-                      ? 'text-teal-600 border-teal-600'
-                      : 'text-gray-500 hover:text-gray-700 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Ideas Hub</span>
-                  </div>
-                </button>
-              )}
-
-              {/* Library Tab */}
-              {visibleTabs.includes('library') && (
-                <button
-                  onClick={() => handleTabChange('library')}
-                  className={`relative py-4 px-1 font-medium text-sm transition-colors border-b-2 ${
-                    activeTab === 'library'
-                      ? 'text-teal-600 border-teal-600'
-                      : 'text-gray-500 hover:text-gray-700 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Archive className="w-4 h-4" />
-                    <span>Idea Library</span>
-                  </div>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Content Area */}
-<div className={showTabs ? "pt-16" : "pt-0"}>
+<div>
         {activeTab === 'hub' ? (
           <EnhancedIdeasHub 
             onNavigateToCreate={handleNavigateToCreate}
