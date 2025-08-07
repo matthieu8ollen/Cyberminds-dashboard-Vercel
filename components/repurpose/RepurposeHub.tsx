@@ -21,6 +21,13 @@ import {
 type RepurposeType = 'blog' | 'voice' | 'youtube' | 'linkedin'
 type ProcessingStage = 'input' | 'processing' | 'completed' | 'error'
 
+interface BlogInputData {
+  content: string;
+  target_audience?: string;
+  content_preferences?: string[];
+  user_role?: string;
+}
+
 interface RepurposeHubProps {
   onIdeationComplete?: (ideation: any) => void
   onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
@@ -36,6 +43,25 @@ interface RepurposeSession {
   generated_ideas_count?: number
   error_message?: string
 }
+
+// Type guard functions
+const isBlogInputData = (input: any): input is BlogInputData => {
+  return input && 
+         typeof input === 'object' && 
+         typeof input.content === 'string' && 
+         !('name' in input) && 
+         !('size' in input) && 
+         !('type' in input);
+};
+
+const isFile = (input: any): input is File => {
+  return input instanceof File || 
+         (input && 
+          typeof input === 'object' && 
+          'name' in input && 
+          'size' in input && 
+          'type' in input);
+};
 
 const REPURPOSE_TYPES = [
   {
@@ -92,7 +118,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   const [lastProcessedInput, setLastProcessedInput] = useState<string | File | null>(null)
 
   // Webhook integration functions
-  const callRepurposeAI = async (input: string | File, repurposeType: RepurposeType, sessionId: string) => {
+  const callRepurposeAI = async (input: string | File | BlogInputData, repurposeType: RepurposeType, sessionId: string) => {
     // Check if webhook is configured
     if (!isWebhookConfigured()) {
       console.warn('⚠️ Webhook URL not configured, using fallback')
@@ -112,32 +138,31 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
       };
 
       if (typeof input === 'string') {
-        // Text input (blog content or URLs)
-        if (repurposeType === 'blog') {
-          payload.content = input;
-        } else {
-          payload.source_url = input;
-        }
-      } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
+  // Text input (blog content or URLs)
+  if (repurposeType === 'blog') {
+    payload.content = input;
+  } else {
+    payload.source_url = input;
+  }
+} else if (isBlogInputData(input)) {
   // Blog input with additional data
-  const blogData = input as { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string };
-  payload.content = blogData.content;
-  if (blogData.target_audience) {
-    payload.target_audience = blogData.target_audience;
+  payload.content = input.content;
+  if (input.target_audience) {
+    payload.target_audience = input.target_audience;
   }
-  if (blogData.content_preferences && blogData.content_preferences.length > 0) {
-    payload.content_preferences = blogData.content_preferences;
+  if (input.content_preferences && input.content_preferences.length > 0) {
+    payload.content_preferences = input.content_preferences;
   }
-  if (blogData.user_role) {
-    payload.user_role = blogData.user_role;
+  if (input.user_role) {
+    payload.user_role = input.user_role;
   }
-} else {
-        // File input (voice recording)
-        payload.file_name = input.name;
-        payload.file_size = input.size;
-        // TODO: Handle file upload to storage and pass reference
-        payload.file_reference = `temp_${sessionId}_${input.name}`;
-      }
+} else if (isFile(input)) {
+  // File input (voice recording)
+  payload.file_name = input.name;
+  payload.file_size = input.size;
+  // TODO: Handle file upload to storage and pass reference
+  payload.file_reference = `temp_${sessionId}_${input.name}`;
+}
 
       const response = await fetch(REPURPOSE_CONFIG.WEBHOOK_URL, {
         method: 'POST',
@@ -229,7 +254,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
     }
   }
 
-  const handleProcessContent = async (input: string | File | { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string }) => {
+  const handleProcessContent = async (input: string | File | BlogInputData) => {
     if (!user) return
 
     setCurrentError('')
@@ -249,21 +274,20 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
       }
 
       if (typeof input === 'string') {
-        // Text input (blog content or URLs)
-        if (activeType === 'blog') {
-          sessionUpdate.original_content = input
-        } else {
-          sessionUpdate.source_url = input
-        }
-      } else if (input && typeof input === 'object' && !('name' in input) && 'content' in input) {
+  // Text input (blog content or URLs)
+  if (activeType === 'blog') {
+    sessionUpdate.original_content = input
+  } else {
+    sessionUpdate.source_url = input
+  }
+} else if (isBlogInputData(input)) {
   // Blog input with additional data
-  const blogData = input as { content: string; target_audience?: string; content_preferences?: string[]; user_role?: string };
-  sessionUpdate.original_content = blogData.content
-} else {
-        // File input (voice recording)
-        sessionUpdate.file_reference = input.name
-        sessionUpdate.source_title = input.name
-      }
+  sessionUpdate.original_content = input.content
+} else if (isFile(input)) {
+  // File input (voice recording)
+  sessionUpdate.file_reference = input.name
+  sessionUpdate.source_title = input.name
+}
 
       // Create ideation session
       const { data: session, error } = await createIdeationSession({
