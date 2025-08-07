@@ -197,7 +197,7 @@ export interface FormulaAnalyzerProps {
   formula: EnhancedContentFormula
   analysis?: AIAnalysisResult
   suggestions?: OptimizationSuggestion[]
-  onAnalyze: () => Promise<void>
+  onAnalyze: () => Promise<FormulaAnalysisResponse>  // ← Fixed to match return type
   onApplySuggestion: (suggestion: OptimizationSuggestion) => void
   isAnalyzing: boolean
 }
