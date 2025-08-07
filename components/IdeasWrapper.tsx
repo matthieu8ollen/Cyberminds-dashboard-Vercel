@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageCircle, Archive, ArrowRight } from 'lucide-react'
 import IdeasHub from './IdeasHub'
 import IdeaLibrary from './IdeaLibrary'
 import { ContentIdea } from '../lib/supabase'
 
-type IdeasTab = 'hub' | 'library'
 type WorkflowState = 'top-level' | 'in-ideation-subpage' | 'in-creation-flow'
 
 interface IdeasWrapperProps {
@@ -74,7 +72,6 @@ export default function IdeasWrapper({
   const resetToTopLevel = () => {
     setWorkflowState('top-level')
     setFromLibrary(false)
-    setActiveTab('hub')
   }
 
   return (
