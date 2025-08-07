@@ -61,7 +61,7 @@ const [currentStatus, setCurrentStatus] = useState('')
 
 // Webhook integration functions
 const callMarcusAI = async (userInput: string, conversationContext: any, contentPreference: string, sessionId: string) => {
-  const N8N_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/74cc6b41-dc95-4bb4-b0ea-adc8f6fa56b1';
+  const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_MARCUS_WEBHOOK_URL || 'https://testcyber.app.n8n.cloud/webhook/74cc6b41-dc95-4bb4-b0ea-adc8f6fa56b1';
   
   try {
     console.log('🚀 Calling Marcus AI webhook:', { userInput, conversationContext, contentPreference });
