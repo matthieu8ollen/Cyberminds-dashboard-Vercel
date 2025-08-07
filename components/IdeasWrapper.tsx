@@ -13,72 +13,66 @@ interface IdeasWrapperProps {
   onUseInStandardMode?: (idea: ContentIdea) => void
   onUseInWriterSuite?: (idea: ContentIdea) => void
   onWorkflowStateChange?: (state: 'top-level' | 'in-ideation-subpage' | 'in-creation-flow') => void
+  onTabChange?: (tab: 'hub' | 'library') => void  // Add this
 }
 
 export default function IdeasWrapper({ 
   activeTab,
+  onTabChange,
   onNavigateToCreate, 
   onUseInStandardMode, 
   onUseInWriterSuite,
   onWorkflowStateChange
 }: IdeasWrapperProps) {
-  const [workflowState, setWorkflowState] = useState<WorkflowState>('top-level')
-  const [hubSubPage, setHubSubPage] = useState<string>('welcome')
-  const [fromLibrary, setFromLibrary] = useState(false)
-
-  // Monitor IdeasHub internal state changes
-  useEffect(() => {
-    // This would be called by IdeasHub when entering sub-pages
-    // For now, we'll simulate this logic
-  }, [])
-
-  // Enhanced navigation handlers
-  const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(false) // Coming from Hub
-    if (onNavigateToCreate) {
-      onNavigateToCreate(mode, ideationData)
-    }
-  }
-
-  const handleUseInStandardMode = (idea: ContentIdea) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(true) // Coming from Library
-    if (onUseInStandardMode) {
-      onUseInStandardMode(idea)
-    }
-  }
-
-  const handleUseInWriterSuite = (idea: ContentIdea) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(true) // Coming from Library
-    if (onUseInWriterSuite) {
-      onUseInWriterSuite(idea)
-    }
-  }
-
-  // Simulate IdeasHub sub-page detection
-  // In real implementation, IdeasHub would call this via callback
-  const handleHubPageChange = (page: string) => {
-    setHubSubPage(page)
-    if (page === 'welcome') {
-      setWorkflowState('top-level')
-    } else {
-      setWorkflowState('in-ideation-subpage')
-    }
-  }
-
-  // Reset function for when user completes workflows
-  const resetToTopLevel = () => {
-    setWorkflowState('top-level')
-    setFromLibrary(false)
-  }
+  // ... existing state logic ...
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Full-width Header Bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
+            {/* Left: Tabs */}
+            <div className="flex items-center space-x-8">
+              <button
+                onClick={() => onTabChange?.('hub')}
+                className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
+                  activeTab === 'hub'
+                    ? 'text-teal-600 border-teal-600'
+                    : 'text-gray-500 hover:text-gray-700 border-transparent'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Ideas Hub</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => onTabChange?.('library')}
+                className={`relative py-2 px-1 font-medium text-sm transition-colors border-b-2 ${
+                  activeTab === 'library'
+                    ? 'text-teal-600 border-teal-600'
+                    : 'text-gray-500 hover:text-gray-700 border-transparent'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Archive className="w-4 h-4" />
+                  <span>Idea Library</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Right: Optional actions/status */}
+            <div className="text-sm text-gray-500">
+              {/* Could add search, filters, or other actions here */}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Content Area */}
-<div>
+      <div>
         {activeTab === 'hub' ? (
           <EnhancedIdeasHub 
             onNavigateToCreate={handleNavigateToCreate}
