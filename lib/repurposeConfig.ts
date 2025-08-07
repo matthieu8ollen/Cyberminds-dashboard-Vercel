@@ -1,9 +1,8 @@
 // Repurpose Content Backend Configuration
-// Update this file when backend provides the actual webhook URLs
 
 export const REPURPOSE_CONFIG = {
   // Main webhook URL for processing content
-  WEBHOOK_URL: process.env.NEXT_PUBLIC_REPURPOSE_WEBHOOK_URL || 'PLACEHOLDER_WEBHOOK_URL_HERE',
+  WEBHOOK_URL: process.env.NEXT_PUBLIC_REPURPOSE_WEBHOOK_URL || 'https://testcyber.app.n8n.cloud/webhook/43eff478-a00c-4ac3-815e-1d10ff20460e',
   
   // Callback URL where our API receives responses
   CALLBACK_URL: process.env.NEXT_PUBLIC_SITE_URL 
