@@ -1,8 +1,3 @@
-// ==========================================
-// LEGACY FORMULA CONVERTER UTILITY
-// File: lib/formulaConverter.ts
-// ==========================================
-
 import type { 
   EnhancedContentFormula, 
   FormulaSection, 
