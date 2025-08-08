@@ -8,6 +8,7 @@ import BlogInput from './BlogInput'
 import VoiceUpload from './VoiceUpload'
 import YouTubeInput from './YouTubeInput'
 import LinkedInInput from './LinkedInInput'
+import RepurposeResults from './RepurposeResults'
 import { 
   FileText, 
   Mic, 
@@ -110,12 +111,14 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   
   // Input states
   const [currentError, setCurrentError] = useState('')
+const [resultsData, setResultsData] = useState<any>(null)
+const [originalContentData, setOriginalContentData] = useState<string>('')
 
-  // Backend integration states
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
-  const [currentStatus, setCurrentStatus] = useState('')
-  const [showRetryButton, setShowRetryButton] = useState(false)
-  const [lastProcessedInput, setLastProcessedInput] = useState<string | File | BlogInputData | null>(null)
+// Backend integration states
+const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+const [currentStatus, setCurrentStatus] = useState('')
+const [showRetryButton, setShowRetryButton] = useState(false)
+const [lastProcessedInput, setLastProcessedInput] = useState<string | File | BlogInputData | null>(null)
 
   // Webhook integration functions
   const callRepurposeAI = async (input: string | File | BlogInputData, repurposeType: RepurposeType, sessionId: string) => {
