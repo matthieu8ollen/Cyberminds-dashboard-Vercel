@@ -291,6 +291,15 @@ const [lastProcessedInput, setLastProcessedInput] = useState<string | File | Blo
   sessionUpdate.file_reference = input.name
   sessionUpdate.source_title = input.name
 }
+      
+    // Store original content for results display
+if (typeof input === 'string') {
+  setOriginalContentData(activeType === 'blog' ? input : input)
+} else if (isBlogInputData(input)) {
+  setOriginalContentData(input.content)
+} else if (isFile(input)) {
+  setOriginalContentData(`Audio file: ${input.name}`)
+}
 
       // Create ideation session
       const { data: session, error } = await createIdeationSession({
@@ -327,23 +336,36 @@ if (response.message === "Workflow was started" || response.success) {
           setCurrentError("Something went wrong while processing your content. Please try again.")
           setShowRetryButton(true)
         } else if (aiResponse && aiResponse.key_themes) {
-          setCurrentStatus('')
-          setProcessingStage('completed')
-          
-          // Transform AI response to ideation output format
-          const ideationResults = {
-  topic: aiResponse.topics || `Content ideas from ${activeType}`,
-  angle: 'Repurposed content perspective',
-  takeaways: aiResponse.key_themes || [
-    'Key insight from original content',
-    'Strategic takeaway for LinkedIn', 
-    'Actionable advice for audience'
-  ],
-  source_page: 'repurpose_content',
-  session_id: session.id,
-  repurpose_type: activeType,
-  source_badges: getSourceBadge(activeType)
-}
+  setCurrentStatus('')
+  setProcessingStage('completed')
+  
+  // Store results data for RepurposeResults component
+  const resultsData = {
+    topic: aiResponse.topics || `Content ideas from ${activeType}`,
+    topics: aiResponse.topics || `Content ideas from ${activeType}`,
+    key_themes: aiResponse.key_themes,
+    takeaways: aiResponse.key_themes,
+    repurpose_type: activeType,
+    session_id: session.id,
+    source_badges: getSourceBadge(activeType)
+  }
+  
+  setResultsData(resultsData)
+  
+  // Transform AI response to ideation output format (for backward compatibility)
+  const ideationResults = {
+    topic: aiResponse.topics || `Content ideas from ${activeType}`,
+    angle: 'Repurposed content perspective',
+    takeaways: aiResponse.key_themes || [
+      'Key insight from original content',
+      'Strategic takeaway for LinkedIn',
+      'Actionable advice for audience'
+    ],
+    source_page: 'repurpose_content',
+    session_id: session.id,
+    repurpose_type: activeType,
+    source_badges: getSourceBadge(activeType)
+  }
           
           // Update session with results
           await updateIdeationSession(session.id, {
@@ -472,26 +494,27 @@ if (response.message === "Workflow was started" || response.success) {
         )
 
       case 'completed':
-        return (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-green-900 mb-2">
-              Content Ideas Generated!
-            </h3>
-            <p className="text-green-800 mb-4">
-              Successfully transformed your content into LinkedIn-ready ideas.
-            </p>
-            <button
-              onClick={() => {
-                // Navigation will be handled by parent component
-                console.log('Navigate to ideas or content creation')
-              }}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-            >
-              View Ideas
-            </button>
-          </div>
-        )
+  if (resultsData) {
+    return (
+      <RepurposeResults
+        results={resultsData}
+        originalContent={originalContentData}
+        onStartOver={() => {
+          setProcessingStage('input')
+          setResultsData(null)
+          setOriginalContentData('')
+          setCurrentError('')
+          setShowRetryButton(false)
+        }}
+        onGenerateVariations={() => {
+          if (lastProcessedInput) {
+            handleProcessContent(lastProcessedInput)
+          }
+        }}
+      />
+    )
+  }
+  return null
 
       case 'error':
         return (
