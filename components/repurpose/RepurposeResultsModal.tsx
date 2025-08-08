@@ -182,18 +182,18 @@ export default function RepurposeResultsModal({
       <div className="flex min-h-full items-center justify-center p-4">
         <div 
           ref={modalRef}
-          className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+          className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
         >
-          {/* Header - Simplified */}
-          <div className="bg-gradient-to-r from-slate-700 to-teal-600 px-6 py-4">
+          {/* Header - Compact */}
+          <div className="bg-gradient-to-r from-slate-700 to-teal-600 px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                  <SourceIcon className="w-4 h-4 text-white" />
+                <div className="w-6 h-6 bg-white bg-opacity-20 rounded-md flex items-center justify-center">
+                  <SourceIcon className="w-3 h-3 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Content Ideas Ready!</h2>
-                  <p className="text-sm text-gray-200">From {sourceConfig.label}</p>
+                  <h2 className="text-base font-semibold text-white">Content Ideas Ready!</h2>
+                  <p className="text-xs text-gray-200">From {sourceConfig.label}</p>
                 </div>
               </div>
               
@@ -201,13 +201,13 @@ export default function RepurposeResultsModal({
                 onClick={onClose}
                 className="p-1 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Content - Simplified */}
-          <div className="p-6 space-y-6">
+          {/* Content - Expanded Focus */}
+          <div className="p-8 space-y-8">
             {/* Topic Section */}
             <div>
               <div className="flex items-center mb-3">
@@ -218,8 +218,8 @@ export default function RepurposeResultsModal({
               <textarea
                 value={editedTopic}
                 onChange={(e) => setEditedTopic(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                rows={2}
+                className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none text-base"
+                rows={3}
                 placeholder="Enter the main topic..."
               />
             </div>
@@ -239,8 +239,8 @@ export default function RepurposeResultsModal({
                       <textarea
                         value={theme}
                         onChange={(e) => updateTheme(index, e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none text-sm"
-                        rows={1}
+                        className="flex-1 p-3 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                        rows={2}
                         placeholder="Enter theme..."
                       />
                       {editedThemes.length > 1 && (
@@ -275,26 +275,26 @@ export default function RepurposeResultsModal({
             )}
           </div>
 
-          {/* Actions - Simplified */}
-          <div className="border-t border-gray-200 px-6 py-4">
-            <div className="grid grid-cols-2 gap-3">
+          {/* Actions - Full Width */}
+          <div className="border-t border-gray-200 px-8 py-6">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={saveToIdeas}
                 disabled={isSaving}
-                className="flex items-center justify-center space-x-2 p-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+                className="flex items-center justify-center space-x-2 p-4 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
               >
-                <BookOpen className="w-4 h-4" />
-                <span className="font-medium">
+                <BookOpen className="w-5 h-5" />
+                <span className="font-medium text-base">
                   {isSaving ? 'Saving...' : 'Save to Ideas'}
                 </span>
               </button>
 
               <button
                 onClick={createPost}
-                className="flex items-center justify-center space-x-2 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                className="flex items-center justify-center space-x-2 p-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
               >
-                <Edit3 className="w-4 h-4" />
-                <span className="font-medium">Create Post</span>
+                <Edit3 className="w-5 h-5" />
+                <span className="font-medium text-base">Create Post</span>
               </button>
             </div>
           </div>
