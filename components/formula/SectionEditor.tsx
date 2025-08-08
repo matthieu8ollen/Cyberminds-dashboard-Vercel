@@ -384,10 +384,41 @@ const getExampleContent = (section: FormulaSection): string => {
     ))}
   </ul>
   
-  <div className="mt-3 p-2 bg-gray-50 rounded border">
-    <p className="text-xs font-medium text-gray-700 mb-1">Example Content:</p>
-    <p className="text-xs text-gray-600 italic">{getExampleContent(section)}</p>
+ <div className="mt-3 p-2 bg-gray-50 rounded border">
+  <div className="flex items-start justify-between">
+    <div className="flex-1">
+      <p className="text-xs font-medium text-gray-700 mb-1">Example Content:</p>
+      <p className="text-xs text-gray-600 italic">{getExampleContent(section)}</p>
+    </div>
+    <div className="flex space-x-1 ml-2">
+      <button
+        onClick={() => {
+          const exampleText = getExampleContent(section).replace('Example: "', '').replace('"', '')
+          updateSection({ placeholder: exampleText })
+        }}
+        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        title="Use as placeholder"
+      >
+        Use
+      </button>
+      <button
+        onClick={async () => {
+          const exampleText = getExampleContent(section).replace('Example: "', '').replace('"', '')
+          try {
+            await navigator.clipboard.writeText(exampleText)
+            // You could add a toast notification here later
+          } catch (err) {
+            console.log('Clipboard not available')
+          }
+        }}
+        className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+        title="Copy to clipboard"
+      >
+        Copy
+      </button>
+    </div>
   </div>
+</div>
 </div>
         </div>
       </div>
