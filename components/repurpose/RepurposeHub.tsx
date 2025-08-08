@@ -231,22 +231,24 @@ const [lastProcessedInput, setLastProcessedInput] = useState<string | File | Blo
   };
 
   // Reset state when changing tabs
-  useEffect(() => {
-    setCurrentError('')
-    setCurrentStatus('')
-    setShowRetryButton(false)
-    setIsWaitingForResponse(false)
-    setProcessingStage('input')
-    setSessionData(prev => ({
-      ...prev,
-      repurpose_type: activeType,
-      processing_status: 'input',
-      source_url: undefined,
-      original_content: undefined,
-      file_reference: undefined,
-      error_message: undefined
-    }))
-  }, [activeType])
+useEffect(() => {
+  setCurrentError('')
+  setCurrentStatus('')
+  setShowRetryButton(false)
+  setIsWaitingForResponse(false)
+  setProcessingStage('input')
+  setResultsData(null)
+  setOriginalContentData('')
+  setSessionData(prev => ({
+    ...prev,
+    repurpose_type: activeType,
+    processing_status: 'input',
+    source_url: undefined,
+    original_content: undefined,
+    file_reference: undefined,
+    error_message: undefined
+  }))
+}, [activeType])
 
   const handleRetry = () => {
     setShowRetryButton(false)
