@@ -106,6 +106,7 @@ export default function FormulaBuilder({
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showAISuggestions, setShowAISuggestions] = useState<Record<number, boolean>>({})
 
   // Mark changes when formula is modified
   useEffect(() => {
@@ -500,17 +501,6 @@ export default function FormulaBuilder({
                 />
               </div>
 
-              {/* AI Writing Suggestions - Simple Version */}
-<div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-  <div className="flex items-center space-x-2 mb-2">
-    <Lightbulb className="w-4 h-4 text-blue-600" />
-    <span className="text-sm font-medium text-blue-900">AI Suggestion</span>
-  </div>
-  <p className="text-sm text-blue-800">
-    {section.guidance || "AI will provide contextual writing guidance based on your section title."}
-  </p>
-</div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Placeholder Text
@@ -523,10 +513,46 @@ export default function FormulaBuilder({
                   placeholder="Example content for this section..."
                 />
               </div>
-            </div>
+
+              {/* AI Writing Suggestions - Collapsible */}
+<div className="bg-blue-50 border border-blue-200 rounded-lg">
+  <button
+    onClick={() => setShowAISuggestions(prev => ({ ...prev, [index]: !prev[index] }))}
+    className="w-full p-3 text-left flex items-center justify-between hover:bg-blue-100 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <Lightbulb className="w-4 h-4 text-blue-600" />
+      <span className="text-sm font-medium text-blue-900">AI Writing Suggestions</span>
+    </div>
+    {showAISuggestions[index] ? (
+      <ChevronUp className="w-4 h-4 text-blue-600" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-blue-600" />
+    )}
+  </button>
+  
+  {showAISuggestions[index] && (
+    <div className="px-3 pb-3 border-t border-blue-200">
+      <div className="bg-white rounded-lg p-3 mt-3">
+        <div className="text-sm text-gray-700">
+          <p className="font-medium text-blue-900 mb-2">Writing Guidance:</p>
+          <p className="text-blue-800 mb-3">
+            {section.guidance || "AI will provide contextual writing guidance based on your section title."}
+          </p>
+          
+          <div className="pt-2 border-t border-gray-100">
+            <p className="font-medium text-blue-900 mb-2">Quick Tips:</p>
+            <ul className="text-xs text-blue-700 space-y-1">
+              <li>• Start with a compelling hook to grab attention</li>
+              <li>• Use specific examples and data points</li>
+              <li>• End with a clear call-to-action</li>
+            </ul>
           </div>
-        ))}
+        </div>
       </div>
+    </div>
+  )}
+</div>
 
       {formula.sections.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
