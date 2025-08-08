@@ -1,6 +1,6 @@
-# CyberMinds Dashboard
+# Writer Suite Dashboard
 
-AI-powered LinkedIn content generator for finance professionals.
+Professional LinkedIn content creation platform powered by AI.
 
 ## Features
 
