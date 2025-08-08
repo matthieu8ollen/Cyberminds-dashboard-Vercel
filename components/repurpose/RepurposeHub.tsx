@@ -303,10 +303,11 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
       setSessionData(prev => ({ ...prev, ...sessionUpdate }))
 
       // Call backend webhook
-      setCurrentStatus('Analyzing your content...')
-      const response = await callRepurposeAI(input, activeType, sessionId)
-      
-      if (response.message === "Workflow was started" || response.success) {
+setCurrentStatus('Analyzing your content...')
+const response = await callRepurposeAI(input, activeType, sessionId)
+console.log('🔍 FULL RESPONSE DEBUG:', JSON.stringify(response, null, 2))
+
+if (response.message === "Workflow was started" || response.success) {
         console.log('🔄 Processing workflow started, polling for response...')
         
         // Poll for the actual AI response
