@@ -1,8 +1,3 @@
-// ==========================================
-// FORMULA BUILDER WIZARD COMPONENT
-// File: components/formula/FormulaBuilder.tsx
-// ==========================================
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -22,7 +17,8 @@ import {
   Eye,
   Settings,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Lightbulb
 } from 'lucide-react'
 import type { 
   EnhancedContentFormula, 
@@ -504,18 +500,16 @@ export default function FormulaBuilder({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Writing Guidance
-                </label>
-                <textarea
-                  value={section.guidance}
-                  onChange={(e) => updateSection(index, { ...section, guidance: e.target.value })}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                  placeholder="Guidance for writing this section..."
-                />
-              </div>
+              {/* AI Writing Suggestions - Simple Version */}
+<div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+  <div className="flex items-center space-x-2 mb-2">
+    <Lightbulb className="w-4 h-4 text-blue-600" />
+    <span className="text-sm font-medium text-blue-900">AI Suggestion</span>
+  </div>
+  <p className="text-sm text-blue-800">
+    {section.guidance || "AI will provide contextual writing guidance based on your section title."}
+  </p>
+</div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
