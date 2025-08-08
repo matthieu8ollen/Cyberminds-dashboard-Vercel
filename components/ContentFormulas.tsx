@@ -1,8 +1,3 @@
-// ==========================================
-// ENHANCED CONTENT FORMULAS COMPONENT
-// File: components/ContentFormulas.tsx (REPLACE EXISTING)
-// ==========================================
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -218,7 +213,7 @@ const CUSTOM_FORMULAS: EnhancedContentFormula[] = [
 ]
 
 const CATEGORIES = [
-  { id: 'all', label: 'All Formulas', icon: BookOpen },
+  { id: 'all', label: 'AI Suggested', icon: BookOpen },
   { id: 'story', label: 'Story-Based', icon: MessageSquare },
   { id: 'data', label: 'Data-Driven', icon: BarChart3 },
   { id: 'framework', label: 'Framework', icon: TrendingUp },
