@@ -6,7 +6,7 @@ export default function Loading() {
   <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-8 h-8" />
 </div>
         <div className="loading-spinner mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading CyberMinds...</p>
+        <p className="text-gray-600">Loading Writer Suite...</p>
       </div>
     </div>
   )
