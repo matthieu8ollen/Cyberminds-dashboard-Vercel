@@ -94,6 +94,32 @@ export default function SectionEditor({
   ]
 }
 
+const getExampleContent = (section: FormulaSection): string => {
+  const title = section.title.toLowerCase()
+  
+  if (title.includes('hook') || title.includes('intro') || title.includes('opening')) {
+    return 'Example: "87% of SaaS companies are making this one critical pricing mistake that\'s costing them millions in ARR..."'
+  }
+  
+  if (title.includes('problem') || title.includes('pain') || title.includes('challenge')) {
+    return 'Example: "You\'re spending 3+ hours every week manually reconciling financial data that should take 15 minutes..."'
+  }
+  
+  if (title.includes('solution') || title.includes('method') || title.includes('framework')) {
+    return 'Example: "Here\'s the 3-step framework I use: 1) Audit current process 2) Identify bottlenecks 3) Implement automation..."'
+  }
+  
+  if (title.includes('result') || title.includes('outcome') || title.includes('conclusion')) {
+    return 'Example: "Result: We reduced our month-end close from 12 days to 3 days, saving 40+ hours per month..."'
+  }
+  
+  if (title.includes('cta') || title.includes('call') || title.includes('action')) {
+    return 'Example: "What\'s your biggest challenge with financial reporting? Share in the comments - I\'ll personally respond with specific advice."'
+  }
+  
+  return 'Example: "This reminds me of when we first implemented this approach at our company..."'
+}
+  
   const updateSection = (updates: Partial<FormulaSection>) => {
     onChange({ ...section, ...updates })
   }
@@ -357,6 +383,11 @@ export default function SectionEditor({
       <li key={index}>• {tip}</li>
     ))}
   </ul>
+  
+  <div className="mt-3 p-2 bg-gray-50 rounded border">
+    <p className="text-xs font-medium text-gray-700 mb-1">Example Content:</p>
+    <p className="text-xs text-gray-600 italic">{getExampleContent(section)}</p>
+  </div>
 </div>
         </div>
       </div>
