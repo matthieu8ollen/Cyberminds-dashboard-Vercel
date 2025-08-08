@@ -8,7 +8,7 @@ import BlogInput from './BlogInput'
 import VoiceUpload from './VoiceUpload'
 import YouTubeInput from './YouTubeInput'
 import LinkedInInput from './LinkedInInput'
-import RepurposeResults from './RepurposeResults'
+import RepurposeResultsModal from './RepurposeResultsModal'
 import { 
   FileText, 
   Mic, 
@@ -113,6 +113,7 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
   const [currentError, setCurrentError] = useState('')
 const [resultsData, setResultsData] = useState<any>(null)
 const [originalContentData, setOriginalContentData] = useState<string>('')
+const [showResultsModal, setShowResultsModal] = useState(false)
 
 // Backend integration states
 const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
@@ -239,6 +240,7 @@ useEffect(() => {
   setProcessingStage('input')
   setResultsData(null)
   setOriginalContentData('')
+  setShowResultsModal(false)
   setSessionData(prev => ({
     ...prev,
     repurpose_type: activeType,
@@ -341,18 +343,19 @@ if (response.message === "Workflow was started" || response.success) {
   setCurrentStatus('')
   setProcessingStage('completed')
   
-  // Store results data for RepurposeResults component
-  const resultsData = {
-    topic: aiResponse.topics || `Content ideas from ${activeType}`,
-    topics: aiResponse.topics || `Content ideas from ${activeType}`,
-    key_themes: aiResponse.key_themes,
-    takeaways: aiResponse.key_themes,
-    repurpose_type: activeType,
-    session_id: session.id,
-    source_badges: getSourceBadge(activeType)
-  }
-  
-  setResultsData(resultsData)
+  // Store results data for RepurposeResultsModal component
+const resultsData = {
+  topic: aiResponse.topics || `Content ideas from ${activeType}`,
+  topics: aiResponse.topics || `Content ideas from ${activeType}`,
+  key_themes: aiResponse.key_themes,
+  takeaways: aiResponse.key_themes,
+  repurpose_type: activeType,
+  session_id: session.id,
+  source_badges: getSourceBadge(activeType)
+}
+
+setResultsData(resultsData)
+setShowResultsModal(true)
   
   // Transform AI response to ideation output format (for backward compatibility)
   const ideationResults = {
@@ -496,27 +499,23 @@ if (response.message === "Workflow was started" || response.success) {
         )
 
       case 'completed':
-  if (resultsData) {
-    return (
-      <RepurposeResults
-        results={resultsData}
-        originalContent={originalContentData}
-        onStartOver={() => {
-          setProcessingStage('input')
-          setResultsData(null)
-          setOriginalContentData('')
-          setCurrentError('')
-          setShowRetryButton(false)
-        }}
-        onGenerateVariations={() => {
-          if (lastProcessedInput) {
-            handleProcessContent(lastProcessedInput)
-          }
-        }}
-      />
-    )
-  }
-  return null
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+      <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-4" />
+      <h3 className="text-lg font-semibold text-green-900 mb-2">
+        Content Ideas Generated!
+      </h3>
+      <p className="text-green-800 mb-4">
+        Successfully transformed your content into LinkedIn-ready ideas.
+      </p>
+      <button
+        onClick={() => setShowResultsModal(true)}
+        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+      >
+        View Results
+      </button>
+    </div>
+  )
 
       case 'error':
         return (
@@ -555,6 +554,7 @@ if (response.message === "Workflow was started" || response.success) {
   }
 
   return (
+  <>
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="text-center mb-8">
@@ -603,5 +603,30 @@ if (response.message === "Workflow was started" || response.success) {
         {processingStage !== 'input' && renderProcessingState()}
       </div>
     </div>
-  )
+
+    {/* Results Modal */}
+    {resultsData && (
+      <RepurposeResultsModal
+        isOpen={showResultsModal}
+        onClose={() => setShowResultsModal(false)}
+        results={resultsData}
+        originalContent={originalContentData}
+        onStartOver={() => {
+          setShowResultsModal(false)
+          setProcessingStage('input')
+          setResultsData(null)
+          setOriginalContentData('')
+          setCurrentError('')
+          setShowRetryButton(false)
+        }}
+        onGenerateVariations={() => {
+          setShowResultsModal(false)
+          if (lastProcessedInput) {
+            handleProcessContent(lastProcessedInput)
+          }
+        }}
+      />
+    )}
+  </>
+)
 }
