@@ -454,8 +454,11 @@ export default function RepurposeHub({ onIdeationComplete, onNavigateToCreate }:
               Processing Your Content
             </h3>
             <p className="text-blue-800 mb-2">
-              Marcus is analyzing your {currentType.name.toLowerCase()} and generating content ideas...
-            </p>
+  Marcus is analyzing your {currentType.name.toLowerCase()} and generating content ideas...
+</p>
+<p className="text-sm text-blue-600 mb-4">
+  ⏱ This process typically takes 1-2 minutes. Please stay on this page.
+</p>
             {currentStatus && (
               <p className="text-sm text-blue-700 italic">
                 {currentStatus}
