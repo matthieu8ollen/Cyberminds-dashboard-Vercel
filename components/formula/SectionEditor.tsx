@@ -1,8 +1,3 @@
-// ==========================================
-// SECTION EDITOR COMPONENT
-// File: components/formula/SectionEditor.tsx
-// ==========================================
-
 'use client'
 
 import { useState, useRef } from 'react'
@@ -45,6 +40,7 @@ export default function SectionEditor({
   const [isExpanded, setIsExpanded] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [showAISuggestions, setShowAISuggestions] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
 
   const updateSection = (updates: Partial<FormulaSection>) => {
@@ -276,18 +272,46 @@ export default function SectionEditor({
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Writing Guidance
-              </label>
-              <textarea
-                value={section.guidance}
-                onChange={(e) => updateSection({ guidance: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Provide guidance on how to write this section effectively..."
-              />
-            </div>
+            {/* AI Writing Suggestions - Collapsible */}
+<div className="bg-blue-50 border border-blue-200 rounded-lg">
+  <button
+    onClick={() => setShowAISuggestions(!showAISuggestions)}
+    className="w-full p-4 text-left flex items-center justify-between hover:bg-blue-100 transition"
+  >
+    <div className="flex items-center space-x-2">
+      <Lightbulb className="w-4 h-4 text-blue-600" />
+      <span className="text-sm font-medium text-blue-900">AI Writing Suggestions</span>
+    </div>
+    {showAISuggestions ? (
+      <ChevronUp className="w-4 h-4 text-blue-600" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-blue-600" />
+    )}
+  </button>
+  
+  {showAISuggestions && (
+    <div className="px-4 pb-4 border-t border-blue-200">
+      <div className="bg-white rounded-lg p-3 mt-3">
+        <div className="text-sm text-gray-700 space-y-2">
+          <p className="font-medium text-blue-900">Writing Guidance:</p>
+          <p className="text-blue-800">
+            {section.guidance || "AI suggestions will appear here based on your section type and content goals."}
+          </p>
+          
+          {/* Example suggestions - you can make these dynamic later */}
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="font-medium text-blue-900 mb-2">Quick Tips:</p>
+            <ul className="text-xs text-blue-700 space-y-1">
+              <li>• Start with a compelling hook to grab attention</li>
+              <li>• Use specific examples and data points</li>
+              <li>• End with a clear call-to-action</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
