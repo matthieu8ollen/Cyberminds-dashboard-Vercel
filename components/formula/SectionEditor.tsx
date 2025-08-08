@@ -43,6 +43,57 @@ export default function SectionEditor({
   const [showAISuggestions, setShowAISuggestions] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
 
+  const getContextualTips = (section: FormulaSection): string[] => {
+  const title = section.title.toLowerCase()
+  
+  if (title.includes('hook') || title.includes('intro') || title.includes('opening')) {
+    return [
+      'Start with a surprising statistic or counterintuitive statement',
+      'Ask a provocative question your audience is thinking',
+      'Share a brief personal anecdote that relates to the topic'
+    ]
+  }
+  
+  if (title.includes('problem') || title.includes('pain') || title.includes('challenge')) {
+    return [
+      'Be specific about the pain point - avoid generic statements',
+      'Use "you" language to make it personal and relatable',
+      'Quantify the impact when possible (time, money, stress)'
+    ]
+  }
+  
+  if (title.includes('solution') || title.includes('method') || title.includes('framework')) {
+    return [
+      'Break down complex ideas into simple, actionable steps',
+      'Use numbered lists or bullet points for clarity',
+      'Include a real example of the solution in action'
+    ]
+  }
+  
+  if (title.includes('result') || title.includes('outcome') || title.includes('conclusion')) {
+    return [
+      'Use specific metrics and measurable outcomes',
+      'Connect back to the original problem you identified',
+      'End with a clear next step or call-to-action'
+    ]
+  }
+  
+  if (title.includes('cta') || title.includes('call') || title.includes('action')) {
+    return [
+      'Make the desired action crystal clear and specific',
+      'Create urgency without being pushy',
+      'Offer value in exchange for engagement'
+    ]
+  }
+  
+  // Default tips for any section
+  return [
+    'Keep your audience engaged with conversational tone',
+    'Use specific examples rather than abstract concepts',
+    'Focus on one main idea per section'
+  ]
+}
+
   const updateSection = (updates: Partial<FormulaSection>) => {
     onChange({ ...section, ...updates })
   }
@@ -299,14 +350,14 @@ export default function SectionEditor({
           </p>
           
           {/* Example suggestions - you can make these dynamic later */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="font-medium text-blue-900 mb-2">Quick Tips:</p>
-            <ul className="text-xs text-blue-700 space-y-1">
-              <li>• Start with a compelling hook to grab attention</li>
-              <li>• Use specific examples and data points</li>
-              <li>• End with a clear call-to-action</li>
-            </ul>
-          </div>
+         <div className="mt-3 pt-3 border-t border-gray-100">
+  <p className="font-medium text-blue-900 mb-2">Smart Tips for "{section.title}":</p>
+  <ul className="text-xs text-blue-700 space-y-1">
+    {getContextualTips(section).map((tip, index) => (
+      <li key={index}>• {tip}</li>
+    ))}
+  </ul>
+</div>
         </div>
       </div>
     </div>
