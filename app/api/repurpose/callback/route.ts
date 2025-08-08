@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       session_id,
       hasData: !!responseData
     })
+    console.log('🔍 CALLBACK FULL DATA:', JSON.stringify(body, null, 2))
 
     // Optional: Update database with results
     if (responseData.content_ideas && responseData.ideation_session_id) {
