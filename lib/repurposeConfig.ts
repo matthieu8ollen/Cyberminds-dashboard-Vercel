@@ -11,10 +11,10 @@ export const REPURPOSE_CONFIG = {
   
   // Polling configuration
   POLLING: {
-    MAX_ATTEMPTS: 40,      // 40 attempts = 60 seconds max wait
-    INTERVAL_MS: 1500,     // 1.5 seconds between polls
-    FALLBACK_MESSAGE_AFTER: 26 // Show "taking longer" message after this many attempts
-  },
+  MAX_ATTEMPTS: 80,      // 80 attempts = 120 seconds max wait (2 minutes)
+  INTERVAL_MS: 1500,     // 1.5 seconds between polls
+  FALLBACK_MESSAGE_AFTER: 40 // Show "taking longer" message after 1 minute
+},
   
   // File upload limits
   FILE_LIMITS: {
