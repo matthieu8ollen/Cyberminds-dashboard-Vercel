@@ -987,8 +987,8 @@ const sendToWritersSuite = (topic: any) => {
           user.id,
           currentSession?.id || `marcus-${Date.now()}`,
           ideationOutput.topic,
-          ideationOutput.angle,
-          ideationOutput.takeaways,
+          ideationOutput.angle || '',
+          ideationOutput.takeaways || [],
           'talk_with_marcus'
         )
         console.log('💡 Idea auto-saved to library')
@@ -1000,8 +1000,8 @@ const sendToWritersSuite = (topic: any) => {
     if (onNavigateToCreate && ideationOutput.topic) {
       onNavigateToCreate('standard', {
         topic: ideationOutput.topic,
-        angle: ideationOutput.angle,
-        takeaways: ideationOutput.takeaways,
+        angle: ideationOutput.angle || '',
+        takeaways: ideationOutput.takeaways || [],
         source_page: 'talk_with_marcus',
         session_id: currentSession?.id
       })
@@ -1021,8 +1021,8 @@ const sendToWritersSuite = (topic: any) => {
     if (onNavigateToCreate && ideationOutput.topic) {
       onNavigateToCreate('power', {
         topic: ideationOutput.topic,
-        angle: ideationOutput.angle,
-        takeaways: ideationOutput.takeaways,
+        angle: ideationOutput.angle || '',
+        takeaways: ideationOutput.takeaways || [],
         source_page: 'talk_with_marcus',
         session_id: currentSession?.id
       })
