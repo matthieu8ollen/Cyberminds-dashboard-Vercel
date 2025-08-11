@@ -219,16 +219,16 @@ export interface FormulaSection {
   character_count_target?: number
 }
 
-// Fetch all content formulas with sections (foreign key constraint exists)
+// Fetch all content formulas with sections (alternative PostgREST syntax)
 export const getContentFormulas = async (userId?: string) => {
-  console.log('🔍 Fetching content_formulas with sections via foreign key...')
+  console.log('🔍 Fetching content_formulas with sections (alternative syntax)...')
   
   try {
     const { data, error } = await supabase
       .from('content_formulas')
       .select(`
         *,
-        formula_sections (*)
+        formula_sections!formula_sections_formula_id_fkey (*)
       `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
