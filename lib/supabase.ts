@@ -219,19 +219,36 @@ export interface FormulaSection {
   character_count_target?: number
 }
 
-// Fetch all content formulas with sections (alternative PostgREST syntax)
+// Fetch formulas and sections separately (no foreign key constraint exists)
 export const getContentFormulas = async (userId?: string) => {
+  console.log('🔍 Manual join - no foreign key constraint exists')
+  
   try {
-    const { data, error } = await supabase
+    // Get formulas
+    const { data: formulas, error: formulasError } = await supabase
       .from('content_formulas')
-      .select(`
-        *,
-        formula_sections!formula_id (*)
-      `)
+      .select('*')
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    return { data, error }
+    if (formulasError) return { data: null, error: formulasError }
+
+    // Get sections
+    const { data: sections, error: sectionsError } = await supabase
+      .from('formula_sections')
+      .select('*')
+      .order('section_order', { ascending: true })
+
+    if (sectionsError) return { data: null, error: sectionsError }
+
+    // Join manually
+    const result = formulas?.map(formula => ({
+      ...formula,
+      formula_sections: sections?.filter(s => s.formula_id === formula.id) || []
+    })) || []
+
+    console.log('📊 Manual join success:', result.length, 'formulas')
+    return { data: result, error: null }
   } catch (err) {
     return { data: null, error: err }
   }
