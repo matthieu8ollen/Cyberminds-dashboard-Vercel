@@ -11,7 +11,7 @@ import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
-  onBack?: () => void
+  onBack: () => void
   onComplete?: () => void
   ideationData?: {
     topic: string
@@ -23,7 +23,7 @@ interface StandardGeneratorProps {
 }
 
 export default function StandardGenerator({ onSwitchMode, onBack, onComplete, ideationData }: StandardGeneratorProps) {
-const [topic, setTopic] = useState(ideationData?.topic || '')
+  const [topic, setTopic] = useState(ideationData?.topic || '')
 const [contentType, setContentType] = useState('framework')
 const [tone, setTone] = useState('insightful_cfo')
 const [points, setPoints] = useState('5')
@@ -111,7 +111,14 @@ const [context, setContext] = useState(
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back button removed - using breadcrumb navigation instead */}
+      {/* Header */}
+      <div className="mb-8">
+        <button
+          onClick={onBack}
+          className="text-slate-600 hover:text-slate-800 mb-4 transition"
+        >
+          ← Back to Mode Selection
+        </button>
         
         <div className="flex items-center space-x-3 mb-4">
   <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg flex items-center justify-center">
