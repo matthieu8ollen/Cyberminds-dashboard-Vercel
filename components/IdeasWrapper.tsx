@@ -40,19 +40,12 @@ export default function IdeasWrapper({
 
   // Enhanced navigation handlers
   const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
-  setWorkflowState('in-creation-flow')
-  setFromLibrary(false)
-  
-  // Store ideation data in sessionStorage for cross-page transfer
-  if (ideationData) {
-    sessionStorage.setItem('ideationData', JSON.stringify(ideationData))
+    setWorkflowState('in-creation-flow')
+    setFromLibrary(false)
+    if (onNavigateToCreate) {
+      onNavigateToCreate(mode, ideationData)
+    }
   }
-  
-  // Use callback navigation (Dashboard will handle URLs)
-if (onNavigateToCreate) {
-  onNavigateToCreate(mode, ideationData)
-}
-}
 
   const handleUseInStandardMode = (idea: ContentIdea) => {
     setWorkflowState('in-creation-flow') // This will hide header
