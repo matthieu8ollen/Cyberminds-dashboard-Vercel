@@ -228,7 +228,9 @@ export default function IdeasHub({ onIdeationComplete, onNavigateToCreate, onPag
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation header removed - using breadcrumb navigation instead */}
-{false && currentPage !== 'welcome' && (
+{false && (
+  <div></div>
+)}
                 <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-white" />
                 </div>
