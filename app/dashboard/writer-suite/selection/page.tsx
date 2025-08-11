@@ -19,9 +19,6 @@ export default function WriterSuiteSelectionPage() {
           window.location.href = '/dashboard/standard-mode'
         }
       }}
-      onBack={() => {
-        window.location.href = '/dashboard/ideas/hub'
-      }}
     />
   )
 }
