@@ -219,9 +219,9 @@ export interface FormulaSection {
   character_count_target?: number
 }
 
-// Fetch all content formulas with sections
+// Fetch all content formulas with their actual sections
 export const getContentFormulas = async (userId?: string) => {
-  console.log('🔍 Attempting to fetch content_formulas with sections...')
+  console.log('🔍 Fetching content_formulas with sections...')
   
   try {
     const { data, error } = await supabase
@@ -238,9 +238,10 @@ export const getContentFormulas = async (userId?: string) => {
     
     if (error) {
       console.error('❌ Database error:', error)
+      return { data: null, error }
     }
 
-    return { data, error }
+    return { data, error: null }
   } catch (err) {
     console.error('💥 Fetch error:', err)
     return { data: null, error: err }
