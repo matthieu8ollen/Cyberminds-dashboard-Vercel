@@ -159,41 +159,64 @@ export interface IdeationOutput {
 
 export interface ContentFormula {
   id: string
-  user_id?: string
-  name: string
-  description: string
-  category: 'story' | 'data' | 'framework' | 'lead-generation' | 'hybrid'
-  difficulty: 'beginner' | 'intermediate' | 'advanced'
-  estimated_time: string
-  popularity: number
-  is_custom: boolean
-  is_public: boolean
-  usage_count: number
-  stakeholder_scores?: any
-  psychological_triggers?: any
-  cta_positions?: any
-  tags: string[]
-  version: number
-  base_formula_id?: string
+  formula_name: string
+  funnel_stage: string
+  funnel_purpose?: string
+  content_intent?: string
+  formula_category?: string
+  content_type_compatibility?: string[]
+  author_personas?: string[]
+  target_audience?: string
+  company_stage_fit?: string[]
+  industry_fit?: string[]
+  section_count: number
+  estimated_word_count?: number
+  difficulty_level?: string
+  psychological_triggers?: string[]
+  engagement_type?: string
+  effectiveness_score?: number
+  use_cases?: string[]
+  best_posting_times?: any
+  seasonal_relevance?: any
+  is_active?: boolean
+  is_premium?: boolean
+  created_by?: string
   created_at: string
   updated_at?: string
+  last_performance_update?: string
+  reusability_score?: number
+  engagement_prediction_score?: number
+  adaptation_difficulty?: string
+  primary_target_role?: string
+  complete_template?: string
+  formula_id?: string
 }
 
 export interface FormulaSection {
   id: string
   formula_id: string
-  title: string
-  description?: string
-  guidance?: string
-  placeholder?: string
-  position: number
-  is_required: boolean
-  is_custom: boolean
-  psychology_note?: string
+  section_order: number
+  section_name: string
+  section_slug?: string
+  section_purpose: string
+  section_template?: string
+  section_guidelines?: string
   word_count_target?: number
-  tone_guidance?: string
-  example_content?: string
+  word_count_min?: number
+  word_count_max?: number
+  character_limit?: number
+  is_required?: boolean
+  is_customizable?: boolean
+  template_variables?: any
+  psychological_purpose?: string
+  emotional_target?: string
+  must_contain_elements?: string[]
+  should_avoid_elements?: string[]
   created_at: string
+  updated_at?: string
+  section_strategy_explanation?: string
+  transition_to_next_section?: string
+  character_count_target?: number
 }
 
 // Fetch all content formulas
