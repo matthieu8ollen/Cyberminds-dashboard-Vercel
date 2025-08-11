@@ -4,14 +4,12 @@ import MarcusCopilot from './MarcusCopilot'
 
 interface WriterSuiteProps {
   onComplete?: (data: any) => void
-  onBack?: () => void
 }
 
-export default function WriterSuite({ onComplete, onBack }: WriterSuiteProps) {
+export default function WriterSuite({ onComplete }: WriterSuiteProps) {
   return (
     <MarcusCopilot 
       onComplete={onComplete}
-      onBack={onBack}
     />
   )
 }
