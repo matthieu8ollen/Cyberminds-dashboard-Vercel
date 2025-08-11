@@ -17,10 +17,6 @@ export default function MarcusModePage() {
         // Navigate to production pipeline
         window.location.href = '/dashboard/production'
       }}
-      onBack={() => {
-        // Return to mode selection
-        window.location.href = '/dashboard/writer-suite/selection'
-      }}
     />
   )
 }
