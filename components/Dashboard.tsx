@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('ideas')
-  const [inStandardMode, setInStandardMode] = useState(false)
+const [inStandardMode, setInStandardMode] = useState(false)
   const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -89,6 +89,7 @@ export default function Dashboard() {
   const [ideasActiveTab, setIdeasActiveTab] = useState<'hub' | 'library'>('hub')
   const [ideasWorkflowState, setIdeasWorkflowState] = useState<'top-level' | 'in-ideation-subpage' | 'in-creation-flow'>('top-level')
 
+
   // Form Data
   const [formData, setFormData] = useState({
     topic: '',
@@ -96,88 +97,6 @@ export default function Dashboard() {
     tone: (profile?.preferred_tone || 'insightful_cfo') as ToneType,
     context: ''
   })
-
-  // URL Navigation - Update URL when page changes
-  useEffect(() => {
-    const updateURL = () => {
-      let newPath = '/dashboard/ideas/hub' // default
-      
-      switch (activePage) {
-        case 'ideas':
-          newPath = `/dashboard/ideas/${ideasActiveTab}`
-          break
-        case 'writer-suite':
-          newPath = `/dashboard/writer-suite/${writerSuiteMode}`
-          break
-        case 'standard':
-          newPath = '/dashboard/standard-mode'
-          break
-        case 'production':
-          newPath = '/dashboard/production'
-          break
-        case 'plan':
-          newPath = '/dashboard/plan'
-          break
-        case 'analytics':
-          newPath = '/dashboard/analytics'
-          break
-        case 'images':
-          newPath = '/dashboard/images'
-          break
-        case 'settings':
-          newPath = '/dashboard/settings'
-          break
-        case 'feed':
-          newPath = '/dashboard/feed'
-          break
-      }
-      
-      if (window.location.pathname !== newPath) {
-        window.history.pushState({}, '', newPath)
-      }
-    }
-    
-    updateURL()
-  }, [activePage, ideasActiveTab, writerSuiteMode])
-
-  // Browser back/forward support
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname
-      
-      if (path.includes('/ideas/hub')) {
-        setActivePage('ideas')
-        setIdeasActiveTab('hub')
-      } else if (path.includes('/ideas/library')) {
-        setActivePage('ideas')
-        setIdeasActiveTab('library')
-      } else if (path.includes('/writer-suite/selection')) {
-        setActivePage('writer-suite')
-        setWriterSuiteMode('selection')
-      } else if (path.includes('/writer-suite/marcus')) {
-        setActivePage('writer-suite')
-        setWriterSuiteMode('marcus')
-      } else if (path.includes('/standard-mode')) {
-        setActivePage('standard')
-        setInStandardMode(true)
-      } else if (path.includes('/production')) {
-        setActivePage('production')
-      } else if (path.includes('/plan')) {
-        setActivePage('plan')
-      } else if (path.includes('/analytics')) {
-        setActivePage('analytics')
-      } else if (path.includes('/images')) {
-        setActivePage('images')
-      } else if (path.includes('/settings')) {
-        setActivePage('settings')
-      } else if (path.includes('/feed')) {
-        setActivePage('feed')
-      }
-    }
-    
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
 
   // Effects
   useEffect(() => {
@@ -192,11 +111,11 @@ export default function Dashboard() {
   }, [profile])
 
   // Load ideation data from workflow if available
-  useEffect(() => {
-    if (workflowIdeationData) {
-      setIdeationData(workflowIdeationData)
-    }
-  }, [workflowIdeationData])
+useEffect(() => {
+  if (workflowIdeationData) {
+    setIdeationData(workflowIdeationData)
+  }
+}, [workflowIdeationData])
 
   // Click outside handler for profile menu
   useEffect(() => {
@@ -227,16 +146,17 @@ export default function Dashboard() {
   }
 
   // Content Generation Functions
-  const handleWriteFromIdea = (idea: ContentIdea) => {
-    setFormData(prev => ({
-      ...prev,
-      topic: idea.title,
-      context: idea.description || ''
-    }))
-    setSelectedIdea(idea)
-    setActivePage('writer-suite')
-    setWriterSuiteMode('selection')
-  }
+ const handleWriteFromIdea = (idea: ContentIdea) => {
+  // Open Writer Suite with pre-filled topic for mode selection
+  setFormData(prev => ({
+    ...prev,
+    topic: idea.title,
+    context: idea.description || ''
+  }))
+  setSelectedIdea(idea)
+  setActivePage('writer-suite')
+  setWriterSuiteMode('selection')
+}
 
   const handleGenerate = async () => {
     if (!formData.topic.trim()) return
@@ -471,31 +391,31 @@ export default function Dashboard() {
   ]
 
   const getNavigationItems = () => {
-    const baseItems = [
-      { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
-      { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
-      { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
-      { id: 'images' as ActivePage, label: 'Images', icon: Camera },
-      { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
-      { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
-      { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
-    ]
+  const baseItems = [
+    { id: 'writer-suite' as ActivePage, label: 'Writer Suite', icon: Sparkles, premium: true },
+    { id: 'ideas' as ActivePage, label: 'Ideas', icon: Lightbulb },
+    { id: 'images' as ActivePage, label: 'Images', icon: Camera },
+    { id: 'production' as ActivePage, label: 'Production', icon: BarChart3 },
+    { id: 'plan' as ActivePage, label: 'Plan', icon: Calendar },
+    { id: 'analytics' as ActivePage, label: 'Analytics', icon: BarChart },
+    { id: 'feed' as ActivePage, label: 'Feed', icon: Rss }
+  ]
 
-    // Inject Standard Mode after Writer Suite when active
-    if (inStandardMode) {
-      const writerSuiteIndex = baseItems.findIndex(item => item.id === 'writer-suite')
-      baseItems.splice(writerSuiteIndex + 1, 0, {
-        id: 'standard' as ActivePage,
-        label: 'Standard Mode',
-        icon: Zap,
-        premium: false
-      })
-    }
-
-    return baseItems
+  // Inject Standard Mode after Writer Suite when active
+  if (inStandardMode) {
+    const writerSuiteIndex = baseItems.findIndex(item => item.id === 'writer-suite')
+    baseItems.splice(writerSuiteIndex + 1, 0, {
+      id: 'standard' as ActivePage,
+      label: 'Standard Mode',
+      icon: Zap,
+      premium: false
+    })
   }
 
-  const navigationItems = getNavigationItems()
+  return baseItems
+}
+
+const navigationItems = getNavigationItems()
 
   // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
@@ -510,111 +430,122 @@ export default function Dashboard() {
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
   // Ideas Tab Logic
-  const shouldShowIdeasTab = () => {
-    return activePage === 'ideas'
-  }
+const shouldShowIdeasTab = () => {
+  return activePage === 'ideas'
+}
 
-  const getVisibleIdeasTab = () => {
-    if (ideasWorkflowState === 'in-creation-flow') return ['library']
-    return ['hub', 'library']
-  }
+const getVisibleIdeasTab = () => {
+  if (ideasWorkflowState === 'in-creation-flow') return ['library']
+  return ['hub', 'library']
+}
 
   // Page Content Rendering
   const renderPageContent = () => {
     switch (activePage) {
       case 'ideas':
-        return <IdeasWrapper 
-          activeTab={ideasActiveTab}
-          onTabChange={(tab) => setIdeasActiveTab(tab)}
-          onNavigateToCreate={(mode, ideationData) => {
-            setIdeationData(ideationData)
-            
-            if (mode === 'power') {
-              setActivePage('writer-suite')
-              setWriterSuiteMode('selection')
-            } else if (mode === 'standard') {
-              setInStandardMode(true)
-              setActivePage('standard')
-            }
-          }}
-          onUseInStandardMode={(idea) => {
-            setIdeaFromLibrary(idea)
-            
-            const ideationData = {
-              topic: idea.title,
-              angle: idea.description || '',
-              takeaways: idea.tags || [],
-              source_page: 'idea_library'
-            }
-            setIdeationData(ideationData)
-            
+return <IdeasWrapper 
+  activeTab={ideasActiveTab}
+  onTabChange={(tab) => setIdeasActiveTab(tab)}
+  onNavigateToCreate={(mode, ideationData) => {
+    setIdeationData(ideationData)
+    
+    if (mode === 'power') {
+      setActivePage('writer-suite')
+      setWriterSuiteMode('selection')
+    } else if (mode === 'standard') {
+      setInStandardMode(true)
+      setActivePage('standard')
+    }
+  }}
+  onUseInStandardMode={(idea) => {
+    setIdeaFromLibrary(idea)
+    
+    // Convert idea to ideationData format
+    const ideationData = {
+      topic: idea.title,
+      angle: idea.description || '',
+      takeaways: idea.tags || [],
+      source_page: 'idea_library'
+    }
+    setIdeationData(ideationData)
+    
+    setInStandardMode(true)
+    setActivePage('standard')
+  }}
+  onUseInWriterSuite={(idea) => {
+    setIdeaFromLibrary(idea)
+    
+    // Convert idea to ideationData format  
+    const ideationData = {
+      topic: idea.title,
+      angle: idea.description || '',
+      takeaways: idea.tags || [],
+      source_page: 'idea_library'
+    }
+    setIdeationData(ideationData)
+    
+    setActivePage('writer-suite')
+    setWriterSuiteMode('selection')
+  }}
+  onWorkflowStateChange={(state) => {
+    setIdeasWorkflowState(state)
+  }}
+/>
+      
+      case 'writer-suite':
+  if (writerSuiteMode === 'selection') {
+    return (
+      <WriterSuiteSelection
+        onModeSelect={(mode) => {
+          if (mode === 'writer-suite') {
+            // Enter Marcus mode within Writer Suite
+            setWriterSuiteMode('marcus')
+          } else if (mode === 'standard') {
+            // Enter Standard Mode
             setInStandardMode(true)
             setActivePage('standard')
-          }}
-          onUseInWriterSuite={(idea) => {
-            setIdeaFromLibrary(idea)
-            
-            const ideationData = {
-              topic: idea.title,
-              angle: idea.description || '',
-              takeaways: idea.tags || [],
-              source_page: 'idea_library'
-            }
-            setIdeationData(ideationData)
-            
-            setActivePage('writer-suite')
-            setWriterSuiteMode('selection')
-          }}
-          onWorkflowStateChange={(state) => {
-            setIdeasWorkflowState(state)
-          }}
-        />
-        
-      case 'writer-suite':
-        if (writerSuiteMode === 'selection') {
-          return (
-            <WriterSuiteSelection
-              onModeSelect={(mode) => {
-                if (mode === 'writer-suite') {
-                  setWriterSuiteMode('marcus')
-                } else if (mode === 'standard') {
-                  setInStandardMode(true)
-                  setActivePage('standard')
-                }
-              }}
-            />
-          )
-        } else {
-          return (
-            <WriterSuite 
-              onComplete={(data) => {
-                console.log('Writer Suite completed:', data)
-                setWriterSuiteMode('selection')
-              }}
-            />
-          )
-        }
+          }
+        }}
+      />
+    )
+  } else {
+    // Show Marcus mode
+    return (
+      <WriterSuite 
+        onComplete={(data) => {
+          console.log('Writer Suite completed:', data)
+          // Reset back to selection after completion
+          setWriterSuiteMode('selection')
+        }}
+        onBack={() => {
+          // Return to mode selection
+          setWriterSuiteMode('selection')
+        }}
+      />
+    )
+  }
 
-      case 'standard':
-        return (
-          <StandardGenerator
-            onSwitchMode={(mode) => {
-              if (mode === 'power') {
-                setInStandardMode(false)
-                setActivePage('writer-suite')
-              }
-            }}
-            onBack={() => {
-              setInStandardMode(false)
-              setActivePage('ideas')
-            }}
-            onComplete={() => {
-              setInStandardMode(false)
-              setActivePage('production')
-            }}
-            ideationData={ideationData}
-          />
-        )
+        case 'standard':
+  return (
+    <StandardGenerator
+      onSwitchMode={(mode) => {
+        if (mode === 'power') {
+          setInStandardMode(false)
+          setActivePage('writer-suite')
+        }
+      }}
+      onBack={() => {
+        setInStandardMode(false)
+        setActivePage('writer-suite')
+      }}
+      onComplete={() => {
+        // Standard mode work completed - return to normal sidebar
+        setInStandardMode(false)
+        setActivePage('production')
+      }}
+      ideationData={ideationData}
+    />
+  )
         
       case 'production':
         return <ProductionPipeline />
@@ -625,8 +556,8 @@ export default function Dashboard() {
       case 'settings':
         return <SettingsPage />
 
-      case 'images':
-        return <ImageGeneration />
+        case 'images':
+  return <ImageGeneration />
       
       case 'analytics':
         return (
@@ -688,75 +619,79 @@ export default function Dashboard() {
         )
       
       default:
-        return (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Sparkles className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Writer Suite</h2>
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                Your AI-powered LinkedIn content creation platform. Start with an idea or jump straight to creation.
-              </p>
-              
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
-                <button
-                  onClick={() => setActivePage('ideas')}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
-                >
-                  <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-200 transition-colors">
-                    <Lightbulb className="w-6 h-6 text-teal-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Start with Ideas</h3>
-                  <p className="text-sm text-gray-600">Develop topics with Marcus</p>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setInStandardMode(true)
-                    setActivePage('standard')
-                  }}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
-                >
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-                    <Zap className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Standard Mode</h3>
-                  <p className="text-sm text-gray-600">Quick customization</p>
-                </button>
-                
-                <button
-                  onClick={() => setActivePage('writer-suite')}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition-all duration-200 group"
-                >
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
-                    <Sparkles className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Writer Suite</h3>
-                  <p className="text-sm text-gray-600">Comprehensive process</p>
-                </button>
-                
-                <button
-                  onClick={() => setActivePage('production')}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-green-500 hover:shadow-lg transition-all duration-200 group"
-                >
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-                    <BarChart3 className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">View Pipeline</h3>
-                  <p className="text-sm text-gray-600">Manage your content</p>
-                </button>
-              </div>
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Welcome Dashboard */}
+      <div className="text-center py-12">
+        <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <Sparkles className="w-10 h-10 text-white" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Writer Suite</h2>
+        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          Your AI-powered LinkedIn content creation platform. Start with an idea or jump straight to creation.
+        </p>
+        
+        {/* Quick Start Options */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
+          <button
+            onClick={() => setActivePage('ideas')}
+            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-teal-500 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-200 transition-colors">
+              <Lightbulb className="w-6 h-6 text-teal-600" />
             </div>
-          </div>
-        )
+            <h3 className="font-semibold text-gray-900 mb-2">Start with Ideas</h3>
+            <p className="text-sm text-gray-600">Develop topics with Marcus</p>
+          </button>
+          
+          <button
+  onClick={() => {
+    setInStandardMode(true)
+    setActivePage('standard')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
+>
+  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+    <Zap className="w-6 h-6 text-blue-600" />
+  </div>
+  <h3 className="font-semibold text-gray-900 mb-2">Standard Mode</h3>
+  <p className="text-sm text-gray-600">Quick customization</p>
+</button>
+          
+          <button
+            onClick={() => setActivePage('writer-suite')}
+            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+              <Sparkles className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Writer Suite</h3>
+            <p className="text-sm text-gray-600">Comprehensive process</p>
+          </button>
+          
+          <button
+            onClick={() => setActivePage('production')}
+            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-green-500 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
+              <BarChart3 className="w-6 h-6 text-green-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">View Pipeline</h3>
+            <p className="text-sm text-gray-600">Manage your content</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <nav 
-        className={`bg-slate-800 min-h-screen flex flex-col transition-all duration-300 ease-in-out ${
+  <div className="min-h-screen bg-gray-50 flex">
+
+    {/* Premium Left Sidebar */}
+    <nav 
+        className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
           sidebarExpanded ? 'w-60' : 'w-16'
         }`}
         onMouseEnter={() => setSidebarExpanded(true)}
@@ -788,23 +723,23 @@ export default function Dashboard() {
                   <button
                     onClick={() => setActivePage(item.id)}
                     className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
-                      sidebarExpanded ? 'space-x-3' : 'justify-center'
-                    } ${
-                      isActive
-                        ? item.id === 'standard' 
-                          ? 'bg-blue-600 text-white shadow-lg' 
-                          : 'bg-slate-700 text-white shadow-lg'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
+  sidebarExpanded ? 'space-x-3' : 'justify-center'
+} ${
+  isActive
+    ? item.id === 'standard' 
+      ? 'bg-blue-600 text-white shadow-lg' 
+      : 'bg-slate-700 text-white shadow-lg'
+    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+}`}
                   >
                     {/* Active indicator */}
                     {isActive && (
-                      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full ${
-                        item.id === 'standard' 
-                          ? 'bg-gradient-to-b from-blue-400 to-blue-600'
-                          : 'bg-gradient-to-b from-teal-400 to-teal-600'
-                      }`}></div>
-                    )}
+  <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full ${
+    item.id === 'standard' 
+      ? 'bg-gradient-to-b from-blue-400 to-blue-600'
+      : 'bg-gradient-to-b from-teal-400 to-teal-600'
+  }`}></div>
+)}
                     
                     <Icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
                       isActive ? 'text-teal-400' : 'group-hover:scale-110'
@@ -945,6 +880,9 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
+   {/* Removed empty header to save space */}
+
+        {/* Page Content */}
         <main>
           {renderPageContent()}
         </main>
