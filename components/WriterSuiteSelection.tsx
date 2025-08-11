@@ -46,7 +46,6 @@ const modes: WriterSuiteModeConfig[] = [
 
 interface WriterSuiteSelectionProps {
   onModeSelect: (mode: 'writer-suite' | 'standard') => void
-  onBack?: () => void
 }
 
 export default function WriterSuiteSelection({ onModeSelect, onBack }: WriterSuiteSelectionProps) {
@@ -122,18 +121,6 @@ export default function WriterSuiteSelection({ onModeSelect, onBack }: WriterSui
           )
         })}
       </div>
-
-      {/* Back Button */}
-      {onBack && (
-        <div className="text-center mt-12">
-          <button
-            onClick={onBack}
-            className="text-gray-600 hover:text-gray-800 transition"
-          >
-            ← Back to Ideas
-          </button>
-        </div>
-      )}
     </div>
   )
 }
