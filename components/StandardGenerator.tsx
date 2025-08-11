@@ -110,14 +110,7 @@ const [context, setContext] = useState(
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <button
-          onClick={() => window.history.back()}
-className="text-slate-600 hover:text-slate-800 mb-4 transition"
->
-← Back to Previous Page
-        </button>
+      {/* Back button removed - using breadcrumb navigation instead */}
         
         <div className="flex items-center space-x-3 mb-4">
   <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-gray-600 rounded-lg flex items-center justify-center">
