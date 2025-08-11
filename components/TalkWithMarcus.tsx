@@ -49,7 +49,6 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
       return false
     }
   }
-  const { user } = useAuth()
   const { startIdeation } = useWorkflow()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
