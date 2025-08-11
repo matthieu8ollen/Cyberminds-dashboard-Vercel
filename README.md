@@ -33,8 +33,8 @@ Professional LinkedIn content creation platform powered by AI.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/cyberminds-dashboard.git
-   cd cyberminds-dashboard
+   git clone https://github.com/your-username/writer-suite-dashboard.git
+cd writer-suite-dashboard
    ```
 
 2. **Install dependencies**
@@ -126,4 +126,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Support
 
-For support, email support@cyberminds.com or join our Slack channel.
+For support, email support@writersuite.io or join our community.
