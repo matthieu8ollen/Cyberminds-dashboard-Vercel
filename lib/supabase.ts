@@ -221,23 +221,18 @@ export interface FormulaSection {
 
 // Fetch all content formulas with sections (alternative PostgREST syntax)
 export const getContentFormulas = async (userId?: string) => {
-  console.log('🔍 Fetching content_formulas with sections (alternative syntax)...')
-  
   try {
     const { data, error } = await supabase
       .from('content_formulas')
       .select(`
         *,
-        formula_sections!formula_sections_formula_id_fkey (*)
+        formula_sections!formula_id (*)
       `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    console.log('📊 Query result:', { data: !!data, error, recordCount: data?.length })
-    
     return { data, error }
   } catch (err) {
-    console.error('💥 Fetch error:', err)
     return { data: null, error: err }
   }
 }
