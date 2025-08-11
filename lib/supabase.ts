@@ -483,6 +483,52 @@ export const getContentIdeas = async (userId: string, limit: number = 20) => {
   return { data, error }
 }
 
+// Update idea status (for dismiss functionality)
+export const updateContentIdea = async (ideaId: string, updates: Partial<ContentIdea>) => {
+  const { data, error } = await supabase
+    .from('content_ideas')
+    .update(updates)
+    .eq('id', ideaId)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+// Auto-save idea from ideation sessions
+export const saveIdeaFromSession = async (
+  userId: string,
+  sessionId: string,
+  topic: string,
+  angle: string,
+  takeaways: string[],
+  sourcePage: string
+) => {
+  const idea: Omit<ContentIdea, 'id' | 'created_at'> = {
+    user_id: userId,
+    title: topic,
+    description: angle,
+    tags: takeaways,
+    content_pillar: 'ai_generated',
+    source_type: 'ai_generated',
+    source_data: { session_id: sessionId, source_page: sourcePage },
+    status: 'active'
+  }
+  
+  return await createContentIdea(idea)
+}
+
+// Get ideas count for 100-limit enforcement
+export const getActiveIdeasCount = async (userId: string) => {
+  const { count, error } = await supabase
+    .from('content_ideas')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('status', 'active')
+  
+  return { count, error }
+}
+
 export const scheduleContent = async (schedule: Omit<ContentCalendar, 'id' | 'created_at'>) => {
   const { data, error } = await supabase
     .from('content_calendar')
