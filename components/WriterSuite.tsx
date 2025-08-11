@@ -11,6 +11,7 @@ export default function WriterSuite({ onComplete, onBack }: WriterSuiteProps) {
   return (
     <MarcusCopilot 
       onComplete={onComplete}
+      onBack={onBack}
     />
   )
 }
