@@ -16,6 +16,12 @@ import type {
 import { getContentFormulas, saveContentFormula, updateContentFormula, deleteContentFormula, type ContentFormula, type FormulaSection } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 
+interface ContentFormulasProps {
+  onBack: () => void
+  onCreateFormula?: (baseFormula?: EnhancedContentFormula) => void
+  onUseFormula?: (formula: EnhancedContentFormula) => void
+}
+
 // Conversion function from database format to component format
 const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
   return {
@@ -197,17 +203,6 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   const handleCreateFormula = (baseFormula?: EnhancedContentFormula) => {
     setBuilderFormula(baseFormula || null)
     setViewMode('builder')
-  }
-
-  const handleSaveFormula = async (formula: EnhancedContentFormula) => {
-    // TODO: Backend integration - save formula
-    console.log('Saving formula:', formula)
-    
-    // For now, just go back to gallery
-    setViewMode('gallery')
-    setBuilderFormula(null)
-    
-    // In real implementation, update the custom formulas list
   }
 
   const handleCancelBuilder = () => {
@@ -435,7 +430,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Built-in Formulas ({BUILTIN_FORMULAS.length})
+            Built-in Formulas ({builtinFormulas.length})
           </button>
           <button
             onClick={() => setActiveTab('custom')}
@@ -445,7 +440,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            My Custom Formulas ({CUSTOM_FORMULAS.length})
+            My Custom Formulas ({customFormulas.length})
           </button>
         </div>
 
