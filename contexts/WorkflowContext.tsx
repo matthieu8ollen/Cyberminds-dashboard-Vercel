@@ -55,6 +55,14 @@ export const WorkflowProvider: React.FC<WorkflowProviderProps> = ({ children }) 
     }
   }, [user])
 
+  // Setup auto-save when workflow is active
+useEffect(() => {
+  if (workflowState) {
+    const cleanup = setupAutoSave()
+    return cleanup
+  }
+}, [workflowState])
+
   const startIdeation = async (ideation: IdeationOutput) => {
     if (!user) return
 
@@ -168,24 +176,35 @@ export const WorkflowProvider: React.FC<WorkflowProviderProps> = ({ children }) 
   }
 
   const saveProgress = async (stageData: any) => {
-    if (!user || !workflowState) return
+  if (!user || !workflowState) return
 
-    try {
-      const { data } = await updateWorkflowState(workflowState.id, {
-        stage_data: { 
-          ...workflowState.stage_data,
-          ...stageData,
-          lastAutoSave: new Date().toISOString()
-        }
-      })
-
-      if (data) {
-        setWorkflowState(data)
+  try {
+    const { data } = await updateWorkflowState(workflowState.id, {
+      stage_data: { 
+        ...workflowState.stage_data,
+        ...stageData,
+        lastAutoSave: new Date().toISOString()
       }
-    } catch (error) {
-      console.error('Error saving progress:', error)
+    })
+
+    if (data) {
+      setWorkflowState(data)
     }
+  } catch (error) {
+    console.error('Error saving progress:', error)
   }
+}
+
+// Auto-save every 30 seconds
+const setupAutoSave = () => {
+  const interval = setInterval(() => {
+    if (workflowState && currentStage !== 'ideas') {
+      saveProgress({ autoSave: true })
+    }
+  }, 30000) // 30 seconds
+
+  return () => clearInterval(interval)
+}
 
   const loadUserProgress = async () => {
     if (!user) return
