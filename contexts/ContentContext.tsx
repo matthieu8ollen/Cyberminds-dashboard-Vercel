@@ -121,7 +121,6 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   
   return null
 }
-  }
 
   const updateContent = async (id: string, updates: Partial<GeneratedContent>) => {
     try {
