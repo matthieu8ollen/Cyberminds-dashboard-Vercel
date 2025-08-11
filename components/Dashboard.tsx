@@ -72,16 +72,17 @@ export default function Dashboard() {
   const showProfileMenu = profileMenuHoverActive || profileMenuClickActive
 
   // Page and Content States
-  import { usePathname } from 'next/navigation'
+  'use client'
+import { useRouter } from 'next/router'
 
 // Inside the component, after other hooks:
-const pathname = usePathname()
+const router = useRouter()
 
 const getActivePageFromPath = (): ActivePage => {
-  if (pathname?.includes('/ideas')) return 'ideas'
-  if (pathname?.includes('/writer-suite')) return 'writer-suite'
-  if (pathname?.includes('/standard-mode')) return 'standard'
-  if (pathname?.includes('/production')) return 'production'
+  if (router.pathname?.includes('/ideas')) return 'ideas'
+  if (router.pathname?.includes('/writer-suite')) return 'writer-suite'
+  if (router.pathname?.includes('/standard-mode')) return 'standard'
+  if (router.pathname?.includes('/production')) return 'production'
   return 'ideas'
 }
 
