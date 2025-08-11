@@ -40,12 +40,21 @@ export default function IdeasWrapper({
 
   // Enhanced navigation handlers
   const handleNavigateToCreate = (mode: 'standard' | 'power', ideationData: any) => {
-    setWorkflowState('in-creation-flow')
-    setFromLibrary(false)
-    if (onNavigateToCreate) {
-      onNavigateToCreate(mode, ideationData)
-    }
+  setWorkflowState('in-creation-flow')
+  setFromLibrary(false)
+  
+  // Store ideation data in sessionStorage for cross-page transfer
+  if (ideationData) {
+    sessionStorage.setItem('ideationData', JSON.stringify(ideationData))
   }
+  
+  // Navigate using URLs
+  if (mode === 'power') {
+    window.location.href = '/dashboard/writer-suite/selection'
+  } else {
+    window.location.href = '/dashboard/standard-mode'
+  }
+}
 
   const handleUseInStandardMode = (idea: ContentIdea) => {
     setWorkflowState('in-creation-flow') // This will hide header
