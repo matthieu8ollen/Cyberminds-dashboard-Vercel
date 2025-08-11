@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { saveIdeaFromSession } from '../lib/supabase'
 import { User, ArrowRight, Send, Lightbulb, Target, TrendingUp } from 'lucide-react'
 import { createContentIdea } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -26,6 +28,7 @@ interface TalkWithMarcusProps {
 
 export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps) {
   const { user } = useAuth()
+  const [messages, setMessages] = useState<Message[]>([
   
   const saveIdeaToLibrary = async (title: string, description: string, tags: string[]) => {
     if (!user) return false
@@ -979,7 +982,24 @@ const sendToWritersSuite = (topic: any) => {
           <div className="grid gap-3 md:grid-cols-3">
 
 <button 
-  onClick={() => {
+  onClick={async () => {
+    // Auto-save idea to library
+    if (user && ideationOutput.topic) {
+      try {
+        await saveIdeaFromSession(
+          user.id,
+          currentSession?.id || `marcus-${Date.now()}`,
+          ideationOutput.topic,
+          ideationOutput.angle,
+          ideationOutput.takeaways,
+          'talk_with_marcus'
+        )
+        console.log('💡 Idea auto-saved to library')
+      } catch (error) {
+        console.error('Error auto-saving idea:', error)
+      }
+    }
+    
     if (onNavigateToCreate && ideationOutput.topic) {
       onNavigateToCreate('standard', {
         topic: ideationOutput.topic,
