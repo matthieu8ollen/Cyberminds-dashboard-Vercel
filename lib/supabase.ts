@@ -221,23 +221,14 @@ export interface FormulaSection {
 
 // Fetch all content formulas
 export const getContentFormulas = async (userId?: string) => {
-  let query = supabase
+  const { data, error } = await supabase
     .from('content_formulas')
     .select(`
       *,
       formula_sections (*)
     `)
+    .eq('is_active', true)
     .order('created_at', { ascending: false })
-
-  // If userId provided, fetch both public and user's custom formulas
-  if (userId) {
-    query = query.or(`is_public.eq.true,user_id.eq.${userId}`)
-  } else {
-    // If no userId, only fetch public formulas
-    query = query.eq('is_public', true)
-  }
-
-  const { data, error } = await query
 
   return { data, error }
 }
