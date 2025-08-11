@@ -219,47 +219,23 @@ export interface FormulaSection {
   character_count_target?: number
 }
 
-// Fetch formulas and sections separately, then join manually
+// Fetch all content formulas with sections (foreign key constraint exists)
 export const getContentFormulas = async (userId?: string) => {
-  console.log('🔍 Fetching formulas and sections separately...')
+  console.log('🔍 Fetching content_formulas with sections via foreign key...')
   
   try {
-    // Get formulas first
-    const { data: formulas, error: formulasError } = await supabase
+    const { data, error } = await supabase
       .from('content_formulas')
-      .select('*')
+      .select(`
+        *,
+        formula_sections (*)
+      `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
-      .limit(10)
 
-    if (formulasError) {
-      console.error('❌ Formulas error:', formulasError)
-      return { data: null, error: formulasError }
-    }
-
-    // Get all sections
-    const { data: sections, error: sectionsError } = await supabase
-      .from('formula_sections')
-      .select('*')
-      .order('section_order', { ascending: true })
-
-    if (sectionsError) {
-      console.error('❌ Sections error:', sectionsError)
-      return { data: null, error: sectionsError }
-    }
-
-    // Manually join the data
-    const formulasWithSections = formulas?.map(formula => ({
-      ...formula,
-      formula_sections: sections?.filter(section => section.formula_id === formula.id) || []
-    })) || []
-
-    console.log('📊 Manual join result:', { 
-      formulaCount: formulasWithSections.length,
-      totalSections: sections?.length || 0
-    })
+    console.log('📊 Query result:', { data: !!data, error, recordCount: data?.length })
     
-    return { data: formulasWithSections, error: null }
+    return { data, error }
   } catch (err) {
     console.error('💥 Fetch error:', err)
     return { data: null, error: err }
