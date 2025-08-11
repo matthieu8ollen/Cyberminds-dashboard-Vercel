@@ -56,12 +56,7 @@ function MainApp() {
   return <OnboardingWizard onComplete={handleOnboardingComplete} />
 }
 
-// Redirect authenticated users to dashboard
-if (user) {
-  redirect('/dashboard/ideas/hub')
-}
-
-return <Login />
+return <Dashboard />
 }
 
 export default function Home() {
