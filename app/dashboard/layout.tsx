@@ -1,7 +1,7 @@
 'use client'
 
 import { AuthProvider } from '../../contexts/AuthContext'
-import { ContentProvider } from '../../contexts/ContentProvider'
+import { ContentProvider } from '../../contexts/ContentContext'
 import { WorkflowProvider } from '../../contexts/WorkflowContext'
 import { ToastProvider } from '../../components/ToastNotifications'
 import BreadcrumbNavigation from '../../components/BreadcrumbNavigation'
