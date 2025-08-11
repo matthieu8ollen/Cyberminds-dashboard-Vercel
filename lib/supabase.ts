@@ -153,6 +153,190 @@ export interface IdeationOutput {
   session_id: string
 }
 
+// ========================================
+// CONTENT FORMULAS INTERFACES & FUNCTIONS
+// ========================================
+
+export interface ContentFormula {
+  id: string
+  user_id?: string
+  name: string
+  description: string
+  category: 'story' | 'data' | 'framework' | 'lead-generation' | 'hybrid'
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  estimated_time: string
+  popularity: number
+  is_custom: boolean
+  is_public: boolean
+  usage_count: number
+  stakeholder_scores?: any
+  psychological_triggers?: any
+  cta_positions?: any
+  tags: string[]
+  version: number
+  base_formula_id?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface FormulaSection {
+  id: string
+  formula_id: string
+  title: string
+  description?: string
+  guidance?: string
+  placeholder?: string
+  position: number
+  is_required: boolean
+  is_custom: boolean
+  psychology_note?: string
+  word_count_target?: number
+  tone_guidance?: string
+  example_content?: string
+  created_at: string
+}
+
+// Fetch all content formulas
+export const getContentFormulas = async (userId?: string) => {
+  let query = supabase
+    .from('content_formulas')
+    .select(`
+      *,
+      formula_sections (*)
+    `)
+    .order('created_at', { ascending: false })
+
+  // If userId provided, fetch both public and user's custom formulas
+  if (userId) {
+    query = query.or(`is_public.eq.true,user_id.eq.${userId}`)
+  } else {
+    // If no userId, only fetch public formulas
+    query = query.eq('is_public', true)
+  }
+
+  const { data, error } = await query
+
+  return { data, error }
+}
+
+// Fetch formula by ID with sections
+export const getFormulaById = async (formulaId: string) => {
+  const { data, error } = await supabase
+    .from('content_formulas')
+    .select(`
+      *,
+      formula_sections (*)
+    `)
+    .eq('id', formulaId)
+    .single()
+
+  return { data, error }
+}
+
+// Save new custom formula
+export const saveContentFormula = async (formula: Omit<ContentFormula, 'id' | 'created_at' | 'updated_at'>, sections: Omit<FormulaSection, 'id' | 'formula_id' | 'created_at'>[]) => {
+  try {
+    // Insert formula
+    const { data: formulaData, error: formulaError } = await supabase
+      .from('content_formulas')
+      .insert(formula)
+      .select()
+      .single()
+
+    if (formulaError) throw formulaError
+
+    // Insert sections
+    const sectionsToInsert = sections.map(section => ({
+      ...section,
+      formula_id: formulaData.id
+    }))
+
+    const { data: sectionsData, error: sectionsError } = await supabase
+      .from('formula_sections')
+      .insert(sectionsToInsert)
+      .select()
+
+    if (sectionsError) throw sectionsError
+
+    return { 
+      data: { 
+        ...formulaData, 
+        formula_sections: sectionsData 
+      }, 
+      error: null 
+    }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+// Update existing formula
+export const updateContentFormula = async (formulaId: string, updates: Partial<ContentFormula>, sections?: Omit<FormulaSection, 'id' | 'formula_id' | 'created_at'>[]) => {
+  try {
+    // Update formula
+    const { data: formulaData, error: formulaError } = await supabase
+      .from('content_formulas')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', formulaId)
+      .select()
+      .single()
+
+    if (formulaError) throw formulaError
+
+    // If sections provided, replace all sections
+    if (sections) {
+      // Delete existing sections
+      await supabase
+        .from('formula_sections')
+        .delete()
+        .eq('formula_id', formulaId)
+
+      // Insert new sections
+      const sectionsToInsert = sections.map(section => ({
+        ...section,
+        formula_id: formulaId
+      }))
+
+      const { data: sectionsData, error: sectionsError } = await supabase
+        .from('formula_sections')
+        .insert(sectionsToInsert)
+        .select()
+
+      if (sectionsError) throw sectionsError
+
+      return { 
+        data: { 
+          ...formulaData, 
+          formula_sections: sectionsData 
+        }, 
+        error: null 
+      }
+    }
+
+    return { data: formulaData, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+// Delete formula and its sections
+export const deleteContentFormula = async (formulaId: string) => {
+  const { error } = await supabase
+    .from('content_formulas')
+    .delete()
+    .eq('id', formulaId)
+
+  return { error }
+}
+
+// Update formula usage count
+export const incrementFormulaUsage = async (formulaId: string) => {
+  const { error } = await supabase
+    .rpc('increment_formula_usage', { formula_id: formulaId })
+
+  return { error }
+}
+
 // Auth helpers
 export const signUp = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signUp({
