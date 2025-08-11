@@ -3,9 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useWorkflow } from '../../contexts/WorkflowContext'
-import { 
-  createIdeationSession 
-} from '../../lib/supabase'
+import { createIdeationSession, saveIdeaFromSession } from '../../lib/supabase'
 import { 
   FileText, 
   Mic, 
@@ -119,42 +117,54 @@ export default function RepurposeResultsModal({
     setEditedThemes([...editedThemes, 'New insight'])
   }
 
-  // Save to Ideas Library - simplified
-  const saveToIdeas = async () => {
-    if (!user) return
-    
-    setIsSaving(true)
-    setSaveMessage('')
-    
-    try {
-      const { data: session, error } = await createIdeationSession({
-        user_id: user.id,
-        page_type: 'repurpose_content',
-        session_data: {
-          repurpose_type: results.repurpose_type,
-          original_session_id: results.session_id
-        },
-        status: 'completed',
-        topic: editedTopic,
-        takeaways: editedThemes
-      })
+  // Auto-save to Ideas Library
+const saveToIdeas = async () => {
+  if (!user) return
+  
+  setSaveMessage('')
+  
+  try {
+    // Save to ideation session
+    const { data: session, error: sessionError } = await createIdeationSession({
+      user_id: user.id,
+      page_type: 'repurpose_content',
+      session_data: {
+        repurpose_type: results.repurpose_type,
+        original_session_id: results.session_id
+      },
+      status: 'completed',
+      topic: editedTopic,
+      takeaways: editedThemes
+    })
 
-      if (error) throw error
+    if (sessionError) throw sessionError
 
-      setSaveMessage('✅ Saved to Ideas Library!')
-      setTimeout(() => {
-        setSaveMessage('')
-        onClose()
-      }, 1500)
-      
-    } catch (error) {
-      console.error('Error saving to ideas:', error)
-      setSaveMessage('❌ Error saving. Try again.')
-      setTimeout(() => setSaveMessage(''), 3000)
-    } finally {
-      setIsSaving(false)
-    }
+    // Auto-save idea to library
+    const { error: ideaError } = await saveIdeaFromSession(
+      user.id,
+      session?.id || results.session_id,
+      editedTopic,
+      'Repurposed content perspective',
+      editedThemes,
+      'repurpose_content'
+    )
+
+    if (ideaError) throw ideaError
+
+    setSaveMessage('✅ Saved to Ideas Library!')
+    setTimeout(() => {
+      setSaveMessage('')
+      onClose()
+    }, 1500)
+    
+  } catch (error) {
+    console.error('Error saving to ideas:', error)
+    setSaveMessage('❌ Error saving. Try again.')
+    setTimeout(() => setSaveMessage(''), 3000)
+  } finally {
+    setIsSaving(false)
   }
+}
 
   // Create LinkedIn Post - simplified
   const createPost = async () => {
