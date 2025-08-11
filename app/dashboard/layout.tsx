@@ -5,6 +5,8 @@ import { ContentProvider } from '../../contexts/ContentContext'
 import { WorkflowProvider } from '../../contexts/WorkflowContext'
 import { ToastProvider } from '../../components/ToastNotifications'
 
+import BreadcrumbNavigation from '../../components/BreadcrumbNavigation'
+
 export default function DashboardLayout({
   children
 }: {
@@ -15,7 +17,10 @@ export default function DashboardLayout({
       <ContentProvider>
         <WorkflowProvider>
           <ToastProvider>
-            {children}
+            <div className="min-h-screen bg-gray-50">
+              <BreadcrumbNavigation />
+              {children}
+            </div>
           </ToastProvider>
         </WorkflowProvider>
       </ContentProvider>
