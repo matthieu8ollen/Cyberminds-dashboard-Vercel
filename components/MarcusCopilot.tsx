@@ -15,10 +15,12 @@ interface MarcusState {
 }
 
 interface MarcusCopilotProps {
+  onBackToChoice?: () => void
   onComplete?: (data: any) => void
+  onBack?: () => void
 }
 
-export default function MarcusCopilot({ onComplete }: MarcusCopilotProps) {
+export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: MarcusCopilotProps = {}) {
   const [marcusState, setMarcusState] = useState<MarcusState>({
     currentPath: 'welcome',
     conversationData: {}
@@ -191,10 +193,33 @@ export default function MarcusCopilot({ onComplete }: MarcusCopilotProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header section removed - using breadcrumb navigation instead */}
+      {/* Header with Back to Choice Option */}
+      {(onBackToChoice || onBack) && (
+  <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center py-4">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={onBack || onBackToChoice}
+            className="text-gray-600 hover:text-gray-800 transition"
+          >
+            ← Back to Mode Selection
+          </button>
+                <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Marcus Mode</h1>
+                  <p className="text-sm text-gray-600">AI-Assisted Content Creation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
-      <div>
+      <div className={onBackToChoice ? "pt-0" : ""}>
         {marcusState.currentPath === 'welcome' ? renderWelcomeScreen() : renderPathContent()}
       </div>
     </div>
