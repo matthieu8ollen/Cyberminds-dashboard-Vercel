@@ -193,6 +193,8 @@ export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: Ma
     <div className="min-h-screen bg-gray-50">
       {/* Header section removed - using breadcrumb navigation instead */}
 {false && (
+  <div></div>
+)}
                 <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
