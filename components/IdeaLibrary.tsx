@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { ContentIdea, createContentIdea, getContentIdeas } from '../lib/supabase'
+import { ContentIdea, createContentIdea, getContentIdeas, updateContentIdea } from '../lib/supabase'
 import { 
   Filter, 
   TrendingUp, 
@@ -121,6 +121,21 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }:
     const diffInWeeks = Math.floor(diffInDays / 7)
     return `${diffInWeeks}w ago`
   }
+
+  const handleUpdateIdea = async (ideaId: string, updates: Partial<ContentIdea>) => {
+  try {
+    const { error } = await updateContentIdea(ideaId, updates)
+    if (error) throw error
+    
+    // Refresh the ideas list
+    loadSavedIdeas()
+    
+    // Show success message
+    console.log('Idea updated successfully')
+  } catch (error) {
+    console.error('Error updating idea:', error)
+  }
+}
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -272,22 +287,40 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }:
               </div>
               
               {/* Action Buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onUseInStandardMode?.(idea)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
-                >
-                  <Zap className="w-4 h-4" />
-                  Standard Mode
-                </button>
-                <button
-  onClick={() => onUseInWriterSuite?.(idea)}
-  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition"
->
-  <Crown className="w-4 h-4" />
-  Writer Suite
-</button>
-              </div>
+<div className="space-y-2">
+  <div className="flex gap-2">
+    <button
+      onClick={() => onUseInStandardMode?.(idea)}
+      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
+    >
+      <Zap className="w-4 h-4" />
+      Standard
+    </button>
+    <button
+      onClick={() => onUseInWriterSuite?.(idea)}
+      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition"
+    >
+      <Crown className="w-4 h-4" />
+      Writer Suite
+    </button>
+  </div>
+  
+  {/* Dismiss Actions */}
+  <div className="flex gap-1">
+    <button
+      onClick={() => handleUpdateIdea(idea.id, { status: 'used' })}
+      className="flex-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition"
+    >
+      Mark Used
+    </button>
+    <button
+      onClick={() => handleUpdateIdea(idea.id, { status: 'archived' })}
+      className="flex-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition"
+    >
+      Archive
+    </button>
+  </div>
+</div>
             </div>
           ))}
         </div>
