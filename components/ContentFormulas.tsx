@@ -26,41 +26,49 @@ interface ContentFormulasProps {
 const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
   return {
     id: dbFormula.id,
-    name: dbFormula.name,
-    description: dbFormula.description,
-    category: dbFormula.category,
-    difficulty: dbFormula.difficulty,
-    estimatedTime: dbFormula.estimated_time,
-    popularity: dbFormula.popularity,
-    isCustom: dbFormula.is_custom,
+    name: dbFormula.formula_name,
+    description: dbFormula.funnel_purpose || '',
+    category: dbFormula.formula_category as any || 'framework',
+    difficulty: dbFormula.difficulty_level as any || 'beginner',
+    estimatedTime: '25 min', // Default since not in schema
+    popularity: Math.round((dbFormula.effectiveness_score || 0) * 10),
+    isCustom: dbFormula.created_by !== null,
     createdAt: dbFormula.created_at,
     updatedAt: dbFormula.updated_at,
-    userId: dbFormula.user_id,
+    userId: dbFormula.created_by,
     
     // Convert sections
-    sections: dbFormula.formula_sections.map(section => ({
+    sections: (dbFormula.formula_sections || []).map(section => ({
       id: section.id,
-      title: section.title,
-      description: section.description || '',
-      guidance: section.guidance || '',
-      placeholder: section.placeholder || '',
-      position: section.position,
-      isRequired: section.is_required,
-      isCustom: section.is_custom,
-      psychologyNote: section.psychology_note,
+      title: section.section_name,
+      description: section.section_purpose || '',
+      guidance: section.section_guidelines || '',
+      placeholder: section.section_template || '',
+      position: section.section_order,
+      isRequired: section.is_required ?? true,
+      isCustom: section.is_customizable ?? true,
+      psychologyNote: section.psychological_purpose,
       wordCountTarget: section.word_count_target,
-      toneGuidance: section.tone_guidance,
-      exampleContent: section.example_content
+      toneGuidance: section.emotional_target,
+      exampleContent: section.section_strategy_explanation
     })).sort((a, b) => a.position - b.position),
     
     // Default values for enhanced properties
-    ctaPositions: dbFormula.cta_positions || [],
-    psychologicalTriggers: dbFormula.psychological_triggers || [],
-    usageCount: dbFormula.usage_count,
-    stakeholderScores: dbFormula.stakeholder_scores || { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
-    version: dbFormula.version,
-    tags: dbFormula.tags || [],
-    isPublic: dbFormula.is_public
+    ctaPositions: [],
+    psychologicalTriggers: (dbFormula.psychological_triggers || []).map((trigger, index) => ({
+      id: `trigger_${index}`,
+      name: trigger,
+      description: '',
+      category: 'authority' as any,
+      strength: 5,
+      applicableSections: [],
+      implementation: ''
+    })),
+    usageCount: 0,
+    stakeholderScores: { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
+    version: 1,
+    tags: dbFormula.use_cases || [],
+    isPublic: !dbFormula.created_by
   }
 }
 
