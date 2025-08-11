@@ -113,10 +113,10 @@ const [context, setContext] = useState(
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={onBack}
-          className="text-slate-600 hover:text-slate-800 mb-4 transition"
-        >
-          ← Back to Mode Selection
+          onClick={() => window.history.back()}
+className="text-slate-600 hover:text-slate-800 mb-4 transition"
+>
+← Back to Previous Page
         </button>
         
         <div className="flex items-center space-x-3 mb-4">
