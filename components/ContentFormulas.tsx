@@ -12,205 +12,91 @@ import type {
   FormulaAnalysisResponse
 } from '@/types/formulaTypes'
 
-// Legacy formula interface for backward compatibility
-interface LegacyContentFormula {
-  id: string
-  name: string
-  description: string
-  category: 'story' | 'data' | 'framework' | 'lead-generation'
-  difficulty: 'beginner' | 'intermediate' | 'advanced'
-  estimatedTime: string
-  popularity: number
-  structure: string[]
-  example: string
-  whyItWorks: string[]
-  bestFor: string
-  isCustom?: boolean
-  createdAt?: string
+// Import database functions
+import { getContentFormulas, saveContentFormula, updateContentFormula, deleteContentFormula, type ContentFormula, type FormulaSection } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
+
+// Conversion function from database format to component format
+const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
+  return {
+    id: dbFormula.id,
+    name: dbFormula.name,
+    description: dbFormula.description,
+    category: dbFormula.category,
+    difficulty: dbFormula.difficulty,
+    estimatedTime: dbFormula.estimated_time,
+    popularity: dbFormula.popularity,
+    isCustom: dbFormula.is_custom,
+    createdAt: dbFormula.created_at,
+    updatedAt: dbFormula.updated_at,
+    userId: dbFormula.user_id,
+    
+    // Convert sections
+    sections: dbFormula.formula_sections.map(section => ({
+      id: section.id,
+      title: section.title,
+      description: section.description || '',
+      guidance: section.guidance || '',
+      placeholder: section.placeholder || '',
+      position: section.position,
+      isRequired: section.is_required,
+      isCustom: section.is_custom,
+      psychologyNote: section.psychology_note,
+      wordCountTarget: section.word_count_target,
+      toneGuidance: section.tone_guidance,
+      exampleContent: section.example_content
+    })).sort((a, b) => a.position - b.position),
+    
+    // Default values for enhanced properties
+    ctaPositions: dbFormula.cta_positions || [],
+    psychologicalTriggers: dbFormula.psychological_triggers || [],
+    usageCount: dbFormula.usage_count,
+    stakeholderScores: dbFormula.stakeholder_scores || { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
+    version: dbFormula.version,
+    tags: dbFormula.tags || [],
+    isPublic: dbFormula.is_public
+  }
 }
 
-interface ContentFormulasProps {
-  onBack: () => void
-  onCreateFormula?: (baseFormula?: EnhancedContentFormula) => void
-  onUseFormula?: (formula: EnhancedContentFormula) => void
+// Conversion function from component format to database format
+const convertEnhancedToDatabase = (formula: EnhancedContentFormula): { 
+  formula: Omit<ContentFormula, 'id' | 'created_at' | 'updated_at'>, 
+  sections: Omit<FormulaSection, 'id' | 'formula_id' | 'created_at'>[] 
+} => {
+  return {
+    formula: {
+      user_id: formula.userId,
+      name: formula.name,
+      description: formula.description,
+      category: formula.category,
+      difficulty: formula.difficulty,
+      estimated_time: formula.estimatedTime,
+      popularity: formula.popularity,
+      is_custom: formula.isCustom,
+      is_public: formula.isPublic,
+      usage_count: formula.usageCount,
+      stakeholder_scores: formula.stakeholderScores,
+      psychological_triggers: formula.psychologicalTriggers,
+      cta_positions: formula.ctaPositions,
+      tags: formula.tags,
+      version: formula.version,
+      base_formula_id: formula.baseFormulaId
+    },
+    sections: formula.sections.map(section => ({
+      title: section.title,
+      description: section.description,
+      guidance: section.guidance,
+      placeholder: section.placeholder,
+      position: section.position,
+      is_required: section.isRequired,
+      is_custom: section.isCustom,
+      psychology_note: section.psychologyNote,
+      word_count_target: section.wordCountTarget,
+      tone_guidance: section.toneGuidance,
+      example_content: section.exampleContent
+    }))
+  }
 }
-
-// Your existing legacy formulas (converted to enhanced format)
-const LEGACY_BUILTIN_FORMULAS: LegacyContentFormula[] = [
-  {
-    id: 'confession',
-    name: 'Confession Formula',
-    description: 'Share vulnerable business lessons through personal mistakes',
-    category: 'story',
-    difficulty: 'beginner',
-    estimatedTime: '15 min',
-    popularity: 94,
-    structure: [
-      'Admission - Hook that takes responsibility',
-      'Context - Why you made this decision', 
-      'Consequence - What went wrong and impact',
-      'Learning - Key insight discovered',
-      'Redemption - How you do it differently now',
-      'CTA - Question inviting sharing'
-    ],
-    example: 'Hiring my best friend as CTO was the hardest mistake I ever made...',
-    whyItWorks: [
-      'Vulnerability builds immediate trust',
-      'Specific details make it relatable', 
-      'Clear lesson provides universal value'
-    ],
-    bestFor: 'Business relationship lessons, leadership stories'
-  },
-  {
-    id: 'myth-buster',
-    name: 'Myth-Buster Formula',
-    description: 'Challenge conventional wisdom with evidence',
-    category: 'data',
-    difficulty: 'intermediate',
-    estimatedTime: '20 min',
-    popularity: 87,
-    structure: [
-      'State the conventional wisdom',
-      'Explain the problems with this belief',
-      'Provide credible evidence',
-      'Give superior alternative',
-      'CTA asking about experience'
-    ],
-    example: 'Everyone says "hire slow, fire fast" but this advice is killing your startup...',
-    whyItWorks: [
-      'Creates cognitive dissonance',
-      'Positions you as contrarian thinker',
-      'Evidence builds credibility'
-    ],
-    bestFor: 'Industry misconceptions, best practice challenges'
-  },
-  {
-    id: 'framework-reveal',
-    name: 'Framework Reveal',
-    description: 'Share systematic approach to solving problems',
-    category: 'framework',
-    difficulty: 'intermediate',
-    estimatedTime: '25 min',
-    popularity: 91,
-    structure: [
-      'Problem introduction',
-      'Framework overview',
-      'Step-by-step breakdown',
-      'Real-world application',
-      'Results and validation',
-      'CTA for implementation'
-    ],
-    example: 'The 3-2-1 Method that transformed our customer retention...',
-    whyItWorks: [
-      'Provides structured value',
-      'Memorable and actionable',
-      'Establishes expertise'
-    ],
-    bestFor: 'Process sharing, methodologies, strategic insights'
-  },
-  {
-    id: 'webinar-teaser',
-    name: 'Webinar Teaser',
-    description: 'Generate leads with valuable preview content',
-    category: 'lead-generation',
-    difficulty: 'advanced',
-    estimatedTime: '30 min',
-    popularity: 78,
-    structure: [
-      'Hook with common mistake',
-      'Personal transformation story',
-      'Preview of valuable insight',
-      'Mid-post CTA with signup link',
-      'Surface-level teaching',
-      'Deep-dive promise for webinar'
-    ],
-    example: 'I used to think cash flow was just about timing payments...',
-    whyItWorks: [
-      'Provides immediate value',
-      'Creates curiosity gap',
-      'Clear value proposition'
-    ],
-    bestFor: 'Lead generation, webinar promotion, course marketing'
-  }
-]
-
-// Convert legacy to enhanced formulas
-const BUILTIN_FORMULAS: EnhancedContentFormula[] = convertLegacyFormulas(LEGACY_BUILTIN_FORMULAS)
-
-// Sample custom enhanced formulas
-const CUSTOM_FORMULAS: EnhancedContentFormula[] = [
-  {
-    id: 'custom-saas-metrics',
-    name: 'SaaS Metrics Breakthrough',
-    description: 'Custom formula for sharing counterintuitive SaaS performance insights',
-    category: 'data',
-    difficulty: 'intermediate',
-    estimatedTime: '20 min',
-    popularity: 0,
-    isCustom: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    sections: [
-      {
-        id: 'hook_section',
-        title: 'Shocking Metric Hook',
-        description: 'Lead with a counterintuitive metric that challenges assumptions',
-        guidance: 'Start with a specific, surprising statistic that makes people question what they know',
-        placeholder: 'Our churn rate is 47% higher than industry average, and our investors are celebrating...',
-        position: 0,
-        isRequired: true,
-        isCustom: true,
-        psychologyNote: 'Cognitive dissonance creates attention and curiosity'
-      },
-      {
-        id: 'context_section',
-        title: 'Industry Comparison',
-        description: 'Show how this metric compares to industry standards',
-        guidance: 'Provide context that explains why this metric seems problematic at first glance',
-        placeholder: 'While most SaaS companies celebrate low churn, we discovered something different...',
-        position: 1,
-        isRequired: true,
-        isCustom: true,
-        psychologyNote: 'Context helps readers understand the stakes and why this matters'
-      },
-      {
-        id: 'strategy_section',
-        title: 'Our Contrarian Strategy',
-        description: 'Reveal the strategy behind the surprising metric',
-        guidance: 'Explain the methodology that led to this counterintuitive approach',
-        placeholder: 'Here\'s our 3-part approach to strategic churn management...',
-        position: 2,
-        isRequired: true,
-        isCustom: true,
-        psychologyNote: 'Providing a systematic approach establishes authority'
-      }
-    ],
-    ctaPositions: [
-      {
-        id: 'engagement_cta',
-        type: 'comment',
-        position: 'end',
-        text: 'What metrics do you track that might seem counterintuitive? Share below.',
-        trackingParams: { type: 'engagement' }
-      }
-    ],
-    psychologicalTriggers: [
-      {
-        id: 'contrarian_authority',
-        name: 'Contrarian Authority',
-        description: 'Challenging conventional wisdom establishes thought leadership',
-        category: 'authority',
-        strength: 8,
-        applicableSections: ['hook_section', 'strategy_section'],
-        implementation: 'Present data that contradicts popular beliefs'
-      }
-    ],
-    usageCount: 0,
-    stakeholderScores: { cfo: 9, cmo: 6, ceo: 7, vc: 8 },
-    version: 1,
-    tags: ['saas', 'metrics', 'contrarian', 'data-driven'],
-    isPublic: false
-  }
-]
 
 const CATEGORIES = [
   { id: 'all', label: 'AI Suggested', icon: BookOpen },
@@ -223,11 +109,17 @@ const CATEGORIES = [
 type ViewMode = 'gallery' | 'builder' | 'analyzer'
 
 export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula }: ContentFormulasProps) {
+  const { user } = useAuth()
   const [viewMode, setViewMode] = useState<ViewMode>('gallery')
   const [activeTab, setActiveTab] = useState<'builtin' | 'custom'>('builtin')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFormula, setSelectedFormula] = useState<EnhancedContentFormula | null>(null)
+  
+  // Replace static data with dynamic loading
+  const [allFormulas, setAllFormulas] = useState<EnhancedContentFormula[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   // Builder/Analyzer state
   const [builderFormula, setBuilderFormula] = useState<EnhancedContentFormula | null>(null)
@@ -237,7 +129,41 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   }>({})
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
-  const currentFormulas = activeTab === 'builtin' ? BUILTIN_FORMULAS : CUSTOM_FORMULAS
+  // Load formulas from database
+  useEffect(() => {
+    loadFormulas()
+  }, [user])
+
+  const loadFormulas = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { data, error } = await getContentFormulas(user?.id)
+      
+      if (error) {
+        console.error('Error loading formulas:', error)
+        setError('Failed to load formulas')
+        return
+      }
+
+      if (data) {
+        const convertedFormulas = data.map(convertDatabaseToEnhanced)
+        setAllFormulas(convertedFormulas)
+      }
+    } catch (err) {
+      console.error('Error loading formulas:', err)
+      setError('Failed to load formulas')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Separate formulas into builtin and custom
+  const builtinFormulas = allFormulas.filter(f => !f.isCustom)
+  const customFormulas = allFormulas.filter(f => f.isCustom && f.userId === user?.id)
+  
+  const currentFormulas = activeTab === 'builtin' ? builtinFormulas : customFormulas
 
   const filteredFormulas = currentFormulas.filter(formula => {
     const matchesCategory = selectedCategory === 'all' || formula.category === selectedCategory
@@ -364,8 +290,37 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   }
 
   const handleApplySuggestion = (suggestion: OptimizationSuggestion) => {
-    // TODO: Apply suggestion to formula
+    // Implementation for applying suggestions
     console.log('Applying suggestion:', suggestion)
+  }
+
+  // Handle save
+  const handleSaveFormula = async (formula: EnhancedContentFormula) => {
+    try {
+      const { formula: dbFormula, sections } = convertEnhancedToDatabase({
+        ...formula,
+        userId: user?.id,
+        isCustom: true,
+        isPublic: false
+      })
+
+      if (formula.id && formula.id.startsWith('custom_')) {
+        // Update existing
+        const { data, error } = await updateContentFormula(formula.id, dbFormula, sections)
+        if (error) throw error
+      } else {
+        // Create new
+        const { data, error } = await saveContentFormula(dbFormula, sections)
+        if (error) throw error
+      }
+
+      // Reload formulas
+      await loadFormulas()
+      setViewMode('gallery')
+    } catch (error) {
+      console.error('Error saving formula:', error)
+      // Handle error - you might want to show a toast notification
+    }
   }
 
   const handleUseFormula = (formula: EnhancedContentFormula) => {
@@ -381,9 +336,9 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   if (viewMode === 'builder') {
     return (
       <FormulaBuilder
-  baseFormula={builderFormula || undefined}
+  baseFormula={builderFormula}
   onSave={handleSaveFormula}
-  onCancel={handleCancelBuilder}
+  onCancel={() => setViewMode('gallery')}
   onAnalyze={handleAnalyzeFormula}
 />
     )
@@ -420,8 +375,32 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   // Gallery view
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+          <span className="ml-3 text-gray-600">Loading formulas...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={loadFormulas}
+            className="mt-2 text-sm text-red-700 underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Only show content if not loading and no error */}
+      {!loading && !error && (
+        <>
+          {/* Header */}
+          <div className="mb-8">
         <button
           onClick={onBack}
           className="text-gray-600 hover:text-gray-800 mb-4 transition"
@@ -822,6 +801,8 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )
