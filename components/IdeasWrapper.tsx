@@ -48,12 +48,10 @@ export default function IdeasWrapper({
     sessionStorage.setItem('ideationData', JSON.stringify(ideationData))
   }
   
-  // Navigate using URLs
-  if (mode === 'power') {
-    window.location.href = '/dashboard/writer-suite/selection'
-  } else {
-    window.location.href = '/dashboard/standard-mode'
-  }
+  // Use callback navigation (Dashboard will handle URLs)
+if (onNavigateToCreate) {
+  onNavigateToCreate(mode, ideationData)
+}
 }
 
   const handleUseInStandardMode = (idea: ContentIdea) => {
