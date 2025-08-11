@@ -233,122 +233,20 @@ export const getContentFormulas = async (userId?: string) => {
   return { data, error }
 }
 
-// Fetch formula by ID with sections
-export const getFormulaById = async (formulaId: string) => {
-  const { data, error } = await supabase
-    .from('content_formulas')
-    .select(`
-      *,
-      formula_sections (*)
-    `)
-    .eq('id', formulaId)
-    .single()
-
-  return { data, error }
+// Simple placeholder functions for now
+export const saveContentFormula = async (formula: any, sections: any) => {
+  console.log('Save formula not implemented yet')
+  return { data: null, error: new Error('Not implemented') }
 }
 
-// Save new custom formula
-export const saveContentFormula = async (formula: Omit<ContentFormula, 'id' | 'created_at' | 'updated_at'>, sections: Omit<FormulaSection, 'id' | 'formula_id' | 'created_at'>[]) => {
-  try {
-    // Insert formula
-    const { data: formulaData, error: formulaError } = await supabase
-      .from('content_formulas')
-      .insert(formula)
-      .select()
-      .single()
-
-    if (formulaError) throw formulaError
-
-    // Insert sections
-    const sectionsToInsert = sections.map(section => ({
-      ...section,
-      formula_id: formulaData.id
-    }))
-
-    const { data: sectionsData, error: sectionsError } = await supabase
-      .from('formula_sections')
-      .insert(sectionsToInsert)
-      .select()
-
-    if (sectionsError) throw sectionsError
-
-    return { 
-      data: { 
-        ...formulaData, 
-        formula_sections: sectionsData 
-      }, 
-      error: null 
-    }
-  } catch (error) {
-    return { data: null, error }
-  }
+export const updateContentFormula = async (formulaId: string, updates: any, sections?: any) => {
+  console.log('Update formula not implemented yet')
+  return { data: null, error: new Error('Not implemented') }
 }
 
-// Update existing formula
-export const updateContentFormula = async (formulaId: string, updates: Partial<ContentFormula>, sections?: Omit<FormulaSection, 'id' | 'formula_id' | 'created_at'>[]) => {
-  try {
-    // Update formula
-    const { data: formulaData, error: formulaError } = await supabase
-      .from('content_formulas')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', formulaId)
-      .select()
-      .single()
-
-    if (formulaError) throw formulaError
-
-    // If sections provided, replace all sections
-    if (sections) {
-      // Delete existing sections
-      await supabase
-        .from('formula_sections')
-        .delete()
-        .eq('formula_id', formulaId)
-
-      // Insert new sections
-      const sectionsToInsert = sections.map(section => ({
-        ...section,
-        formula_id: formulaId
-      }))
-
-      const { data: sectionsData, error: sectionsError } = await supabase
-        .from('formula_sections')
-        .insert(sectionsToInsert)
-        .select()
-
-      if (sectionsError) throw sectionsError
-
-      return { 
-        data: { 
-          ...formulaData, 
-          formula_sections: sectionsData 
-        }, 
-        error: null 
-      }
-    }
-
-    return { data: formulaData, error: null }
-  } catch (error) {
-    return { data: null, error }
-  }
-}
-
-// Delete formula and its sections
 export const deleteContentFormula = async (formulaId: string) => {
-  const { error } = await supabase
-    .from('content_formulas')
-    .delete()
-    .eq('id', formulaId)
-
-  return { error }
-}
-
-// Update formula usage count
-export const incrementFormulaUsage = async (formulaId: string) => {
-  const { error } = await supabase
-    .rpc('increment_formula_usage', { formula_id: formulaId })
-
-  return { error }
+  console.log('Delete formula not implemented yet')
+  return { error: new Error('Not implemented') }
 }
 
 // Auth helpers
