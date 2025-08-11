@@ -11,6 +11,7 @@ import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
+  onBack?: () => void
   onComplete?: () => void
   ideationData?: {
     topic: string
@@ -22,7 +23,7 @@ interface StandardGeneratorProps {
 }
 
 export default function StandardGenerator({ onSwitchMode, onBack, onComplete, ideationData }: StandardGeneratorProps) {
-  const [topic, setTopic] = useState(ideationData?.topic || '')
+const [topic, setTopic] = useState(ideationData?.topic || '')
 const [contentType, setContentType] = useState('framework')
 const [tone, setTone] = useState('insightful_cfo')
 const [points, setPoints] = useState('5')
