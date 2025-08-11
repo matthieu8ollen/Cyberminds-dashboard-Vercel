@@ -18,7 +18,7 @@ interface MarcusCopilotProps {
   onComplete?: (data: any) => void
 }
 
-export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: MarcusCopilotProps = {}) {
+export default function MarcusCopilot({ onComplete }: MarcusCopilotProps) {
   const [marcusState, setMarcusState] = useState<MarcusState>({
     currentPath: 'welcome',
     conversationData: {}
@@ -192,24 +192,9 @@ export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: Ma
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header section removed - using breadcrumb navigation instead */}
-{false && (
-  <div></div>
-)}
-                <div className="w-8 h-8 bg-gradient-to-br from-slate-800 via-slate-700 to-teal-600 rounded-lg flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Marcus Mode</h1>
-                  <p className="text-sm text-gray-600">AI-Assisted Content Creation</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Content */}
-      <div className={onBackToChoice ? "pt-0" : ""}>
+      <div>
         {marcusState.currentPath === 'welcome' ? renderWelcomeScreen() : renderPathContent()}
       </div>
     </div>
