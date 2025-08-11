@@ -73,20 +73,8 @@ export default function Dashboard() {
 
   // Page and Content States
   'use client'
-import { useRouter } from 'next/router'
-
-// Inside the component, after other hooks:
-const router = useRouter()
-
-const getActivePageFromPath = (): ActivePage => {
-  if (router.pathname?.includes('/ideas')) return 'ideas'
-  if (router.pathname?.includes('/writer-suite')) return 'writer-suite'
-  if (router.pathname?.includes('/standard-mode')) return 'standard'
-  if (router.pathname?.includes('/production')) return 'production'
-  return 'ideas'
-}
-
-const activePage = getActivePageFromPath()
+// Remove pathname detection - breadcrumbs handle navigation context
+const activePage: ActivePage = 'ideas'
 const [inStandardMode, setInStandardMode] = useState(false)
   const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
