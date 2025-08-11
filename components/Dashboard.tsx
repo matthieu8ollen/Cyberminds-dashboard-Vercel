@@ -57,15 +57,13 @@ export default function Dashboard() {
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Premium Left Sidebar */}
-      <nav 
-        className={`bg-slate-800 min-h-screen fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
-          sidebarExpanded ? 'w-60' : 'w-16'
-        }`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-      >
+    <nav 
+      className={`bg-slate-800 min-h-screen flex flex-col transition-all duration-300 ease-in-out ${
+        sidebarExpanded ? 'w-60' : 'w-16'
+      }`}
+      onMouseEnter={() => setSidebarExpanded(true)}
+      onMouseLeave={() => setSidebarExpanded(false)}
+    >
         {/* Logo Section */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center space-x-3">
@@ -248,11 +246,5 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
-
-      {/* Main Content Area - Page content handled by URL routing */}
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-        {/* Dashboard content now handled by layout + URL routing */}
-      </div>
-    </div>
   )
 }
