@@ -84,34 +84,43 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user])
 
+  const clearWorkflowForContent = async (contentId: string) => {
+  try {
+    // Clear any lingering workflow states for this content
+    console.log('Workflow completed for content:', contentId)
+    // Additional cleanup logic can be added here
+  } catch (error) {
+    console.error('Error clearing workflow state:', error)
+  }
+}
+
   const saveDraft = async (content: Omit<GeneratedContent, 'id' | 'created_at' | 'user_id'>, mode?: 'marcus' | 'standard') => {
-    if (!user) return null
+  if (!user) return null
+
+  try {
+    const { data, error } = await saveGeneratedContent({
+      ...content,
+      user_id: user.id
+    })
+
+    if (error) throw error
     
-    try {
-      const contentWithStatus = {
-        ...content,
-        user_id: user.id,
-        status: 'draft' as const,
-        is_saved: true,
-        variations_data: {
-          ...content.variations_data,
-          creation_mode: mode || 'unknown',
-          created_at: new Date().toISOString()
-        }
+    if (data) {
+      await refreshContent()
+      
+      // Clear workflow state when content is saved to production
+      if (content.status === 'draft') {
+        await clearWorkflowForContent(data.id)
       }
       
-      const { data, error } = await saveGeneratedContent(contentWithStatus)
-      if (error) throw error
-      
-      if (data) {
-        setAllContent(prev => [data, ...prev])
-        return data
-      }
-      return null
-    } catch (error) {
-      console.error('Error saving draft:', error)
-      return null
+      return data
     }
+  } catch (error) {
+    console.error('Error saving draft:', error)
+  }
+  
+  return null
+}
   }
 
   const updateContent = async (id: string, updates: Partial<GeneratedContent>) => {
