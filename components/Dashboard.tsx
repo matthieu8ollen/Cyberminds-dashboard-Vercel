@@ -415,7 +415,15 @@ useEffect(() => {
   return baseItems
 }
 
-const navigationItems = getNavigationItems()
+const navigationItems = [
+  { id: 'ideas', label: 'Ideas', icon: Lightbulb, href: '/dashboard/ideas/hub' },
+  { id: 'writer-suite', label: 'Writer Suite', icon: Sparkles, premium: true, href: '/dashboard/writer-suite/selection' },
+  { id: 'production', label: 'Production', icon: BarChart3, href: '/dashboard/production' },
+  { id: 'images', label: 'Images', icon: Camera },
+  { id: 'plan', label: 'Plan', icon: Calendar },
+  { id: 'analytics', label: 'Analytics', icon: BarChart },
+  { id: 'feed', label: 'Feed', icon: Rss }
+]
 
   // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
@@ -721,7 +729,13 @@ return <IdeasWrapper
               return (
                 <div key={item.id} className="relative group">
                   <button
-                    onClick={() => setActivePage(item.id)}
+                    onClick={() => {
+  if (item.href) {
+    window.location.href = item.href
+  } else {
+    setActivePage(item.id)
+  }
+}}
                     className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
   sidebarExpanded ? 'space-x-3' : 'justify-center'
 } ${
