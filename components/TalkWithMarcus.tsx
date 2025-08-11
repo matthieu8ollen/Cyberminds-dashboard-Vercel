@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { User, ArrowRight, Send, Lightbulb, Target, TrendingUp } from 'lucide-react'
+import { createContentIdea } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useWorkflow } from '../contexts/WorkflowContext'
 import { 
@@ -23,7 +24,31 @@ interface TalkWithMarcusProps {
   onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
 }
 
-export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps = {}) {
+export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps) {
+  const { user } = useAuth()
+  
+  const saveIdeaToLibrary = async (title: string, description: string, tags: string[]) => {
+    if (!user) return false
+    
+    try {
+      const { data, error } = await createContentIdea({
+        user_id: user.id,
+        title,
+        description,
+        tags,
+        content_pillar: 'ai_generated',
+        source_type: 'ai_generated',
+        status: 'active'
+      })
+      
+      if (error) throw error
+      console.log('Idea saved to library:', data)
+      return true
+    } catch (error) {
+      console.error('Error saving idea:', error)
+      return false
+    }
+  }
   const { user } = useAuth()
   const { startIdeation } = useWorkflow()
   const [messages, setMessages] = useState<Message[]>([])
