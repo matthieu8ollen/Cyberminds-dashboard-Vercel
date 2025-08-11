@@ -11,7 +11,6 @@ import { GeneratedContent } from '../lib/supabase'
 
 interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
-  onBack: () => void
   onComplete?: () => void
   ideationData?: {
     topic: string
