@@ -17,9 +17,6 @@ export default function StandardModePage() {
           window.location.href = '/dashboard/writer-suite/selection'
         }
       }}
-      onBack={() => {
-        window.location.href = '/dashboard/ideas/hub'
-      }}
       onComplete={() => {
         // Navigate to production pipeline after completion
         window.location.href = '/dashboard/production'
