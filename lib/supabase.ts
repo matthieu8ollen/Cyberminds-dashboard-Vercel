@@ -219,17 +219,22 @@ export interface FormulaSection {
   character_count_target?: number
 }
 
-// Fetch all content formulas (simplified for testing)
+// Fetch all content formulas with sections
 export const getContentFormulas = async (userId?: string) => {
-  console.log('🔍 Attempting to fetch content_formulas...')
+  console.log('🔍 Attempting to fetch content_formulas with sections...')
   
   try {
     const { data, error } = await supabase
       .from('content_formulas')
-      .select('*')
-      .limit(5)
+      .select(`
+        *,
+        formula_sections (*)
+      `)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(10)
 
-    console.log('📊 Query result:', { data: !!data, error })
+    console.log('📊 Query result:', { data: !!data, error, recordCount: data?.length })
     
     if (error) {
       console.error('❌ Database error:', error)
