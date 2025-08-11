@@ -72,7 +72,20 @@ export default function Dashboard() {
   const showProfileMenu = profileMenuHoverActive || profileMenuClickActive
 
   // Page and Content States
-  const [activePage, setActivePage] = useState<ActivePage>('ideas')
+  import { usePathname } from 'next/navigation'
+
+// Inside the component, after other hooks:
+const pathname = usePathname()
+
+const getActivePageFromPath = (): ActivePage => {
+  if (pathname?.includes('/ideas')) return 'ideas'
+  if (pathname?.includes('/writer-suite')) return 'writer-suite'
+  if (pathname?.includes('/standard-mode')) return 'standard'
+  if (pathname?.includes('/production')) return 'production'
+  return 'ideas'
+}
+
+const activePage = getActivePageFromPath()
 const [inStandardMode, setInStandardMode] = useState(false)
   const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
@@ -449,9 +462,16 @@ const getVisibleIdeasTab = () => {
 
   // Page Content Rendering
   const renderPageContent = () => {
-    switch (activePage) {
-      case 'ideas':
-return <IdeasWrapper 
+  // Page content now handled by URL routing
+  return (
+    <div className="p-8">
+      <p className="text-gray-600">
+        Navigation now handled by URL routing. 
+        Use the sidebar to navigate between sections.
+      </p>
+    </div>
+  )
+} 
   activeTab={ideasActiveTab}
   onTabChange={(tab) => setIdeasActiveTab(tab)}
   onNavigateToCreate={(mode, ideationData) => {
