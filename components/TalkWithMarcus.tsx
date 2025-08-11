@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { saveIdeaFromSession } from '../lib/supabase'
-import { User, ArrowRight, Send, Lightbulb, Target, TrendingUp } from 'lucide-react'
-import { createContentIdea } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
 import { useWorkflow } from '../contexts/WorkflowContext'
+import { saveIdeaFromSession, createContentIdea } from '../lib/supabase'
+import { User, ArrowRight, Send, Lightbulb, Target, TrendingUp } from 'lucide-react'
 import { 
   createIdeationSession, 
   updateIdeationSession, 
@@ -28,7 +26,8 @@ interface TalkWithMarcusProps {
 
 export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate }: TalkWithMarcusProps) {
   const { user } = useAuth()
-  const [messages, setMessages] = useState<Message[]>([
+  const { startIdeation } = useWorkflow()
+  const [messages, setMessages] = useState<Message[]>([])
   
   const saveIdeaToLibrary = async (title: string, description: string, tags: string[]) => {
     if (!user) return false
@@ -52,8 +51,6 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
       return false
     }
   }
-  const { startIdeation } = useWorkflow()
-  const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [currentSession, setCurrentSession] = useState<IdeationSession | null>(null)
