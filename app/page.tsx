@@ -6,7 +6,6 @@ import { AuthProvider } from '../contexts/AuthContext'
 import { ContentProvider } from '../contexts/ContentContext'
 import { WorkflowProvider } from '../contexts/WorkflowContext'
 import { ToastProvider } from '../components/ToastNotifications'
-import { redirect } from 'next/navigation'
 import Login from '../components/Login'
 import Dashboard from '../components/Dashboard'
 import OnboardingWizard from '../components/OnboardingWizard'
@@ -53,10 +52,10 @@ function MainApp() {
   }
 
   if (showOnboarding) {
-  return <OnboardingWizard onComplete={handleOnboardingComplete} />
-}
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />
+  }
 
-return <Dashboard />
+  return <Dashboard />
 }
 
 export default function Home() {
