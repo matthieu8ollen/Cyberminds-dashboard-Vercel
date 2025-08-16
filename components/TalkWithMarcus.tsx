@@ -55,7 +55,6 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   const [isTyping, setIsTyping] = useState(false)
   const [currentSession, setCurrentSession] = useState<IdeationSession | null>(null)
   const [ideationOutput, setIdeationOutput] = useState<Partial<IdeationOutput>>({})
-  const [conversationStage, setConversationStage] = useState<'initial' | 'topic-clarification' | 'angle-selection' | 'takeaways' | 'complete'>('initial')
   const [showTopicOverlay, setShowTopicOverlay] = useState(false)
   const [selectedHook, setSelectedHook] = useState('')
   const [selectedHookIndex, setSelectedHookIndex] = useState(0)
@@ -405,11 +404,12 @@ setTimeout(() => {
     }
 
   } catch (error) {
-    console.log('❌ Error with AI webhook, using fallback');
-    processUserInputMock(userInput);
-  } finally {
-    setIsTyping(false);
-  }
+  console.log('❌ Error with AI webhook');
+  addMessage('marcus', "I'm experiencing some technical difficulties. Please try again in a moment.");
+  setShowRetryButton(true);
+} finally {
+  setIsTyping(false);
+}
 };
 
 // New function to handle AI responses
@@ -448,161 +448,6 @@ const processUserInputMock = async (input: string) => {
       break
   }
 }
-
-  const handleInitialTopic = (input: string) => {
-    // Extract topic from user input
-    const topic = input
-    setIdeationOutput(prev => ({ ...prev, topic }))
-    
-    // Mock Marcus analysis - in real implementation, this would call Marcus RAG
-    const clarificationQuestions = [
-      "Great topic! Let me help you refine this.",
-      "",
-      "A few quick questions to nail the perfect angle:",
-      "• Are you targeting CFOs, CMOs, CEOs, or a broader audience?",
-      "• Do you want to take a tactical approach (how-to) or a contrarian stance (myth-busting)?",
-      "• Are you looking to share insights from experience or data-driven analysis?",
-      "",
-      "Feel free to answer any or all of these - or just tell me what direction feels right to you!"
-    ].join('\n')
-
-    addMarcusMessage(clarificationQuestions)
-    setConversationStage('topic-clarification')
-    createOrUpdateSession({ topic })
-  }
-
-  const handleTopicClarification = (input: string) => {
-    // Generate angles based on user input
-    const angles = generateAngles(ideationOutput.topic || '', input)
-    
-    const anglePresentation = [
-      "Perfect! Based on what you've shared, here are 3 strategic angles for your content:",
-      "",
-      ...angles.map((angle, index) => [
-        `**${index + 1}. ${angle.title}**`,
-        angle.description,
-        `*${angle.preview}*`,
-        ""
-      ]).flat(),
-      "Which angle resonates most with you? You can pick a number (1, 2, or 3) or tell me if you'd like to explore a different direction."
-    ].join('\n')
-
-    addMarcusMessage(anglePresentation)
-    setConversationStage('angle-selection')
-  }
-
-  const handleAngleSelection = (input: string) => {
-    // Parse angle selection
-    let selectedAngle = ""
-    if (input.includes('1') || input.toLowerCase().includes('first')) {
-      selectedAngle = "Tactical/Implementation approach"
-    } else if (input.includes('2') || input.toLowerCase().includes('second')) {
-      selectedAngle = "Contrarian/Myth-busting perspective"
-    } else if (input.includes('3') || input.toLowerCase().includes('third')) {
-      selectedAngle = "Data-driven/Analytical approach"
-    } else {
-      selectedAngle = input // User provided custom angle
-    }
-
-    setIdeationOutput(prev => ({ ...prev, angle: selectedAngle }))
-
-    // Generate takeaways
-    const takeaways = generateTakeaways(ideationOutput.topic || '', selectedAngle)
-    
-    const takeawaysPresentation = [
-  `Excellent choice! Here are the key takeaways for your "${selectedAngle}" approach:`,
-  "",
-  ...takeaways.map((takeaway, index) => `${index + 1}. ${takeaway}`),
-  "",
-  "These takeaways are designed to provide immediate value to your audience.",
-  "",
-  "✅ **Type 'yes' below** to proceed with this content foundation and unlock creation modes!",
-  "",
-  "Or let me know what you'd like to adjust."
-].join('\n')
-
-    addMarcusMessage(takeawaysPresentation)
-    setIdeationOutput(prev => ({ ...prev, takeaways }))
-    setConversationStage('takeaways')
-  }
-
-  const handleTakeawaysConfirmation = async (input: string) => {
-  if (input.toLowerCase().includes('yes') || input.toLowerCase().includes('looks good') || input.toLowerCase().includes('perfect')) {
-    // Complete ideation
-    const completedIdeation: IdeationOutput = {
-      topic: ideationOutput.topic || '',
-      angle: ideationOutput.angle || '',
-      takeaways: ideationOutput.takeaways || [],
-      source_page: 'talk_with_marcus',
-      session_id: currentSession?.id || ''
-    }
-
-    const completionMessage = [
-  "🎉 Perfect! Your content foundation is ready:",
-  "",
-  `**Topic:** ${completedIdeation.topic}`,
-  `**Angle:** ${completedIdeation.angle}`,
-  `**Key Takeaways:** ${completedIdeation.takeaways.length} value points`,
-  "",
-  "Choose your creation mode below to get started!"
-].join('\n')
-
-addMarcusMessage(completionMessage)
-setConversationStage('complete')
-
-// Set the completed ideation data for the action buttons
-setIdeationOutput(completedIdeation)
-    
-    // Update session first
-    await createOrUpdateSession({ 
-      status: 'completed',
-      topic: completedIdeation.topic,
-      angle: completedIdeation.angle,
-      takeaways: completedIdeation.takeaways
-    })
-
-    // Save to workflow system
-    try {
-      await startIdeation(completedIdeation)
-    } catch (error) {
-      console.error('Error saving to workflow:', error)
-    }
-
-    // Trigger completion callback if provided
-    if (onIdeationComplete) {
-      onIdeationComplete(completedIdeation)
-    }
-  } else {
-    addMarcusMessage("No problem! What would you like to adjust? I can help you refine the topic, explore a different angle, or modify the takeaways.")
-  }
-}
-
-  // Mock functions - in real implementation, these would call Marcus RAG
-  const generateAngles = (topic: string, context: string) => [
-    {
-      title: "Tactical Implementation",
-      description: "Step-by-step framework your audience can immediately apply",
-      preview: `"The 5-step framework for ${topic} that actually works"`
-    },
-    {
-      title: "Contrarian Perspective", 
-      description: "Challenge common beliefs and share a different viewpoint",
-      preview: `"Why everything you know about ${topic} is wrong"`
-    },
-    {
-      title: "Data-Driven Analysis",
-      description: "Use statistics and insights to support your points",
-      preview: `"The surprising data behind ${topic} (and what it means for you)"`
-    }
-  ]
-
-  const generateTakeaways = (topic: string, angle: string) => [
-    `Key insight about ${topic} that most professionals miss`,
-    `Practical step you can implement immediately`,
-    `Common mistake to avoid when dealing with ${topic}`,
-    `Data point that changes how you think about this`,
-    `Action item for next week`
-  ]
 
 // NEW: AI Response Handlers
 const handleClarificationResponse = (response: any) => {
@@ -942,100 +787,6 @@ const sendToWritersSuite = (topic: any) => {
                 Cancel
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Progress Indicator */}
-      {conversationStage !== 'initial' && (
-        <div className="mt-6 bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-900">Progress</span>
-            <span className="text-gray-600">
-              {conversationStage === 'topic-clarification' && '1/3 - Refining topic'}
-              {conversationStage === 'angle-selection' && '2/3 - Selecting angle'}
-              {conversationStage === 'takeaways' && '3/3 - Finalizing takeaways'}
-              {conversationStage === 'complete' && '✅ Complete'}
-            </span>
-          </div>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-            <div 
-  className="bg-gradient-to-r from-slate-700 to-teal-600 h-2 rounded-full transition-all duration-500"
-  style={{ 
-    width: conversationStage === 'topic-clarification' ? '33%' : 
-           conversationStage === 'angle-selection' ? '66%' : 
-           conversationStage === 'takeaways' ? '100%' : 
-           conversationStage === 'complete' ? '100%' : '0%'
-  }}
-></div>
-          </div>
-        </div>
-      )}
-
-      {/* Completion Actions */}
-{conversationStage === 'complete' && (
-        <div className="mt-6 bg-gradient-to-r from-slate-50 to-teal-50 rounded-lg border border-slate-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ready to Create Content!</h3>
-          <div className="grid gap-3 md:grid-cols-3">
-
-<button 
-  onClick={async () => {
-    // Auto-save idea to library
-    if (user && ideationOutput.topic) {
-      try {
-        await saveIdeaFromSession(
-          user.id,
-          currentSession?.id || `marcus-${Date.now()}`,
-          ideationOutput.topic,
-          ideationOutput.angle || '',
-          ideationOutput.takeaways || [],
-          'talk_with_marcus'
-        )
-        console.log('💡 Idea auto-saved to library')
-      } catch (error) {
-        console.error('Error auto-saving idea:', error)
-      }
-    }
-    
-    if (onNavigateToCreate && ideationOutput.topic) {
-      onNavigateToCreate('standard', {
-        topic: ideationOutput.topic,
-        angle: ideationOutput.angle || '',
-        takeaways: ideationOutput.takeaways || [],
-        source_page: 'talk_with_marcus',
-        session_id: currentSession?.id
-      })
-    }
-  }}
-  className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
->
-  <Target className="w-5 h-5 text-blue-600" />
-  <div className="text-left">
-    <div className="font-medium text-gray-900">Standard Mode</div>
-    <div className="text-sm text-gray-600">Full customization</div>
-  </div>
-</button>
-
-<button 
-  onClick={() => {
-    if (onNavigateToCreate && ideationOutput.topic) {
-      onNavigateToCreate('power', {
-        topic: ideationOutput.topic,
-        angle: ideationOutput.angle || '',
-        takeaways: ideationOutput.takeaways || [],
-        source_page: 'talk_with_marcus',
-        session_id: currentSession?.id
-      })
-    }
-  }}
-  className="flex items-center space-x-3 bg-white border border-gray-200 rounded-lg p-4 hover:border-slate-500 transition-colors"
->
-  <TrendingUp className="w-5 h-5 text-green-600" />
-  <div className="text-left">
-    <div className="font-medium text-gray-900">Writer Suite</div>
-    <div className="text-sm text-gray-600">Comprehensive</div>
-  </div>
-</button>
           </div>
         </div>
       )}
