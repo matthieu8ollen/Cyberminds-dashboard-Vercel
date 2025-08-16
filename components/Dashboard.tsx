@@ -74,7 +74,11 @@ export default function Dashboard() {
   // Page and Content States
   const [activePage, setActivePage] = useState<ActivePage>('ideas')
 const [inStandardMode, setInStandardMode] = useState(false)
-  const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
+const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
+
+// Strict Workflow State
+const [inStrictWorkflow, setInStrictWorkflow] = useState(false)
+const [workflowRoute, setWorkflowRoute] = useState<'ideas' | 'library' | 'direct' | null>(null)
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -420,14 +424,108 @@ const navigationItems = getNavigationItems()
   // Utility Functions
   const getCurrentDraftContent = () => generatedDrafts.find(d => d.type === selectedDraft)?.content || ''
   
-  const getProfileDisplayName = () => {
-    if (!user?.email) return 'Finance Professional'
-    const email = user.email
-    const firstName = email.split('@')[0].split('.')[0]
-    return firstName.charAt(0).toUpperCase() + firstName.slice(1)
+  // Atomic Workflow Control Functions
+const startWorkflowFromIdeas = (mode: 'standard' | 'power', ideationData: any) => {
+  console.log('🚀 Starting workflow from Ideas Hub:', { mode, ideationData })
+  
+  // Set workflow state
+  setInStrictWorkflow(true)
+  setWorkflowRoute('ideas')
+  setIdeationData(ideationData)
+  
+  // Atomic navigation - all state changes together
+  if (mode === 'power') {
+    setActivePage('writer-suite')
+    setWriterSuiteMode('selection')
+  } else {
+    setInStandardMode(true)
+    setActivePage('standard')
   }
+}
+
+const startWorkflowFromLibrary = (mode: 'standard' | 'power', idea: ContentIdea) => {
+  console.log('🚀 Starting workflow from Idea Library:', { mode, idea })
+  
+  // Set workflow state
+  setInStrictWorkflow(true)
+  setWorkflowRoute('library')
+  setIdeaFromLibrary(idea)
+  
+  // Convert idea to ideationData format
+  const ideationData = {
+    topic: idea.title,
+    angle: idea.description || '',
+    takeaways: idea.tags || [],
+    source_page: 'idea_library'
+  }
+  setIdeationData(ideationData)
+  
+  // Atomic navigation - all state changes together
+  if (mode === 'power') {
+    setActivePage('writer-suite')
+    setWriterSuiteMode('selection')
+  } else {
+    setInStandardMode(true)
+    setActivePage('standard')
+  }
+}
+
+const startWorkflowDirect = (targetPage: 'writer-suite' | 'standard') => {
+  console.log('🚀 Starting direct workflow to:', targetPage)
+  
+  // Set workflow state
+  setInStrictWorkflow(true)
+  setWorkflowRoute('direct')
+  
+  // Atomic navigation - all state changes together
+  if (targetPage === 'writer-suite') {
+    setActivePage('writer-suite')
+    setWriterSuiteMode('selection')
+  } else {
+    setInStandardMode(true)
+    setActivePage('standard')
+  }
+}
+
+const exitWorkflow = () => {
+  console.log('✅ Exiting strict workflow')
+  setInStrictWorkflow(false)
+  setWorkflowRoute(null)
+}
+
+const clearWorkflowState = () => {
+  console.log('🧹 Clearing all workflow state')
+  setInStrictWorkflow(false)
+  setWorkflowRoute(null)
+  setIdeationData(null)
+  setIdeaFromLibrary(null)
+}
+
+const getProfileDisplayName = () => {
+  if (!user?.email) return 'Finance Professional'
+  const email = user.email
+  const firstName = email.split('@')[0].split('.')[0]
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1)
+}
   
   const getProfileTitle = () => (profile?.role ? profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Chief Financial Officer')
+
+// Selective Navigation Protection (only when workflow active)
+const handleProtectedNavigation = (targetPage: ActivePage) => {
+  if (inStrictWorkflow) {
+    const confirmed = window.confirm(
+      "You'll lose your current progress if you navigate away. Are you sure you want to continue?"
+    )
+    if (confirmed) {
+      clearWorkflowState()
+      setActivePage(targetPage)
+    }
+    // If cancelled, do nothing - stay where we are
+  } else {
+    // Normal navigation when not in workflow
+    setActivePage(targetPage)
+  }
+}
 
   // Ideas Tab Logic
 const shouldShowIdeasTab = () => {
@@ -447,46 +545,14 @@ return <IdeasWrapper
   activeTab={ideasActiveTab}
   onTabChange={(tab) => setIdeasActiveTab(tab)}
   onNavigateToCreate={(mode, ideationData) => {
-    setIdeationData(ideationData)
-    
-    if (mode === 'power') {
-      setActivePage('writer-suite')
-      setWriterSuiteMode('selection')
-    } else if (mode === 'standard') {
-      setInStandardMode(true)
-      setActivePage('standard')
-    }
-  }}
+  startWorkflowFromIdeas(mode, ideationData)
+}}
   onUseInStandardMode={(idea) => {
-    setIdeaFromLibrary(idea)
-    
-    // Convert idea to ideationData format
-    const ideationData = {
-      topic: idea.title,
-      angle: idea.description || '',
-      takeaways: idea.tags || [],
-      source_page: 'idea_library'
-    }
-    setIdeationData(ideationData)
-    
-    setInStandardMode(true)
-    setActivePage('standard')
-  }}
-  onUseInWriterSuite={(idea) => {
-    setIdeaFromLibrary(idea)
-    
-    // Convert idea to ideationData format  
-    const ideationData = {
-      topic: idea.title,
-      angle: idea.description || '',
-      takeaways: idea.tags || [],
-      source_page: 'idea_library'
-    }
-    setIdeationData(ideationData)
-    
-    setActivePage('writer-suite')
-    setWriterSuiteMode('selection')
-  }}
+  startWorkflowFromLibrary('standard', idea)
+}}
+onUseInWriterSuite={(idea) => {
+  startWorkflowFromLibrary('power', idea)
+}}
   onWorkflowStateChange={(state) => {
     setIdeasWorkflowState(state)
   }}
@@ -496,17 +562,14 @@ return <IdeasWrapper
   if (writerSuiteMode === 'selection') {
     return (
       <WriterSuiteSelection
-        onModeSelect={(mode) => {
-          if (mode === 'writer-suite') {
-            // Enter Marcus mode within Writer Suite
-            setWriterSuiteMode('marcus')
-          } else if (mode === 'standard') {
-            // Enter Standard Mode
-            setInStandardMode(true)
-            setActivePage('standard')
-          }
-        }}
-      />
+  onModeSelect={(mode) => {
+    if (mode === 'writer-suite') {
+      setWriterSuiteMode('marcus')
+    } else if (mode === 'standard') {
+      startWorkflowDirect('standard')
+    }
+  }}
+/>
     )
   } else {
     // Show Marcus mode
@@ -645,11 +708,10 @@ return <IdeasWrapper
           </button>
           
           <button
-  onClick={() => {
-    setInStandardMode(true)
-    setActivePage('standard')
-  }}
-  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
+onClick={() => {
+  startWorkflowDirect('standard')
+}}
+className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
 >
   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
     <Zap className="w-6 h-6 text-blue-600" />
@@ -659,9 +721,11 @@ return <IdeasWrapper
 </button>
           
           <button
-            onClick={() => setActivePage('writer-suite')}
-            className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition-all duration-200 group"
-          >
+  onClick={() => {
+    startWorkflowDirect('writer-suite')
+  }}
+  className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition-all duration-200 group"
+>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
               <Sparkles className="w-6 h-6 text-purple-600" />
             </div>
