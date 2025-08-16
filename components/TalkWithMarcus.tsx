@@ -217,31 +217,31 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   };
 
   const createOrUpdateSession = async (updates: Partial<IdeationSession>) => {
-    if (!user) return
+  if (!user) return
 
-    try {
-      if (!currentSession) {
-        // Create new session
-        const { data } = await createIdeationSession({
-          user_id: user.id,
-          page_type: 'talk_with_marcus',
-          session_data: { messages, stage: conversationStage },
-          status: 'in_progress',
-          ...updates
-        })
-        if (data) setCurrentSession(data)
-      } else {
-        // Update existing session
-        const { data } = await updateIdeationSession(currentSession.id, {
-          session_data: { messages, stage: conversationStage },
-          ...updates
-        })
-        if (data) setCurrentSession(data)
-      }
-    } catch (error) {
-      console.error('Session management error:', error)
+  try {
+    if (!currentSession) {
+      // Create new session
+      const { data } = await createIdeationSession({
+        user_id: user.id,
+        page_type: 'talk_with_marcus',
+        session_data: { messages },
+        status: 'in_progress',
+        ...updates
+      })
+      if (data) setCurrentSession(data)
+    } else {
+      // Update existing session
+      const { data } = await updateIdeationSession(currentSession.id, {
+        session_data: { messages },
+        ...updates
+      })
+      if (data) setCurrentSession(data)
     }
+  } catch (error) {
+    console.error('Session management error:', error)
   }
+}
 
   const handleSendMessage = async () => {
     if (!inputText.trim()) return
