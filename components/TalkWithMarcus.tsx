@@ -431,24 +431,6 @@ const handleAIResponse = (response: any) => {
   }
 };
 
-// Rename existing function as fallback
-const processUserInputMock = async (input: string) => {
-  switch (conversationStage) {
-    case 'initial':
-      handleInitialTopic(input)
-      break
-    case 'topic-clarification':
-      handleTopicClarification(input)
-      break
-    case 'angle-selection':
-      handleAngleSelection(input)
-      break
-    case 'takeaways':
-      await handleTakeawaysConfirmation(input)
-      break
-  }
-}
-
 // NEW: AI Response Handlers
 const handleClarificationResponse = (response: any) => {
   addMessage('marcus', response.message);
