@@ -501,6 +501,15 @@ const clearWorkflowState = () => {
   setIdeaFromLibrary(null)
 }
 
+// Workflow state logger for debugging
+useEffect(() => {
+  console.log('🔄 Workflow State Changed:', { 
+    inStrictWorkflow, 
+    workflowRoute, 
+    activePage 
+  })
+}, [inStrictWorkflow, workflowRoute, activePage])
+
 const getProfileDisplayName = () => {
   if (!user?.email) return 'Finance Professional'
   const email = user.email
@@ -566,49 +575,73 @@ onUseInWriterSuite={(idea) => {
     if (mode === 'writer-suite') {
       setWriterSuiteMode('marcus')
     } else if (mode === 'standard') {
-      startWorkflowDirect('standard')
+      console.log('📋 WriterSuiteSelection → Standard Mode')
+      
+      if (inStrictWorkflow) {
+        console.log('✅ Exiting strict workflow to Standard Mode')
+        exitWorkflow()
+        setInStandardMode(true)
+        setActivePage('standard')
+      } else {
+        startWorkflowDirect('standard')
+      }
     }
   }}
 />
     )
   } else {
     // Show Marcus mode
-    return (
-      <WriterSuite 
-        onComplete={(data) => {
-          console.log('Writer Suite completed:', data)
-          // Reset back to selection after completion
-          setWriterSuiteMode('selection')
-        }}
-        onBack={() => {
-          // Return to mode selection
-          setWriterSuiteMode('selection')
-        }}
-      />
-    )
+return (
+  <WriterSuite 
+    onComplete={(data) => {
+      console.log('📋 WriterSuite completed - checking workflow state:', data)
+      
+      if (inStrictWorkflow) {
+        console.log('✅ Exiting strict workflow from WriterSuite')
+        exitWorkflow()
+        setActivePage('production')
+      } else {
+        console.log('📝 Normal WriterSuite completion')
+        setWriterSuiteMode('selection')
+      }
+    }}
+    onBack={() => {
+      // Return to mode selection
+      setWriterSuiteMode('selection')
+    }}
+  />
+)
   }
 
         case 'standard':
-  return (
-    <StandardGenerator
-      onSwitchMode={(mode) => {
-        if (mode === 'power') {
-          setInStandardMode(false)
-          setActivePage('writer-suite')
-        }
-      }}
-      onBack={() => {
+return (
+  <StandardGenerator
+    onSwitchMode={(mode) => {
+      if (mode === 'power') {
         setInStandardMode(false)
         setActivePage('writer-suite')
-      }}
-      onComplete={() => {
-        // Standard mode work completed - return to normal sidebar
-        setInStandardMode(false)
-        setActivePage('production')
-      }}
-      ideationData={ideationData}
-    />
-  )
+      }
+    }}
+    onBack={() => {
+      setInStandardMode(false)
+      setActivePage('writer-suite')
+    }}
+    onComplete={() => {
+  console.log('📋 StandardGenerator completed - checking workflow state')
+  
+  if (inStrictWorkflow) {
+    console.log('✅ Exiting strict workflow from StandardGenerator')
+    exitWorkflow()
+  } else {
+    console.log('📝 Normal StandardGenerator completion - no workflow to exit')
+  }
+  
+  setInStandardMode(false)
+  setActivePage('production')
+}}
+    ideationData={ideationData}
+  />
+)
         
       case 'production':
         return <ProductionPipeline />
@@ -785,8 +818,8 @@ className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:bord
               return (
                 <div key={item.id} className="relative group">
                   <button
-                    onClick={() => setActivePage(item.id)}
-                    className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
+  onClick={() => handleProtectedNavigation(item.id)}
+  className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative ${
   sidebarExpanded ? 'space-x-3' : 'justify-center'
 } ${
   isActive
