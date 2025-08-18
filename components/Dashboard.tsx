@@ -29,6 +29,7 @@ import ImageGeneration from './ImageGeneration'
 import IdeasWrapper from './IdeasWrapper'
 import WriterSuiteSelection from './WriterSuiteSelection'
 import RepurposeHub from './repurpose/RepurposeHub'
+import WorkflowProgressIndicator from './WorkflowProgressIndicator'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
@@ -976,14 +977,20 @@ className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:bord
       </nav>
 
       {/* Main Content Area */}
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
-   {/* Removed empty header to save space */}
+<div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
+  {/* Workflow Progress Indicator */}
+  {inStrictWorkflow && (
+    <WorkflowProgressIndicator 
+      route={workflowRoute}
+      currentPage={activePage}
+    />
+  )}
 
-        {/* Page Content */}
-        <main>
-          {renderPageContent()}
-        </main>
-      </div>
+  {/* Page Content */}
+  <main>
+    {renderPageContent()}
+  </main>
+</div>
 
       {/* Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsHelp 
