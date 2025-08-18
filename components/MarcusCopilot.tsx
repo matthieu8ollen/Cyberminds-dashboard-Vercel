@@ -18,13 +18,28 @@ interface MarcusCopilotProps {
   onBackToChoice?: () => void
   onComplete?: (data: any) => void
   onBack?: () => void
+  ideationData?: any
 }
 
-export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: MarcusCopilotProps = {}) {
-  const [marcusState, setMarcusState] = useState<MarcusState>({
-    currentPath: 'welcome',
-    conversationData: {}
-  })
+export default function MarcusCopilot({ onBackToChoice, onComplete, onBack, ideationData }: MarcusCopilotProps = {}) {
+  // Intelligent routing based on ideationData
+const getInitialState = (): MarcusState => {
+  if (ideationData) {
+    console.log('🎯 WriterSuite: Ideation data detected, jumping to Content Formulas:', ideationData)
+    return {
+      currentPath: 'formula',
+      conversationData: ideationData
+    }
+  } else {
+    console.log('🎯 WriterSuite: No ideation data, starting at Marcus welcome')
+    return {
+      currentPath: 'welcome',
+      conversationData: {}
+    }
+  }
+}
+
+const [marcusState, setMarcusState] = useState<MarcusState>(getInitialState())
 
   const handlePathSelect = (path: MarcusPath) => {
     setMarcusState(prev => ({
@@ -184,7 +199,12 @@ export default function MarcusCopilot({ onBackToChoice, onComplete, onBack }: Ma
   return <PathLeadMagnet onBack={handleBackToWelcome} />
 
       case 'formula':
-  return <PathFormula onBack={handleBackToWelcome} />
+return (
+  <PathFormula 
+    onBack={handleBackToWelcome}
+    ideationData={marcusState.conversationData}
+  />
+)
 
       default:
         return renderWelcomeScreen()
