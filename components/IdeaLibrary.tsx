@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ContentIdea, createContentIdea, getContentIdeas, updateContentIdea } from '../lib/supabase'
-import { Crown, Filter, Search, X, Plus, Edit3, Trash2, Archive, BarChart3, Users, Target, TrendingUp, Sparkles, Zap, ArrowRight } from 'lucide-react'
+import { Crown, Filter, Search, X, Plus, Edit3, Trash2, Archive, BarChart3, Users, Target, TrendingUp, Sparkles, Zap, ArrowRight, ChevronDown, Tag, Clock } from 'lucide-react'
 
 type FilterType = 'all' | 'industry_trends' | 'case_studies' | 'saas_metrics' | 'leadership' | 'career_advice' | 'market_insights' | 'tools_tech' | 'personal_stories'
 type CategoryType = 'all' | 'authority' | 'growth' | 'personal' | 'educational'
