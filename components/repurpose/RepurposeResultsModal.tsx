@@ -286,28 +286,43 @@ const saveToIdeas = async () => {
           </div>
 
           {/* Actions - Full Width */}
-          <div className="border-t border-gray-200 px-8 py-6">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={saveToIdeas}
-                disabled={isSaving}
-                className="flex items-center justify-center space-x-2 p-4 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
-              >
-                <BookOpen className="w-5 h-5" />
-                <span className="font-medium text-base">
-                  {isSaving ? 'Saving...' : 'Save to Ideas'}
-                </span>
-              </button>
+<div className="border-t border-gray-200 px-8 py-6">
+  <div className="grid grid-cols-3 gap-3">
+    <button
+      onClick={saveToIdeas}
+      disabled={isSaving}
+      className="flex items-center justify-center space-x-2 p-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+    >
+      <BookOpen className="w-4 h-4" />
+      <span className="font-medium text-sm">
+        {isSaving ? 'Saving...' : 'Save to Ideas'}
+      </span>
+    </button>
+    
+    <button
+      onClick={async () => {
+        // Save ideas and exit workflow without creating content
+        await saveToIdeas()
+        console.log('💾 Ideas saved, exiting without workflow')
+        // Modal will close automatically after saveToIdeas completes
+      }}
+      className="flex items-center justify-center space-x-2 p-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition border border-slate-300"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+      <span className="font-medium text-sm">💾 Save & Exit</span>
+    </button>
 
-              <button
-                onClick={createPost}
-                className="flex items-center justify-center space-x-2 p-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
-              >
-                <Edit3 className="w-5 h-5" />
-                <span className="font-medium text-base">Create Post</span>
-              </button>
-            </div>
-          </div>
+    <button
+      onClick={createPost}
+      className="flex items-center justify-center space-x-2 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+    >
+      <Edit3 className="w-4 h-4" />
+      <span className="font-medium text-sm">Create Post</span>
+    </button>
+  </div>
+</div>
         </div>
       </div>
     </div>
