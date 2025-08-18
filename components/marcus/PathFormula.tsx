@@ -27,6 +27,7 @@ export default function PathFormula({ onBack, ideationData }: PathFormulaProps) 
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
+  const [editingContent, setEditingContent] = useState('')
   const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
   const { showToast } = useToast()
   const handleWritingComplete = (content: string) => {
@@ -66,8 +67,10 @@ const renderIdeationContext = () => {
 }
 
   const handleBackToWriting = () => {
-    setCurrentStep('writing')
-  }
+  // Store the current content for pre-filling
+  setEditingContent(generatedContent)
+  setCurrentStep('writing')
+}
 
   const formulas: FormulaTemplate[] = [
     {
