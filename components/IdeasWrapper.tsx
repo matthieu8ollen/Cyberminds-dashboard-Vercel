@@ -13,8 +13,9 @@ interface IdeasWrapperProps {
   onNavigateToCreate?: (mode: 'standard' | 'power', ideationData: any) => void
   onUseInStandardMode?: (idea: ContentIdea) => void
   onUseInWriterSuite?: (idea: ContentIdea) => void
+  onUseThisContent?: (idea: ContentIdea) => void
   onWorkflowStateChange?: (state: 'top-level' | 'in-ideation-subpage' | 'in-creation-flow') => void
-  onTabChange?: (tab: 'hub' | 'library') => void  // Add this
+  onTabChange?: (tab: 'hub' | 'library') => void
 }
 
 export default function IdeasWrapper({ 
@@ -23,6 +24,7 @@ export default function IdeasWrapper({
   onNavigateToCreate, 
   onUseInStandardMode, 
   onUseInWriterSuite,
+  onUseThisContent,
   onWorkflowStateChange
 }: IdeasWrapperProps) {
   const [workflowState, setWorkflowState] = useState<WorkflowState>('top-level')
@@ -56,12 +58,20 @@ export default function IdeasWrapper({
   }
 
   const handleUseInWriterSuite = (idea: ContentIdea) => {
-    setWorkflowState('in-creation-flow') // This will hide header
-    setFromLibrary(true)
-    if (onUseInWriterSuite) {
-      onUseInWriterSuite(idea)
-    }
+  setWorkflowState('in-creation-flow') // This will hide header
+  setFromLibrary(true)
+  if (onUseInWriterSuite) {
+    onUseInWriterSuite(idea)
   }
+}
+
+const handleUseThisContent = (idea: ContentIdea) => {
+  setWorkflowState('in-creation-flow') // This will hide header
+  setFromLibrary(true)
+  if (onUseThisContent) {
+    onUseThisContent(idea)
+  }
+}
 
   const handleHubPageChange = (page: string) => {
     setHubSubPage(page)
@@ -135,9 +145,10 @@ export default function IdeasWrapper({
           />
         ) : (
           <IdeaLibrary 
-            onUseInStandardMode={handleUseInStandardMode}
-            onUseInWriterSuite={handleUseInWriterSuite}
-          />
+  onUseInStandardMode={handleUseInStandardMode}
+  onUseInWriterSuite={handleUseInWriterSuite}
+  onUseThisContent={handleUseThisContent}
+/>
         )}
       </div>
     </div>
