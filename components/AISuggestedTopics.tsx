@@ -91,14 +91,14 @@ export default function AISuggestedTopics({ onBack, onNavigateToCreate }: AISugg
     
     try {
       const { data, error } = await createContentIdea({
-        user_id: user.id,
-        title: topic.title,
-        description: topic.description,
-        tags: topic.key_points,
-        content_pillar: 'ai_generated',
-        source_type: 'ai_suggested',
-        status: 'active'
-      })
+  user_id: user.id,
+  title: topic.title,
+  description: topic.description,
+  tags: topic.key_points,
+  content_pillar: 'ai_generated',
+  source_type: 'ai_generated',
+  status: 'active'
+})
       
       if (error) throw error
       console.log('AI suggested topic saved to library:', data)
