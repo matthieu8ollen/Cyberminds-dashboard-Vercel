@@ -717,32 +717,61 @@ const sendToWritersSuite = (topic: any) => {
                   </div>
 
                   {/* Action Buttons */}
-<div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex justify-between items-center">
-                    <button
-                      onClick={() => setShowTopicOverlay(false)}
-                      className="text-gray-600 hover:text-gray-800 font-medium flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
-                      <span>Back to Chat</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        const selectedTopic = {
-                          ...topic,
-                          selectedHook: selectedHook || topic.hooks?.[0],
-                          selectedHookIndex: selectedHookIndex || 0
-                        };
-                        sendToWritersSuite(selectedTopic);
-                        setShowTopicOverlay(false);
-                      }}
-                      className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition font-medium"
-                    >
-                      Use This Content
-                    </button>
-                  </div>
+<div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
+  <div className="flex justify-between items-center mb-4">
+    <button
+      onClick={() => setShowTopicOverlay(false)}
+      className="text-gray-600 hover:text-gray-800 font-medium flex items-center space-x-2"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Back to Chat</span>
+    </button>
+  </div>
+  
+  <div className="grid grid-cols-2 gap-3">
+    <button
+      onClick={async () => {
+        // Save idea to library without starting workflow
+        if (user && topicsData?.[0]) {
+          const topicData = topicsData[0]
+          const success = await saveIdeaToLibrary(
+            topicData.title || 'AI Generated Topic',
+            selectedHook || topicData.hooks?.[0] || '',
+            topicData.key_takeaways || []
+          )
+          if (success) {
+            console.log('💾 Idea saved to library, exiting without workflow')
+            setShowTopicOverlay(false)
+            // Stay in normal navigation - don't start workflow
+          }
+        }
+      }}
+      className="flex items-center justify-center space-x-2 bg-slate-100 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-200 transition font-medium border border-slate-300"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+      <span>💾 Save Idea & Exit</span>
+    </button>
+    
+    <button
+      onClick={() => {
+        const selectedTopic = {
+          ...topicsData[0],
+          selectedHook: selectedHook || topicsData[0]?.hooks?.[0],
+          selectedHookIndex: selectedHookIndex || 0
+        };
+        sendToWritersSuite(selectedTopic);
+        setShowTopicOverlay(false);
+      }}
+      className="bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 transition font-medium"
+    >
+      Use This Content
+    </button>
+  </div>
+</div>
                 </div>
               ))}
             </div>
