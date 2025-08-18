@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, ArrowRight, MessageCircle, FileText, Magnet, BookOpen } from 'lucide-react'
 import PathFormula from './marcus/PathFormula'
 import PathTopicAngle from './marcus/PathTopicAngle'
@@ -22,24 +22,20 @@ interface MarcusCopilotProps {
 }
 
 export default function MarcusCopilot({ onBackToChoice, onComplete, onBack, ideationData }: MarcusCopilotProps = {}) {
-  // Intelligent routing based on ideationData
-const getInitialState = (): MarcusState => {
+  // Simplified initial state
+const [marcusState, setMarcusState] = useState<MarcusState>({
+  currentPath: ideationData ? 'formula' : 'welcome',
+  conversationData: ideationData || {}
+})
+
+// Add useEffect for logging
+useEffect(() => {
   if (ideationData) {
     console.log('🎯 WriterSuite: Ideation data detected, jumping to Content Formulas:', ideationData)
-    return {
-      currentPath: 'formula',
-      conversationData: ideationData
-    }
   } else {
     console.log('🎯 WriterSuite: No ideation data, starting at Marcus welcome')
-    return {
-      currentPath: 'welcome',
-      conversationData: {}
-    }
   }
-}
-
-const [marcusState, setMarcusState] = useState<MarcusState>(getInitialState())
+}, [ideationData])
 
   const handlePathSelect = (path: MarcusPath) => {
     setMarcusState(prev => ({
