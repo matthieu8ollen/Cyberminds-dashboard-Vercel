@@ -758,14 +758,14 @@ const sendToWritersSuite = (topic: any) => {
     
     <button
       onClick={() => {
-        const selectedTopic = {
-          ...topicsData[0],
-          selectedHook: selectedHook || topicsData[0]?.hooks?.[0],
-          selectedHookIndex: selectedHookIndex || 0
-        };
-        sendToWritersSuite(selectedTopic);
-        setShowTopicOverlay(false);
-      }}
+  const selectedTopic = {
+    ...(topicsData[0] as any),
+    selectedHook: selectedHook || (topicsData[0] as any)?.hooks?.[0],
+    selectedHookIndex: selectedHookIndex || 0
+  };
+  sendToWritersSuite(selectedTopic);
+  setShowTopicOverlay(false);
+}}
       className="bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 transition font-medium"
     >
       Use This Content
