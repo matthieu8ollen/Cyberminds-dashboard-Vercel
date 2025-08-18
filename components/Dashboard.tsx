@@ -12,7 +12,7 @@ import {
   GeneratedContent,
   ContentIdea
 } from '../lib/supabase'
-import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera, ArrowRight, MessageCircle, Archive } from 'lucide-react'
+import { LogOut, Settings, BarChart3, Zap, User, Lightbulb, Calendar, BarChart, Rss, Sparkles, Target, TrendingUp, Eye, Camera, ArrowRight, MessageCircle, Archive, CheckCircle, Circle } from 'lucide-react'
 import WriterSuite from './WriterSuite'
 import LinkedInPreview from './LinkedInPreview'
 import ProductionPipeline from './ProductionPipeline'
