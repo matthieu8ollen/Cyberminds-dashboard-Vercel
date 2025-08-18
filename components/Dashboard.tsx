@@ -614,6 +614,7 @@ return (
       // Return to mode selection
       setWriterSuiteMode('selection')
     }}
+    ideationData={ideationData}
   />
 )
   }
