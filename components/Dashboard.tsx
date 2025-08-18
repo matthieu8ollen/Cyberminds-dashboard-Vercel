@@ -563,6 +563,10 @@ return <IdeasWrapper
 onUseInWriterSuite={(idea) => {
   startWorkflowFromLibrary('power', idea)
 }}
+onUseThisContent={(idea) => {
+  console.log('📋 IdeaLibrary → Use This Content → WriterSuiteSelection')
+  startWorkflowFromLibrary('power', idea)
+}}
   onWorkflowStateChange={(state) => {
     setIdeasWorkflowState(state)
   }}
