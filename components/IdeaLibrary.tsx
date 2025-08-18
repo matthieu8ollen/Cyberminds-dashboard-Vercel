@@ -3,19 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ContentIdea, createContentIdea, getContentIdeas, updateContentIdea } from '../lib/supabase'
-import { 
-  Filter, 
-  TrendingUp, 
-  Target, 
-  BarChart3, 
-  Users,
-  ChevronDown,
-  Sparkles,
-  Clock,
-  Tag,
-  Zap,
-  Crown
-} from 'lucide-react'
+import { Crown, Filter, Search, X, Plus, Edit3, Trash2, Archive, BarChart3, Users, Target, TrendingUp, Sparkles, Zap, ArrowRight } from 'lucide-react'
 
 type FilterType = 'all' | 'industry_trends' | 'case_studies' | 'saas_metrics' | 'leadership' | 'career_advice' | 'market_insights' | 'tools_tech' | 'personal_stories'
 type CategoryType = 'all' | 'authority' | 'growth' | 'personal' | 'educational'
@@ -43,9 +31,10 @@ const CATEGORIES = [
 interface IdeaLibraryProps {
   onUseInStandardMode?: (idea: ContentIdea) => void
   onUseInWriterSuite?: (idea: ContentIdea) => void
+  onUseThisContent?: (idea: ContentIdea) => void
 }
 
-export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }: IdeaLibraryProps) {
+export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, onUseThisContent }: IdeaLibraryProps) {
   const { user, profile } = useAuth()
   const [ideas, setIdeas] = useState<ContentIdea[]>([])
   const [loading, setLoading] = useState(false)
@@ -286,24 +275,16 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite }:
                 )}
               </div>
               
-              {/* Action Buttons */}
-<div className="space-y-2">
-  <div className="flex gap-2">
-    <button
-      onClick={() => onUseInStandardMode?.(idea)}
-      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
-    >
-      <Zap className="w-4 h-4" />
-      Standard
-    </button>
-    <button
-      onClick={() => onUseInWriterSuite?.(idea)}
-      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition"
-    >
-      <Crown className="w-4 h-4" />
-      Writer Suite
-    </button>
-  </div>
+              {/* Action Button */}
+<div className="mb-2">
+  <button
+    onClick={() => onUseThisContent?.(idea)}
+    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition"
+  >
+    <ArrowRight className="w-4 h-4" />
+    Use This Content
+  </button>
+</div>
   
   {/* Dismiss Actions */}
   <div className="flex gap-1">
