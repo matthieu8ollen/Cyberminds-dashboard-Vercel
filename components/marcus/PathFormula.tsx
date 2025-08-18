@@ -20,9 +20,10 @@ interface FormulaTemplate {
 
 interface PathFormulaProps {
   onBack: () => void
+  ideationData?: any
 }
 
-export default function PathFormula({ onBack }: PathFormulaProps) {
+export default function PathFormula({ onBack, ideationData }: PathFormulaProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
@@ -32,6 +33,37 @@ export default function PathFormula({ onBack }: PathFormulaProps) {
     setGeneratedContent(content)
     setCurrentStep('preview')
   }
+
+  // Display pre-existing ideation data if available
+const renderIdeationContext = () => {
+  if (!ideationData) return null
+  
+  return (
+    <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <CheckCircle className="w-5 h-5 text-teal-600" />
+        <h4 className="font-semibold text-teal-900">Your Ideation Data</h4>
+      </div>
+      <div className="space-y-2 text-sm">
+        <div><strong>Topic:</strong> {ideationData.topic}</div>
+        {ideationData.angle && <div><strong>Angle:</strong> {ideationData.angle}</div>}
+        {ideationData.takeaways?.length > 0 && (
+          <div>
+            <strong>Key Takeaways:</strong>
+            <ul className="list-disc list-inside ml-4 mt-1">
+              {ideationData.takeaways.map((takeaway: string, index: number) => (
+                <li key={index} className="text-teal-800">{takeaway}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <div className="text-xs text-teal-600 mt-2">
+          ✨ This data will be used to pre-populate your content structure
+        </div>
+      </div>
+    </div>
+  )
+}
 
   const handleBackToWriting = () => {
     setCurrentStep('writing')
@@ -136,7 +168,11 @@ export default function PathFormula({ onBack }: PathFormulaProps) {
   }
 
   const renderFormulaSelection = () => (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {/* Ideation Context */}
+    {renderIdeationContext()}
+    
+    {/* Existing header content continues... */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Content Formula</h1>
