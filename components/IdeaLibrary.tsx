@@ -302,7 +302,6 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
     </button>
   </div>
 </div>
-            </div>
           ))}
         </div>
       )}
