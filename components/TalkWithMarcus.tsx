@@ -733,21 +733,21 @@ const sendToWritersSuite = (topic: any) => {
   <div className="grid grid-cols-2 gap-3">
     <button
       onClick={async () => {
-        // Save idea to library without starting workflow
-        if (user && topicsData?.[0]) {
-          const topicData = topicsData[0]
-          const success = await saveIdeaToLibrary(
-            topicData.title || 'AI Generated Topic',
-            selectedHook || topicData.hooks?.[0] || '',
-            topicData.key_takeaways || []
-          )
-          if (success) {
-            console.log('💾 Idea saved to library, exiting without workflow')
-            setShowTopicOverlay(false)
-            // Stay in normal navigation - don't start workflow
-          }
-        }
-      }}
+  // Save idea to library without starting workflow
+  if (user && topicsData?.[0]) {
+    const topicData = topicsData[0] as any
+    const success = await saveIdeaToLibrary(
+      topicData?.title || 'AI Generated Topic',
+      selectedHook || topicData?.hooks?.[0] || '',
+      topicData?.key_takeaways || []
+    )
+    if (success) {
+      console.log('💾 Idea saved to library, exiting without workflow')
+      setShowTopicOverlay(false)
+      // Stay in normal navigation - don't start workflow
+    }
+  }
+}}
       className="flex items-center justify-center space-x-2 bg-slate-100 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-200 transition font-medium border border-slate-300"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
