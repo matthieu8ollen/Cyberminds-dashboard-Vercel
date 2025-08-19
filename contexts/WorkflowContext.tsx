@@ -27,6 +27,7 @@ interface WorkflowContextType {
   saveProgress: (stageData: any) => Promise<void>
   loadUserProgress: () => Promise<void>
   clearProgress: () => Promise<void>
+  clearAllProgress: () => Promise<void>
 }
 
 const WorkflowContext = createContext<WorkflowContextType | undefined>(undefined)
@@ -242,19 +243,42 @@ const setupAutoSave = () => {
   setCurrentStage('ideas')
 }
 
-  const contextValue: WorkflowContextType = {
-    workflowState,
-    ideationData,
-    currentStage,
-    startIdeation,
-    moveToCreate,
-    moveToImages,
-    moveToPipeline,
-    completeWorkflow,
-    saveProgress,
-    loadUserProgress,
-    clearProgress
+  const clearAllProgress = async () => {
+  if (!user) return
+  
+  try {
+    console.log('🧹 Clearing ALL workflow states for user')
+    const { error } = await supabase
+      .from('workflow_states')
+      .delete()
+      .eq('user_id', user.id)
+    
+    if (error) throw error
+    
+    console.log('✅ All workflow states cleared')
+  } catch (error) {
+    console.error('Error clearing all workflow states:', error)
   }
+  
+  setWorkflowState(null)
+  setIdeationData(null)
+  setCurrentStage('ideas')
+}
+
+  const contextValue: WorkflowContextType = {
+  workflowState,
+  ideationData,
+  currentStage,
+  startIdeation,
+  moveToCreate,
+  moveToImages,
+  moveToPipeline,
+  completeWorkflow,
+  saveProgress,
+  loadUserProgress,
+  clearProgress,
+  clearAllProgress
+}
 
   return (
     <WorkflowContext.Provider value={contextValue}>
