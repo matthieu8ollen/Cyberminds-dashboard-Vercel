@@ -493,6 +493,9 @@ const exitWorkflow = () => {
   setInStrictWorkflow(false)
   setWorkflowRoute(null)
   setIdeationData(null)
+  
+  // Clear WorkflowContext database state
+  clearProgress()
 }
 
 const clearWorkflowState = () => {
@@ -501,6 +504,9 @@ const clearWorkflowState = () => {
   setWorkflowRoute(null)
   setIdeationData(null)
   setIdeaFromLibrary(null)
+  
+  // Clear WorkflowContext database state
+  clearProgress()
 }
 
 // Workflow state logger for debugging
