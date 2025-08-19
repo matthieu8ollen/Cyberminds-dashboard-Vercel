@@ -8,7 +8,8 @@ import {
   getUserWorkflowState,
   deleteWorkflowState,
   WorkflowState,
-  IdeationOutput 
+  IdeationOutput,
+  supabase
 } from '../lib/supabase'
 
 interface WorkflowContextType {
