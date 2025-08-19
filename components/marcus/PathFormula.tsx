@@ -25,13 +25,15 @@ interface PathFormulaProps {
   ideationData?: any
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 export default function PathFormula({ 
   onBack, 
   ideationData, 
   onExitWorkflow, 
-  onContinueToImages 
+  onContinueToImages,
+  onUserStartedWorking
 }: PathFormulaProps) {
   const { user, profile } = useAuth()
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
@@ -179,8 +181,12 @@ const renderIdeationContext = () => {
   }
 
   const handleStartWriting = () => {
-    setCurrentStep('writing')
+  // User has started working - enable navigation protection
+  if (onUserStartedWorking) {
+    onUserStartedWorking()
   }
+  setCurrentStep('writing')
+}
 
   const renderFormulaSelection = () => (
   <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
