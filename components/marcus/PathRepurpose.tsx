@@ -8,6 +8,10 @@ import { GeneratedContent } from '../../lib/supabase'
 
 interface RepurposeProps {
   onBack: () => void
+  ideationData?: any
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 interface ContentAnalysis {
@@ -28,7 +32,13 @@ interface LinkedInAngle {
   bestFor: string
 }
 
-export default function PathRepurpose({ onBack }: RepurposeProps) {
+export default function PathRepurpose({ 
+  onBack, 
+  ideationData, 
+  onExitWorkflow, 
+  onContinueToImages,
+  onUserStartedWorking
+}: RepurposeProps) {
   const [currentStep, setCurrentStep] = useState<'input' | 'analysis' | 'angles' | 'preview'>('input')
   const [contentInput, setContentInput] = useState('')
   const [contentUrl, setContentUrl] = useState('')
