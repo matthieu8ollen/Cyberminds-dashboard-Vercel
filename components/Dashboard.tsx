@@ -611,10 +611,19 @@ return (
       }
     }}
     onBack={() => {
-      // Return to mode selection
       setWriterSuiteMode('selection')
     }}
     ideationData={ideationData}
+    onExitWorkflow={() => {
+      console.log('🚪 Exit workflow from PathFormula')
+      exitWorkflow()
+      setActivePage('production')
+    }}
+    onContinueToImages={(contentId: string) => {
+      console.log('🖼️ Continue to images from PathFormula:', contentId)
+      localStorage.setItem('workflowContentId', contentId)
+      setActivePage('images')
+    }}
   />
 )
   }
