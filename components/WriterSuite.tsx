@@ -8,6 +8,7 @@ interface WriterSuiteProps {
   ideationData?: any
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 export default function WriterSuite({ 
@@ -15,7 +16,8 @@ export default function WriterSuite({
   onBack, 
   ideationData, 
   onExitWorkflow, 
-  onContinueToImages 
+  onContinueToImages,
+  onUserStartedWorking
 }: WriterSuiteProps) {
   return (
   <MarcusCopilot 
@@ -24,6 +26,7 @@ export default function WriterSuite({
     ideationData={ideationData}
     onExitWorkflow={onExitWorkflow}
     onContinueToImages={onContinueToImages}
+    onUserStartedWorking={onUserStartedWorking}
   />
 )
 }
