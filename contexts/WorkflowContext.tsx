@@ -6,6 +6,7 @@ import {
   saveWorkflowState, 
   updateWorkflowState, 
   getUserWorkflowState,
+  deleteWorkflowState,
   WorkflowState,
   IdeationOutput 
 } from '../lib/supabase'
