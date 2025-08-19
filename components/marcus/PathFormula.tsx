@@ -44,7 +44,10 @@ export default function PathFormula({
 
   // Display pre-existing ideation data if available
 const renderIdeationContext = () => {
-  if (!ideationData) return null
+  // Only show if we have meaningful ideation data
+  if (!ideationData || !ideationData.topic || ideationData.topic.trim() === '') {
+    return null
+  }
   
   return (
     <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
