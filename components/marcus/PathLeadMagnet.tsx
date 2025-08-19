@@ -8,6 +8,10 @@ import { GeneratedContent } from '../../lib/supabase'
 
 interface LeadMagnetProps {
   onBack: () => void
+  ideationData?: any
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 interface LeadMagnetType {
@@ -30,7 +34,13 @@ interface ConversionStrategy {
   conversionBoost: string
 }
 
-export default function PathLeadMagnet({ onBack }: LeadMagnetProps) {
+export default function PathLeadMagnet({ 
+  onBack, 
+  ideationData, 
+  onExitWorkflow, 
+  onContinueToImages,
+  onUserStartedWorking
+}: LeadMagnetProps) {
   const [currentStep, setCurrentStep] = useState<'strategy' | 'magnet-type' | 'content-bridge' | 'preview'>('strategy')
   const [selectedStrategy, setSelectedStrategy] = useState<ConversionStrategy | null>(null)
   const [selectedMagnet, setSelectedMagnet] = useState<LeadMagnetType | null>(null)
