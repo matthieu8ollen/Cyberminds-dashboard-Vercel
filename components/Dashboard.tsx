@@ -659,7 +659,21 @@ return (
         return <SettingsPage />
 
         case 'images':
-  return <ImageGeneration />
+return (
+  <ImageGeneration 
+    inStrictWorkflow={inStrictWorkflow}
+    onCompleteWorkflow={() => {
+      console.log('🎯 Images workflow completed')
+      exitWorkflow()
+      setActivePage('production')
+    }}
+    onExitWorkflow={() => {
+      console.log('🚪 Images workflow exited')
+      clearWorkflowState()
+      setActivePage('production')
+    }}
+  />
+)
       
       case 'analytics':
         return (
