@@ -19,9 +19,18 @@ interface MarcusCopilotProps {
   onComplete?: (data: any) => void
   onBack?: () => void
   ideationData?: any
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
 }
 
-export default function MarcusCopilot({ onBackToChoice, onComplete, onBack, ideationData }: MarcusCopilotProps = {}) {
+export default function MarcusCopilot({ 
+  onBackToChoice, 
+  onComplete, 
+  onBack, 
+  ideationData, 
+  onExitWorkflow, 
+  onContinueToImages 
+}: MarcusCopilotProps = {}) {
   // Simplified initial state
 const [marcusState, setMarcusState] = useState<MarcusState>({
   currentPath: ideationData ? 'formula' : 'welcome',
@@ -195,12 +204,14 @@ useEffect(() => {
   return <PathLeadMagnet onBack={handleBackToWelcome} />
 
       case 'formula':
-return (
-  <PathFormula 
-    onBack={handleBackToWelcome}
-    ideationData={marcusState.conversationData}
-  />
-)
+  return (
+    <PathFormula 
+      onBack={handleBackToWelcome}
+      ideationData={marcusState.conversationData}
+      onExitWorkflow={onExitWorkflow}
+      onContinueToImages={onContinueToImages}
+    />
+  )
 
       default:
         return renderWelcomeScreen()
