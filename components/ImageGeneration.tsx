@@ -34,7 +34,17 @@ interface GeneratedImage {
   revised_prompt?: string
 }
 
-export default function ImageGeneration() {
+interface ImageGenerationProps {
+  inStrictWorkflow?: boolean
+  onCompleteWorkflow?: () => void
+  onExitWorkflow?: () => void
+}
+
+export default function ImageGeneration({ 
+  inStrictWorkflow = false, 
+  onCompleteWorkflow, 
+  onExitWorkflow 
+}: ImageGenerationProps) {
   const { user } = useAuth()
   const { 
     draftContent, 
@@ -71,30 +81,47 @@ export default function ImageGeneration() {
     }
   }, [selectedContent])
 
-  // Auto-select content if coming from Production Pipeline
-  useEffect(() => {
-    const selectedContentFromStorage = localStorage.getItem('selectedContentForImage')
-    if (selectedContentFromStorage) {
-      try {
-        const contentData = JSON.parse(selectedContentFromStorage)
-        
-        // Find the content in current data and select it
-        const allContent = [...draftContent, ...scheduledContent]
-        const matchingContent = allContent.find(c => c.id === contentData.id)
-        
-        if (matchingContent) {
-          setSelectedContent(matchingContent)
-          // Set the appropriate tab
-          setActiveTab(matchingContent.status === 'scheduled' ? 'scheduled' : 'draft')
-        }
-        
-        // Clean up localStorage
-        localStorage.removeItem('selectedContentForImage')
-      } catch (error) {
-        console.error('Error parsing selected content from storage:', error)
-      }
+  // Auto-select content if coming from Production Pipeline or Workflow
+useEffect(() => {
+  // Check for workflow content first
+  const workflowContentId = localStorage.getItem('workflowContentId')
+  if (workflowContentId && inStrictWorkflow) {
+    const allContent = [...draftContent, ...scheduledContent]
+    const workflowContent = allContent.find(c => c.id === workflowContentId)
+    
+    if (workflowContent) {
+      console.log('🎯 Auto-selecting workflow content:', workflowContent.title)
+      setSelectedContent(workflowContent)
+      setActiveTab('draft') // Workflow content is always draft
+      // Clear the workflow content ID
+      localStorage.removeItem('workflowContentId')
+      return
     }
-  }, [draftContent, scheduledContent])
+  }
+  
+  // Fallback to Production Pipeline selection
+  const selectedContentFromStorage = localStorage.getItem('selectedContentForImage')
+  if (selectedContentFromStorage) {
+    try {
+      const contentData = JSON.parse(selectedContentFromStorage)
+      
+      // Find the content in current data and select it
+      const allContent = [...draftContent, ...scheduledContent]
+      const matchingContent = allContent.find(c => c.id === contentData.id)
+      
+      if (matchingContent) {
+        setSelectedContent(matchingContent)
+        // Set the appropriate tab
+        setActiveTab(matchingContent.status === 'scheduled' ? 'scheduled' : 'draft')
+      }
+      
+      // Clean up localStorage
+      localStorage.removeItem('selectedContentForImage')
+    } catch (error) {
+      console.error('Error parsing selected content from storage:', error)
+    }
+  }
+}, [draftContent, scheduledContent, inStrictWorkflow])
 
   const handleContentSelect = (content: any) => {
     setSelectedContent(content)
@@ -223,8 +250,37 @@ export default function ImageGeneration() {
     }
   }
 
-  return (
-    <div className="flex h-screen bg-gray-50">
+ return (
+  <div className="flex h-screen bg-gray-50">
+    {/* Workflow Progress Indicator */}
+    {inStrictWorkflow && (
+      <div className="fixed top-0 left-16 right-0 z-40 bg-gradient-to-r from-slate-50 to-teal-50 border-b border-teal-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-5 h-5 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-slate-700">Workflow Active: Final Step</span>
+                <div className="text-xs text-slate-600">Add an image to complete your content</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-slate-500">Step 3 of 3</span>
+              <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full w-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    
+    <div className={`flex w-full ${inStrictWorkflow ? 'pt-16' : ''}`}>
       {/* Left Panel - Content Selection */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
@@ -391,6 +447,57 @@ export default function ImageGeneration() {
                 )}
               </div>
             </div>
+
+            {/* Workflow Completion Panel */}
+            {inStrictWorkflow && selectedContent && (
+              <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-b border-teal-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-teal-600" />
+                    <div>
+                      <h3 className="font-semibold text-teal-900">Complete Your Workflow</h3>
+                      <p className="text-sm text-teal-700">Add an image to finish your content creation</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        if (onExitWorkflow) {
+                          const confirmed = window.confirm(
+                            "Leave without attaching an image? Your content is saved, but you won't complete the full workflow."
+                          )
+                          if (confirmed) {
+                            onExitWorkflow()
+                          }
+                        }
+                      }}
+                      className="px-3 py-2 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                    >
+                      Exit Workflow
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (selectedContent?.image_url && onCompleteWorkflow) {
+                          onCompleteWorkflow()
+                        } else {
+                          showToast('info', 'Please attach an image to complete the workflow')
+                        }
+                      }}
+                      disabled={!selectedContent?.image_url}
+                      className={`px-4 py-2 text-sm rounded-lg font-medium transition ${
+                        selectedContent?.image_url
+                          ? 'bg-teal-600 text-white hover:bg-teal-700'
+                          : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Complete Workflow
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Content */}
             <div className="flex-1 flex flex-col min-h-0">
