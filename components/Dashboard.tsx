@@ -73,7 +73,7 @@ export default function Dashboard() {
   const showProfileMenu = profileMenuHoverActive || profileMenuClickActive
 
   // Page and Content States
-  const [activePage, setActivePage] = useState<ActivePage>('ideas')
+  const [activePage, setActivePage] = useState<ActivePage>('welcome')
 const [inStandardMode, setInStandardMode] = useState(false)
 const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('selection')
 
@@ -1018,12 +1018,12 @@ return (
       {/* Main Content Area */}
 <div className={`flex-1 transition-all duration-300 ease-in-out ${sidebarExpanded ? 'ml-60' : 'ml-16'}`}>
   {/* Workflow Progress Indicator */}
-  {inStrictWorkflow && (
-    <WorkflowProgressIndicator 
-      route={workflowRoute}
-      currentPage={activePage}
-    />
-  )}
+      {inStrictWorkflow && workflowRoute !== 'direct' && (
+        <WorkflowProgressIndicator 
+          route={workflowRoute}
+          currentPage={activePage}
+        />
+      )}
 
   {/* Page Content */}
   <main>
