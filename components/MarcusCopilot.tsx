@@ -197,13 +197,37 @@ useEffect(() => {
   const renderPathContent = () => {
     switch (marcusState.currentPath) {
       case 'topic-angle':
-  return <PathTopicAngle onBack={handleBackToWelcome} />
+  return (
+    <PathTopicAngle 
+      onBack={handleBackToWelcome}
+      ideationData={marcusState.conversationData}
+      onExitWorkflow={onExitWorkflow}
+      onContinueToImages={onContinueToImages}
+      onUserStartedWorking={onUserStartedWorking}
+    />
+  )
 
-      case 'repurpose':
-  return <PathRepurpose onBack={handleBackToWelcome} />
+case 'repurpose':
+  return (
+    <PathRepurpose 
+      onBack={handleBackToWelcome}
+      ideationData={marcusState.conversationData}
+      onExitWorkflow={onExitWorkflow}
+      onContinueToImages={onContinueToImages}
+      onUserStartedWorking={onUserStartedWorking}
+    />
+  )
 
-      case 'lead-magnet':
-  return <PathLeadMagnet onBack={handleBackToWelcome} />
+case 'lead-magnet':
+  return (
+    <PathLeadMagnet 
+      onBack={handleBackToWelcome}
+      ideationData={marcusState.conversationData}
+      onExitWorkflow={onExitWorkflow}
+      onContinueToImages={onContinueToImages}
+      onUserStartedWorking={onUserStartedWorking}
+    />
+  )
 
       case 'formula':
   return (
