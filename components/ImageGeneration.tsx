@@ -250,7 +250,7 @@ useEffect(() => {
     }
   }
 
- return (
+  return (
     <div className="flex h-screen bg-gray-50">
       {/* Workflow Progress Indicator */}
       {inStrictWorkflow && (
