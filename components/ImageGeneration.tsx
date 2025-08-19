@@ -427,77 +427,68 @@ useEffect(() => {
                   </div>
                 </div>
                 
-                {selectedContent.image_url && (
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
-                      <img
-                        src={selectedContent.image_url}
-                        alt="Current image"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <button
-                      onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md border-2 border-white"
-                      title="Remove image"
-                    >
-                      <span className="text-xs leading-none">✕</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Workflow Completion Panel */}
-            {inStrictWorkflow && selectedContent && (
-              <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-b border-teal-200 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-teal-600" />
-                    <div>
-                      <h3 className="font-semibold text-teal-900">Complete Your Workflow</h3>
-                      <p className="text-sm text-teal-700">Add an image to finish your content creation</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => {
-                        if (onExitWorkflow) {
-                          const confirmed = window.confirm(
-                            "Leave without attaching an image? Your content is saved, but you won't complete the full workflow."
-                          )
-                          if (confirmed) {
-                            onExitWorkflow()
+                <div className="flex items-center space-x-3">
+                  {/* Workflow Buttons */}
+                  {inStrictWorkflow && (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (onExitWorkflow) {
+                            const confirmed = window.confirm(
+                              "Leave without attaching an image? Your content is saved, but you won't complete the full workflow."
+                            )
+                            if (confirmed) {
+                              onExitWorkflow()
+                            }
                           }
-                        }
-                      }}
-                      className="px-3 py-2 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
-                    >
-                      Exit Workflow
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        if (selectedContent?.image_url && onCompleteWorkflow) {
-                          onCompleteWorkflow()
-                        } else {
-                          showToast('info', 'Please attach an image to complete the workflow')
-                        }
-                      }}
-                      disabled={!selectedContent?.image_url}
-                      className={`px-4 py-2 text-sm rounded-lg font-medium transition ${
-                        selectedContent?.image_url
-                          ? 'bg-teal-600 text-white hover:bg-teal-700'
-                          : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Complete Workflow
-                    </button>
-                  </div>
+                        }}
+                        className="px-3 py-2 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                      >
+                        Exit Workflow
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          if (selectedContent?.image_url && onCompleteWorkflow) {
+                            onCompleteWorkflow()
+                          } else {
+                            showToast('info', 'Please attach an image to complete the workflow')
+                          }
+                        }}
+                        disabled={!selectedContent?.image_url}
+                        className={`px-4 py-2 text-sm rounded-lg font-medium transition ${
+                          selectedContent?.image_url
+                            ? 'bg-teal-600 text-white hover:bg-teal-700'
+                            : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Complete Workflow
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Current Image */}
+                  {selectedContent.image_url && (
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-teal-200">
+                        <img
+                          src={selectedContent.image_url}
+                          alt="Current image"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        onClick={handleRemoveImage}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md border-2 border-white"
+                        title="Remove image"
+                      >
+                        <span className="text-xs leading-none">✕</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Content */}
             <div className="flex-1 flex flex-col min-h-0">
