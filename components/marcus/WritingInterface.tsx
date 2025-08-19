@@ -34,21 +34,41 @@ export default function WritingInterface({ formula, onBack, onComplete, ideation
   const [showPreview, setShowPreview] = useState(false)
 
   // Initialize sections based on formula
-  useEffect(() => {
-    const initialSections = formula.structure.map((step, index) => {
+useEffect(() => {
+  // If we have initial content, try to split it and populate sections
+  if (initialContent) {
+    const contentSections = initialContent.split('\n\n').filter(section => section.trim())
+    const populatedSections = formula.structure.map((step, index) => {
       const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
       
       return {
         title,
-        content: '',
+        content: contentSections[index] || '',
         guidance: getGuidanceForSection(formula.id, title, index),
         placeholder: getPlaceholderForSection(formula.id, title, index),
-        completed: false
+        completed: contentSections[index] ? contentSections[index].trim().length > 20 : false
       }
     })
     
-    setSections(initialSections)
-  }, [formula])
+    setSections(populatedSections)
+    return
+  }
+  
+  // Original initialization for new content
+  const initialSections = formula.structure.map((step, index) => {
+    const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
+    
+    return {
+      title,
+      content: '',
+      guidance: getGuidanceForSection(formula.id, title, index),
+      placeholder: getPlaceholderForSection(formula.id, title, index),
+      completed: false
+    }
+  })
+  
+  setSections(initialSections)
+}, [formula, initialContent])
 
   const getGuidanceForSection = (formulaId: string, title: string, index: number): string => {
     const guidanceMap: Record<string, Record<number, string>> = {
