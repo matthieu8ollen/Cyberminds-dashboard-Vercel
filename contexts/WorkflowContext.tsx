@@ -228,9 +228,9 @@ const setupAutoSave = () => {
 
   const clearProgress = async () => {
   try {
-    // Could delete from database if needed
+    // Delete from database to prevent ghost workflows
     if (workflowState?.id) {
-      // await deleteWorkflowState(workflowState.id)
+      await deleteWorkflowState(workflowState.id)
     }
   } catch (error) {
     console.error('Error clearing workflow state:', error)
