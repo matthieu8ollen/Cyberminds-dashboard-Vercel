@@ -80,6 +80,7 @@ const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('
 // Strict Workflow State
 const [inStrictWorkflow, setInStrictWorkflow] = useState(false)
 const [workflowRoute, setWorkflowRoute] = useState<'ideas' | 'library' | 'direct' | null>(null)
+  const [userHasStartedWorking, setUserHasStartedWorking] = useState(false)
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -481,7 +482,7 @@ const startWorkflowDirect = (targetPage: 'writer-suite' | 'standard') => {
   // Atomic navigation - all state changes together
   if (targetPage === 'writer-suite') {
     setActivePage('writer-suite')
-    setWriterSuiteMode('selection')
+    setWriterSuiteMode('marcus')  // Go directly to Marcus, skip selection
   } else {
     setInStandardMode(true)
     setActivePage('standard')
@@ -529,21 +530,22 @@ const getProfileDisplayName = () => {
 
 // Selective Navigation Protection (only when workflow active)
 const handleProtectedNavigation = (targetPage: ActivePage) => {
-  if (inStrictWorkflow) {
+  // Only protect if in workflow AND user has actually started working
+  if (inStrictWorkflow && userHasStartedWorking) {
     const confirmed = window.confirm(
-      "You'll lose your current progress if you navigate away. Are you sure you want to continue?"
+      "You'll lose your current progress if you navigation away. Are you sure you want to continue?"
     )
     if (confirmed) {
       clearWorkflowState()
+      setUserHasStartedWorking(false)
       setActivePage(targetPage)
     }
     // If cancelled, do nothing - stay where we are
   } else {
-    // Normal navigation when not in workflow
+    // Normal navigation when not in workflow or user hasn't started working
     setActivePage(targetPage)
   }
 }
-
   // Ideas Tab Logic
 const shouldShowIdeasTab = () => {
   return activePage === 'ideas'
@@ -605,33 +607,35 @@ onUseThisContent={(idea) => {
     // Show Marcus mode
 return (
   <WriterSuite 
-    onComplete={(data) => {
-      console.log('📋 WriterSuite completed - checking workflow state:', data)
-      
-      if (inStrictWorkflow) {
-        console.log('✅ Exiting strict workflow from WriterSuite')
-        exitWorkflow()
-        setActivePage('production')
-      } else {
-        console.log('📝 Normal WriterSuite completion')
-        setWriterSuiteMode('selection')
-      }
-    }}
-    onBack={() => {
-      setWriterSuiteMode('selection')
-    }}
-    ideationData={ideationData}
-    onExitWorkflow={() => {
-      console.log('🚪 Exit workflow from PathFormula')
+  onComplete={(data) => {
+    console.log('📋 WriterSuite completed - checking workflow state:', data)
+    
+    if (inStrictWorkflow) {
+      console.log('✅ Exiting strict workflow from WriterSuite')
       exitWorkflow()
       setActivePage('production')
-    }}
-    onContinueToImages={(contentId: string) => {
-      console.log('🖼️ Continue to images from PathFormula:', contentId)
-      localStorage.setItem('workflowContentId', contentId)
-      setActivePage('images')
-    }}
-  />
+    } else {
+      console.log('📝 Normal WriterSuite completion')
+      setWriterSuiteMode('selection')
+    }
+  }}
+  onBack={() => {
+    setWriterSuiteMode('selection')
+  }}
+  ideationData={ideationData}
+  onExitWorkflow={() => {
+    console.log('🚪 Exit workflow from PathFormula')
+    exitWorkflow()
+    setUserHasStartedWorking(false)
+    setActivePage('production')
+  }}
+  onContinueToImages={(contentId: string) => {
+    console.log('🖼️ Continue to images from PathFormula:', contentId)
+    localStorage.setItem('workflowContentId', contentId)
+    setActivePage('images')
+  }}
+  onUserStartedWorking={() => setUserHasStartedWorking(true)}
+/>
 )
   }
 
