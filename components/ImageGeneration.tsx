@@ -251,38 +251,38 @@ useEffect(() => {
   }
 
  return (
-  <div className="flex h-screen bg-gray-50">
-    {/* Workflow Progress Indicator */}
-    {inStrictWorkflow && (
-      <div className="fixed top-0 left-16 right-0 z-40 bg-gradient-to-r from-slate-50 to-teal-50 border-b border-teal-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+    <div className="flex h-screen bg-gray-50">
+      {/* Workflow Progress Indicator */}
+      {inStrictWorkflow && (
+        <div className="fixed top-0 left-16 right-0 z-40 bg-gradient-to-r from-slate-50 to-teal-50 border-b border-teal-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-gradient-to-br from-slate-700 to-teal-600 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-slate-700">Workflow Active: Final Step</span>
+                  <div className="text-xs text-slate-600">Add an image to complete your content</div>
+                </div>
               </div>
-              <div>
-                <span className="text-sm font-medium text-slate-700">Workflow Active: Final Step</span>
-                <div className="text-xs text-slate-600">Add an image to complete your content</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-500">Step 3 of 3</span>
-              <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full w-full"></div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-slate-500">Step 3 of 3</span>
+                <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full w-full"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
-    
-    <div className={`flex w-full ${inStrictWorkflow ? 'pt-16' : ''}`}>
-      {/* Left Panel - Content Selection */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      )}
+      
+      <div className={`flex w-full ${inStrictWorkflow ? 'pt-16' : ''}`}>
+        {/* Left Panel - Content Selection */}
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
