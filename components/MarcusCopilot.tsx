@@ -21,6 +21,7 @@ interface MarcusCopilotProps {
   ideationData?: any
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 export default function MarcusCopilot({ 
@@ -29,7 +30,8 @@ export default function MarcusCopilot({
   onBack, 
   ideationData, 
   onExitWorkflow, 
-  onContinueToImages 
+  onContinueToImages,
+  onUserStartedWorking
 }: MarcusCopilotProps = {}) {
   // Simplified initial state
 const [marcusState, setMarcusState] = useState<MarcusState>({
@@ -210,6 +212,7 @@ useEffect(() => {
       ideationData={marcusState.conversationData}
       onExitWorkflow={onExitWorkflow}
       onContinueToImages={onContinueToImages}
+      onUserStartedWorking={onUserStartedWorking}
     />
   )
 
