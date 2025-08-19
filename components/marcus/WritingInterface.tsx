@@ -16,6 +16,8 @@ interface WritingInterfaceProps {
   formula: FormulaTemplate
   onBack: () => void
   onComplete: (content: string) => void
+  ideationData?: any
+  initialContent?: string
 }
 
 interface SectionData {
@@ -26,7 +28,7 @@ interface SectionData {
   completed: boolean
 }
 
-export default function WritingInterface({ formula, onBack, onComplete }: WritingInterfaceProps) {
+export default function WritingInterface({ formula, onBack, onComplete, ideationData, initialContent }: WritingInterfaceProps) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [sections, setSections] = useState<SectionData[]>([])
   const [showPreview, setShowPreview] = useState(false)
