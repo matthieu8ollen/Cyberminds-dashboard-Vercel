@@ -492,6 +492,7 @@ const exitWorkflow = () => {
   console.log('✅ Exiting strict workflow')
   setInStrictWorkflow(false)
   setWorkflowRoute(null)
+  setIdeationData(null)
 }
 
 const clearWorkflowState = () => {
