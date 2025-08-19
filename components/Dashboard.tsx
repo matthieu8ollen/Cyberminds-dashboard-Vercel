@@ -33,7 +33,7 @@ import WorkflowProgressIndicator from './WorkflowProgressIndicator'
 
 type ToneType = 'insightful_cfo' | 'bold_operator' | 'strategic_advisor' | 'data_driven_expert'
 type ContentType = 'framework' | 'story' | 'trend' | 'mistake' | 'metrics'
-type ActivePage = 'ideas' | 'writer-suite' | 'standard' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
+type ActivePage = 'welcome' | 'ideas' | 'writer-suite' | 'standard' | 'images' | 'production' | 'plan' | 'analytics' | 'feed' | 'settings'
 type DraftType = 'bold' | 'insightful' | 'wildcard'
 
 interface GeneratedDraft {
@@ -750,6 +750,7 @@ return (
           </div>
         )
       
+      case 'welcome':
       default:
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -832,17 +833,20 @@ return (
       >
         {/* Logo Section */}
         <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setActivePage('welcome')}
+            className="flex items-center space-x-3 w-full hover:bg-slate-700/30 rounded-lg p-2 -m-2 transition-colors"
+          >
             <div className="w-8 h-8 bg-gradient-to-br from-slate-700 via-slate-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all duration-200 flex-shrink-0">
               <img src="/writer-suite-logo.png" alt="Writer Suite" className="w-5 h-5" />
             </div>
             {sidebarExpanded && (
-              <div className="transition-opacity duration-300 ease-in-out">
+              <div className="transition-opacity duration-300 ease-in-out text-left">
                 <span className="text-lg font-bold text-white whitespace-nowrap">Writer Suite</span>
                 <div className="text-xs text-slate-400 -mt-1 whitespace-nowrap">Professional Content Creation</div>
               </div>
             )}
-          </div>
+          </button>
         </div>
 
         {/* Navigation Items */}
