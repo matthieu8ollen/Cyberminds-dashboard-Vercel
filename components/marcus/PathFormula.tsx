@@ -21,9 +21,16 @@ interface FormulaTemplate {
 interface PathFormulaProps {
   onBack: () => void
   ideationData?: any
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
 }
 
-export default function PathFormula({ onBack, ideationData }: PathFormulaProps) {
+export default function PathFormula({ 
+  onBack, 
+  ideationData, 
+  onExitWorkflow, 
+  onContinueToImages 
+}: PathFormulaProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
@@ -384,12 +391,9 @@ const renderFinalPreview = () => (
         
         if (saved) {
   showToast('success', 'Content saved to Production Pipeline!')
-  console.log('🔍 window.exitWorkflow exists:', !!window.exitWorkflow)
-  if (window.exitWorkflow) {
-    console.log('🚪 Calling window.exitWorkflow')
-    window.exitWorkflow()
-  } else {
-    console.error('❌ window.exitWorkflow is undefined')
+  console.log('🚪 Calling onExitWorkflow callback')
+  if (onExitWorkflow) {
+    onExitWorkflow()
   }
 }
       } catch (error) {
@@ -422,13 +426,9 @@ const renderFinalPreview = () => (
         
         if (saved) {
   showToast('success', 'Content saved! Adding image...')
-  console.log('🔍 window.continueWorkflowToImages exists:', !!window.continueWorkflowToImages)
-  console.log('🔍 saved.id value:', saved.id)
-  if (window.continueWorkflowToImages) {
-    console.log('🖼️ Calling window.continueWorkflowToImages with:', saved.id)
-    window.continueWorkflowToImages(saved.id)
-  } else {
-    console.error('❌ window.continueWorkflowToImages is undefined')
+  console.log('🖼️ Calling onContinueToImages callback with:', saved.id)
+  if (onContinueToImages) {
+    onContinueToImages(saved.id)
   }
 }
       } catch (error) {
