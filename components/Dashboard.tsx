@@ -818,23 +818,9 @@ className="bg-white border-2 border-gray-200 rounded-xl p-6 text-left hover:bord
   )
     }
   }
-
-  return (
+  
+return (
   <div className="min-h-screen bg-gray-50 flex">
-    {/* TEMPORARY: Remove after using once */}
-    <div className="fixed top-4 right-4 z-50">
-      <button
-        onClick={async () => {
-          if (window.confirm('Clear ALL old workflow states? This will stop the ideation data from auto-loading.')) {
-            await clearAllProgress()
-            alert('✅ All workflow states cleared! You can remove this button now.')
-          }
-        }}
-        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
-      >
-        🧹 Clear All Workflows
-      </button>
-    </div>
 
     {/* Premium Left Sidebar */}
     <nav 
