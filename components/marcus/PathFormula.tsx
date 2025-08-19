@@ -383,11 +383,15 @@ const renderFinalPreview = () => (
         const saved = await saveDraft(contentData, 'marcus')
         
         if (saved) {
-          showToast('success', 'Content saved to Production Pipeline!')
-          if (window.exitWorkflow) {
-            window.exitWorkflow()
-          }
-        }
+  showToast('success', 'Content saved to Production Pipeline!')
+  console.log('🔍 window.exitWorkflow exists:', !!window.exitWorkflow)
+  if (window.exitWorkflow) {
+    console.log('🚪 Calling window.exitWorkflow')
+    window.exitWorkflow()
+  } else {
+    console.error('❌ window.exitWorkflow is undefined')
+  }
+}
       } catch (error) {
         showToast('error', 'Failed to save content')
       }
@@ -417,11 +421,16 @@ const renderFinalPreview = () => (
         const saved = await saveDraft(contentData, 'marcus')
         
         if (saved) {
-          showToast('success', 'Content saved! Adding image...')
-          if (window.continueWorkflowToImages) {
-            window.continueWorkflowToImages(saved.id)
-          }
-        }
+  showToast('success', 'Content saved! Adding image...')
+  console.log('🔍 window.continueWorkflowToImages exists:', !!window.continueWorkflowToImages)
+  console.log('🔍 saved.id value:', saved.id)
+  if (window.continueWorkflowToImages) {
+    console.log('🖼️ Calling window.continueWorkflowToImages with:', saved.id)
+    window.continueWorkflowToImages(saved.id)
+  } else {
+    console.error('❌ window.continueWorkflowToImages is undefined')
+  }
+}
       } catch (error) {
         showToast('error', 'Failed to save content')
       }
