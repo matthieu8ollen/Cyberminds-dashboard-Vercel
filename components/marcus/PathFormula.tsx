@@ -6,6 +6,8 @@ import WritingInterface from './WritingInterface'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
 import { GeneratedContent } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
+import LinkedInPreview from '../LinkedInPreview'
 
 interface FormulaTemplate {
   id: string
@@ -31,6 +33,7 @@ export default function PathFormula({
   onExitWorkflow, 
   onContinueToImages 
 }: PathFormulaProps) {
+  const { user, profile } = useAuth()
   const [currentStep, setCurrentStep] = useState<'selection' | 'template' | 'writing' | 'preview'>('selection')
   const [selectedFormula, setSelectedFormula] = useState<FormulaTemplate | null>(null)
   const [generatedContent, setGeneratedContent] = useState('')
@@ -358,11 +361,17 @@ const renderFinalPreview = () => (
     </div>
 
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-      <div className="prose max-w-none">
-        <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-          {generatedContent}
-        </div>
-      </div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">LinkedIn Preview</h3>
+      <LinkedInPreview 
+        content={generatedContent}
+        profileName={user?.email?.split('@')[0].split('.').map(name => 
+          name.charAt(0).toUpperCase() + name.slice(1)
+        ).join(' ') || 'Finance Professional'}
+        profileTitle={profile?.role ? 
+          profile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+          'Chief Financial Officer'
+        }
+      />
     </div>
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
