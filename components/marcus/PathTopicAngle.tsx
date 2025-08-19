@@ -9,6 +9,10 @@ import { GeneratedContent } from '../../lib/supabase'
 
 interface TopicAngleProps {
   onBack: () => void
+  ideationData?: any
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
+  onUserStartedWorking?: () => void
 }
 
 interface AngleOption {
@@ -31,7 +35,13 @@ interface StorySection {
   completed: boolean
 }
 
-export default function PathTopicAngle({ onBack }: TopicAngleProps) {
+export default function PathTopicAngle({ 
+  onBack, 
+  ideationData, 
+  onExitWorkflow, 
+  onContinueToImages,
+  onUserStartedWorking
+}: TopicAngleProps) {
   const [currentStep, setCurrentStep] = useState<'discovery' | 'research' | 'angles' | 'development' | 'preview'>('discovery')
   const [topic, setTopic] = useState('')
   const [researchData, setResearchData] = useState<any>(null)
