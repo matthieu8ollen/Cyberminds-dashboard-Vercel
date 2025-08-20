@@ -3,19 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 // Store for pending AI responses (in production, use Redis or database)
 const pendingResponses = new Map<string, any>()
 
-// Cleanup old responses every 5 minutes
-setInterval(() => {
-  const now = Date.now()
-  const FIVE_MINUTES = 5 * 60 * 1000
-  
-  for (const [key, value] of pendingResponses.entries()) {
-    if (value.timestamp && (now - value.timestamp) > FIVE_MINUTES) {
-      console.log('🗑️ Cleaning up old response:', key)
-      pendingResponses.delete(key)
-    }
-  }
-}, FIVE_MINUTES)
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
