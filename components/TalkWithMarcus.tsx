@@ -88,6 +88,7 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   
   try {
     console.log('🚀 Calling Marcus AI webhook:', { userInput, conversationContext, contentPreference });
+console.log('🔍 DETAILED CONTEXT:', JSON.stringify(conversationContext, null, 2));
     
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
