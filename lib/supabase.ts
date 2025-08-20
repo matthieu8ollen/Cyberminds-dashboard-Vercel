@@ -254,10 +254,61 @@ export const getContentFormulas = async (userId?: string) => {
   }
 }
 
-// Simple placeholder functions for now
-export const saveContentFormula = async (formula: any, sections: any) => {
-  console.log('Save formula not implemented yet')
-  return { data: null, error: new Error('Not implemented') }
+// Save a new content formula with sections
+export const saveContentFormula = async (formula: EnhancedContentFormula, userId: string) => {
+  try {
+    // Convert to database format
+    const formulaData = {
+      formula_name: formula.name,
+      funnel_stage: 'awareness',
+      funnel_purpose: formula.description,
+      formula_category: formula.category,
+      difficulty_level: formula.difficulty,
+      section_count: formula.sections.length,
+      estimated_word_count: formula.sections.reduce((acc, section) => acc + (section.wordCountTarget || 100), 0),
+      psychological_triggers: formula.psychologicalTriggers?.map(t => t.name) || [],
+      use_cases: formula.tags || [],
+      is_active: true,
+      is_premium: false,
+      created_by: userId,
+      effectiveness_score: formula.popularity || 0,
+      engagement_type: 'interactive'
+    }
+
+    // Insert formula
+    const { data: savedFormula, error: formulaError } = await supabase
+      .from('content_formulas')
+      .insert(formulaData)
+      .select()
+      .single()
+
+    if (formulaError) throw formulaError
+
+    // Insert sections
+    const sectionsData = formula.sections.map(section => ({
+      formula_id: savedFormula.id,
+      section_order: section.position,
+      section_name: section.title,
+      section_purpose: section.description,
+      section_guidelines: section.guidance,
+      section_template: section.placeholder,
+      word_count_target: section.wordCountTarget || 100,
+      is_required: section.isRequired,
+      is_customizable: section.isCustom,
+      psychological_purpose: section.psychologyNote,
+      emotional_target: section.toneGuidance
+    }))
+
+    const { error: sectionsError } = await supabase
+      .from('formula_sections')
+      .insert(sectionsData)
+
+    if (sectionsError) throw sectionsError
+
+    return { data: savedFormula, error: null }
+  } catch (err) {
+    return { data: null, error: err }
+  }
 }
 
 export const updateContentFormula = async (formulaId: string, updates: any, sections?: any) => {
