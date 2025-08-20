@@ -414,20 +414,41 @@ setTimeout(() => {
 
 // New function to handle AI responses
 const handleAIResponse = (response: any) => {
+  console.log('🔍 Processing AI response:', response); // Add debugging
+  
+  // Handle missing or undefined response_type
+  if (!response || !response.response_type) {
+    console.warn('⚠️ Response missing response_type:', response);
+    if (response && response.message) {
+      addMessage('marcus', response.message);
+    } else {
+      addMessage('marcus', "I'm having trouble understanding that. Could you rephrase?");
+    }
+    return;
+  }
+
   switch (response.response_type) {
     case 'clarification':
       handleClarificationResponse(response);
       break;
     case 'content_ready':
-    case 'topic_ready':  // Add this line to handle the AI's response type
+    case 'topic_ready':
       handleContentResponse(response);
       break;
     case 'error':
       handleErrorResponse(response);
       break;
+    case 'conversation': // Add this case for general conversation
+      addMessage('marcus', response.message);
+      break;
     default:
-      console.log('⚠️ Unknown response type:', response.response_type, 'using fallback');
-      // Will use fallback in calling function
+      console.warn('⚠️ Unknown response type:', response.response_type);
+      // Try to extract message anyway
+      if (response.message) {
+        addMessage('marcus', response.message);
+      } else {
+        addMessage('marcus', "I'm having trouble processing that. Could you try again?");
+      }
   }
 };
 
