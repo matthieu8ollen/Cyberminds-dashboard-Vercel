@@ -31,12 +31,24 @@ interface SectionData {
   psychologyNote?: string
   emotionalTarget?: string
   isRequired?: boolean
+  templateVariables?: Record<string, any>
+  hasTemplateVariables?: boolean
+}
+
+interface TemplateVariable {
+  name: string
+  type: string
+  required: boolean
+  description: string
+  value?: string
 }
 
 export default function WritingInterface({ formula, onBack, onComplete, ideationData, initialContent }: WritingInterfaceProps) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [sections, setSections] = useState<SectionData[]>([])
   const [showPreview, setShowPreview] = useState(false)
+  const [templateVariables, setTemplateVariables] = useState<Record<string, string>>({})
+  const [showTemplateHelper, setShowTemplateHelper] = useState(false)
 
   // Initialize sections based on formula
 useEffect(() => {
@@ -68,17 +80,36 @@ useEffect(() => {
       if (currentFormula?.formula_sections) {
         const sortedSections = currentFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
         
-        const realSections = sortedSections.map((section, index) => ({
-          title: section.section_name,
-          content: '',
-          guidance: section.section_guidelines || "Write this section with your authentic voice and specific examples.",
-          placeholder: section.section_template || `Write your ${section.section_name.toLowerCase()} here...`,
-          completed: false,
-          wordCountTarget: section.word_count_target,
-          psychologyNote: section.psychological_purpose,
-          emotionalTarget: section.emotional_target,
-          isRequired: section.is_required
-        }))
+        const realSections = sortedSections.map((section, index) => {
+          let parsedVariables = null
+          let hasVariables = false
+          
+          // Parse template variables if they exist
+          if (section.template_variables) {
+            try {
+              parsedVariables = typeof section.template_variables === 'string' 
+                ? JSON.parse(section.template_variables) 
+                : section.template_variables
+              hasVariables = Object.keys(parsedVariables).length > 0
+            } catch (error) {
+              console.warn('Failed to parse template variables:', error)
+            }
+          }
+          
+          return {
+            title: section.section_name,
+            content: '',
+            guidance: section.section_guidelines || "Write this section with your authentic voice and specific examples.",
+            placeholder: section.section_template || `Write your ${section.section_name.toLowerCase()} here...`,
+            completed: false,
+            wordCountTarget: section.word_count_target,
+            psychologyNote: section.psychological_purpose,
+            emotionalTarget: section.emotional_target,
+            isRequired: section.is_required,
+            templateVariables: parsedVariables,
+            hasTemplateVariables: hasVariables
+          }
+        })
         
         setSections(realSections)
         return
@@ -143,6 +174,112 @@ useEffect(() => {
         ? { ...section, content, completed: content.trim().length > 20 }
         : section
     ))
+  }
+
+  const parseTemplateVariables = (template: string): TemplateVariable[] => {
+    const variableRegex = /\[([^\]]+)\]/g
+    const variables: TemplateVariable[] = []
+    let match
+
+    while ((match = variableRegex.exec(template)) !== null) {
+      const variableName = match[1]
+      if (!variables.find(v => v.name === variableName)) {
+        variables.push({
+          name: variableName,
+          type: 'string',
+          required: true,
+          description: `Value for ${variableName}`,
+          value: templateVariables[variableName] || ''
+        })
+      }
+    }
+
+    return variables
+  }
+
+  const applyTemplateVariables = (template: string, variables: Record<string, string>): string => {
+    let result = template
+    Object.entries(variables).forEach(([key, value]) => {
+      const regex = new RegExp(`\\[${key}\\]`, 'g')
+      result = result.replace(regex, value || `[${key}]`)
+    })
+    return result
+  }
+
+  const handleTemplateVariableChange = (variableName: string, value: string) => {
+    setTemplateVariables(prev => ({
+      ...prev,
+      [variableName]: value
+    }))
+
+    // Auto-update current section content if it uses this variable
+    const currentSection = sections[currentSectionIndex]
+    if (currentSection?.hasTemplateVariables) {
+      const updatedTemplate = applyTemplateVariables(currentSection.placeholder, {
+        ...templateVariables,
+        [variableName]: value
+      })
+      handleSectionChange(updatedTemplate)
+    }
+  }
+
+  const renderTemplateHelper = () => {
+    const currentSection = sections[currentSectionIndex]
+    if (!currentSection?.hasTemplateVariables) return null
+
+    const variables = parseTemplateVariables(currentSection.placeholder)
+    if (variables.length === 0) return null
+
+    return (
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-4 h-4 text-purple-600" />
+            <h4 className="text-sm font-medium text-purple-900">Template Variables</h4>
+          </div>
+          <button
+            onClick={() => setShowTemplateHelper(!showTemplateHelper)}
+            className="text-purple-600 hover:text-purple-800 text-sm"
+          >
+            {showTemplateHelper ? 'Hide' : 'Show'} Helper
+          </button>
+        </div>
+
+        {showTemplateHelper && (
+          <div className="space-y-3">
+            <p className="text-xs text-purple-700 mb-3">
+              Fill in these variables to auto-populate your template:
+            </p>
+            
+            {variables.map(variable => (
+              <div key={variable.name}>
+                <label className="block text-xs font-medium text-purple-800 mb-1">
+                  {variable.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {variable.required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <input
+                  type="text"
+                  value={templateVariables[variable.name] || ''}
+                  onChange={(e) => handleTemplateVariableChange(variable.name, e.target.value)}
+                  placeholder={variable.description}
+                  className="w-full px-3 py-2 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            ))}
+
+            <button
+              onClick={() => {
+                const populatedTemplate = applyTemplateVariables(currentSection.placeholder, templateVariables)
+                handleSectionChange(populatedTemplate)
+              }}
+              className="w-full mt-3 px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition"
+            >
+              Apply Template
+            </button>
+          </div>
+        )}
+      </div>
+    )
   }
 
   const goToNextSection = () => {
@@ -313,6 +450,9 @@ useEffect(() => {
                 {currentSection.title}
               </h2>
               
+              {/* Template Variables Helper */}
+              {renderTemplateHelper()}
+
               {/* Enhanced Guidance with Rich Metadata */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-start space-x-2">
