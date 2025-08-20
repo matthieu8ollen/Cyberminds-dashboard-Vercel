@@ -78,7 +78,7 @@ useEffect(() => {
       const currentFormula = data?.find(f => f.id === formula.id)
       
       if (currentFormula?.formula_sections) {
-        const sortedSections = currentFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
+        const sortedSections = currentFormula.formula_sections.sort((a: FormulaSection, b: FormulaSection) => a.section_order - b.section_order)
         
         const realSections = sortedSections.map((section, index) => {
           let parsedVariables = null
