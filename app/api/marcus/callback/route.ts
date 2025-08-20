@@ -3,6 +3,19 @@ import { NextRequest, NextResponse } from 'next/server'
 // Store for pending AI responses (in production, use Redis or database)
 const pendingResponses = new Map<string, any>()
 
+// Cleanup old responses every 5 minutes
+setInterval(() => {
+  const now = Date.now()
+  const FIVE_MINUTES = 5 * 60 * 1000
+  
+  for (const [key, value] of pendingResponses.entries()) {
+    if (value.timestamp && (now - value.timestamp) > FIVE_MINUTES) {
+      console.log('🗑️ Cleaning up old response:', key)
+      pendingResponses.delete(key)
+    }
+  }
+}, FIVE_MINUTES)
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -56,13 +69,16 @@ export async function GET(request: NextRequest) {
   }
   
   // Check for final response first
-  const finalResponse = pendingResponses.get(session_id)
-  if (finalResponse) {
-    // Remove after retrieving (one-time use)
-    pendingResponses.delete(session_id)
-    pendingResponses.delete(`${session_id}_status`) // Clean up status too
-    return NextResponse.json({ success: true, data: finalResponse, type: 'final' })
-  }
+const finalResponse = pendingResponses.get(session_id)
+if (finalResponse) {
+  console.log('📨 Returning cached response for session:', session_id)
+  console.log('🔍 CACHED RESPONSE:', JSON.stringify(finalResponse, null, 2))
+  
+  // Remove after retrieving (one-time use)
+  pendingResponses.delete(session_id)
+  pendingResponses.delete(`${session_id}_status`) // Clean up status too
+  return NextResponse.json({ success: true, data: finalResponse, type: 'final' })
+}
   
   // Check for status updates
   const statusUpdate = pendingResponses.get(`${session_id}_status`)
