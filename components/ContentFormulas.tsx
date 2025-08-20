@@ -209,11 +209,11 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
 
   const getDifficultyColor = (difficulty: string) => {
     const colors = {
-      'beginner': 'text-green-600',
-      'intermediate': 'text-yellow-600',
-      'advanced': 'text-red-600'
+      'beginner': 'text-green-600 bg-green-100',
+      'intermediate': 'text-yellow-600 bg-yellow-100', 
+      'advanced': 'text-red-600 bg-red-100'
     }
-    return colors[difficulty as keyof typeof colors] || 'text-gray-600'
+    return colors[difficulty as keyof typeof colors] || 'text-gray-600 bg-gray-100'
   }
 
   // Builder handlers
@@ -478,14 +478,6 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
     console.log('Applying suggestion:', suggestion)
   }
 
-  // Handle save
-  const handleSaveFormula = async (formula: EnhancedContentFormula) => {
-  console.log('Save formula:', formula.name)
-  // For now, just go back to gallery
-  setViewMode('gallery')
-  setBuilderFormula(null)
-}
-
   const handleUseFormula = (formula: EnhancedContentFormula) => {
     if (onUseFormula) {
       onUseFormula(formula)
@@ -649,7 +641,6 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
       {/* Formulas Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredFormulas.map(formula => (
-          {filteredFormulas.map(formula => (
           <div
             key={formula.id}
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group cursor-pointer"
