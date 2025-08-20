@@ -88,12 +88,6 @@ const callMarcusAI = async (userInput: string, conversationContext: any, content
   
   try {
     console.log('🚀 Calling Marcus AI webhook:', { userInput, conversationContext, contentPreference });
-    console.log('🔍 DETAILED CONTEXT:', JSON.stringify(conversationContext, null, 2));
-console.log('📊 CONTEXT ANALYSIS:');
-console.log('- Previous messages count:', conversationContext.previous_messages.length);
-console.log('- Current stage:', conversationContext.current_stage);
-console.log('- Is this first message?', conversationContext.previous_messages.length === 0);
-console.log('- User input:', userInput);
     
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
@@ -306,9 +300,6 @@ setTimeout(() => {
 
     // Generate unique session ID for this request
 const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-console.log('🆔 Generated Session ID:', sessionId);
-console.log('🕐 Timestamp part:', Date.now().toString());
-console.log('🎲 Random part:', Math.random().toString(36).substr(2, 9));
     
     // Send to N8N webhook
     const response = await callMarcusAI(
