@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle, Loader2 } from 'lucide-react'
 import WritingInterface from './WritingInterface'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
-import { GeneratedContent } from '../../lib/supabase'
+import { GeneratedContent, getContentFormulas, type ContentFormula, type FormulaSection } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import LinkedInPreview from '../LinkedInPreview'
 
@@ -42,6 +42,76 @@ export default function PathFormula({
   const [editingContent, setEditingContent] = useState('')
   const { saveDraft, setSelectedContent, setShowScheduleModal } = useContent()
   const { showToast } = useToast()
+  
+  // Database state
+  const [formulas, setFormulas] = useState<FormulaTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load real formulas from database
+  useEffect(() => {
+    loadFormulas()
+  }, [user])
+
+  const loadFormulas = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { data, error } = await getContentFormulas(user?.id)
+      
+      if (error) {
+        console.error('Error loading formulas:', error)
+        setError('Failed to load formulas')
+        return
+      }
+
+      if (data) {
+        const convertedFormulas = data.map(convertDatabaseToFormula)
+        setFormulas(convertedFormulas)
+      }
+    } catch (err) {
+      console.error('Error loading formulas:', err)
+      setError('Failed to load formulas')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Convert database format to component format
+  const convertDatabaseToFormula = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): FormulaTemplate => {
+    const sortedSections = dbFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
+    
+    return {
+      id: dbFormula.id,
+      name: dbFormula.formula_name,
+      description: dbFormula.funnel_purpose || dbFormula.content_intent || '',
+      category: mapCategoryToDisplay(dbFormula.formula_category || ''),
+      structure: sortedSections.map(section => 
+        `${section.section_name} - ${section.section_purpose}`
+      ),
+      example: dbFormula.complete_template?.split('\n')[0] || `${dbFormula.formula_name} example...`,
+      whyItWorks: dbFormula.psychological_triggers || [
+        'Proven framework structure',
+        'Optimized for engagement',
+        'Based on successful patterns'
+      ],
+      bestFor: dbFormula.primary_target_role || 'Professional content creation'
+    }
+  }
+
+  const mapCategoryToDisplay = (dbCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
+    switch (dbCategory) {
+      case 'Authority_Framework':
+        return 'framework'
+      case 'Contrarian_Insight':
+        return 'data'
+      case 'Personal_Story_Lesson':
+        return 'story'
+      default:
+        return 'framework'
+    }
+  }
   const handleWritingComplete = (content: string) => {
     setGeneratedContent(content)
     setCurrentStep('preview')
