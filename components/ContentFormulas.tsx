@@ -137,6 +137,8 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFormula, setSelectedFormula] = useState<EnhancedContentFormula | null>(null)
+  const [showFormulaModal, setShowFormulaModal] = useState(false)
+  const [modalFormula, setModalFormula] = useState<EnhancedContentFormula | null>(null)
   
   // Replace static data with dynamic loading
   const [allFormulas, setAllFormulas] = useState<EnhancedContentFormula[]>([])
@@ -220,6 +222,154 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
     
     setBuilderFormula(baseFormula || null)
     setViewMode('builder')
+  }
+
+  const handleFormulaClick = (formula: EnhancedContentFormula) => {
+    setModalFormula(formula)
+    setShowFormulaModal(true)
+  }
+
+  const handleUseFormula = (formula: EnhancedContentFormula) => {
+    setShowFormulaModal(false)
+    if (onUseFormula) {
+      onUseFormula(formula)
+    }
+  }
+
+  const formatEffectivenessScore = (score: number) => {
+    if (score >= 8) return { label: 'Excellent', color: 'text-green-600 bg-green-100' }
+    if (score >= 6) return { label: 'Good', color: 'text-blue-600 bg-blue-100' }
+    if (score >= 4) return { label: 'Fair', color: 'text-yellow-600 bg-yellow-100' }
+    return { label: 'Poor', color: 'text-red-600 bg-red-100' }
+  }
+
+  const renderFormulaModal = () => {
+    if (!modalFormula) return null
+
+    const effectiveness = formatEffectivenessScore(modalFormula.popularity)
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{modalFormula.name}</h2>
+                <p className="text-gray-600">{modalFormula.description}</p>
+                <div className="flex items-center gap-3 mt-3">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(modalFormula.category)}`}>
+                    {modalFormula.category === 'authority' ? 'Authority Framework' : 
+                     modalFormula.category === 'contrarian' ? 'Contrarian Insight' : 
+                     modalFormula.category === 'personal' ? 'Personal Stories/Lesson' : 'Framework'}
+                  </span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(modalFormula.difficulty)}`}>
+                    {modalFormula.difficulty}
+                  </span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${effectiveness.color}`}>
+                    {effectiveness.label}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFormulaModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Modal Content */}
+          <div className="p-6 space-y-6">
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Estimated Time</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.estimatedTime}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Sections</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.sections.length}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Effectiveness</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.popularity}/10</p>
+              </div>
+            </div>
+
+            {/* Formula Structure */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Formula Structure</h3>
+              <div className="space-y-3">
+                {modalFormula.sections.map((section, index) => (
+                  <div key={section.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-teal-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{section.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{section.description}</p>
+                      {section.wordCountTarget && (
+                        <p className="text-xs text-gray-500 mt-1">Target: {section.wordCountTarget} words</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Psychological Triggers */}
+            {modalFormula.psychologicalTriggers && modalFormula.psychologicalTriggers.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Psychological Triggers</h3>
+                <div className="flex flex-wrap gap-2">
+                  {modalFormula.psychologicalTriggers.map((trigger, index) => (
+                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                      {trigger.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {modalFormula.tags && modalFormula.tags.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Use Cases</h3>
+                <div className="flex flex-wrap gap-2">
+                  {modalFormula.tags.map((tag, index) => (
+                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Modal Footer */}
+          <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => setShowFormulaModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => handleUseFormula(modalFormula)}
+                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition font-medium"
+              >
+                Use This Formula
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const handleSaveFormula = async (formula: EnhancedContentFormula) => {
@@ -499,10 +649,11 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
       {/* Formulas Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredFormulas.map(formula => (
+          {filteredFormulas.map(formula => (
           <div
             key={formula.id}
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group cursor-pointer"
-            onClick={() => setSelectedFormula(formula)}
+            onClick={() => handleFormulaClick(formula)}
           >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
@@ -661,24 +812,8 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
         </div>
       )}
 
-      {/* Enhanced Formula Detail Modal */}
-      {selectedFormula && viewMode === 'gallery' && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedFormula.name}</h2>
-                  <p className="text-gray-600">{selectedFormula.description}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedFormula(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
+      {/* Formula Details Modal */}
+      {showFormulaModal && renderFormulaModal()}
             
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               {/* Enhanced Structure */}
