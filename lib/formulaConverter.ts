@@ -24,6 +24,21 @@ interface LegacyContentFormula {
   createdAt?: string
 }
 
+const mapLegacyCategory = (legacyCategory: string): 'authority' | 'contrarian' | 'personal' | 'framework' => {
+  switch (legacyCategory) {
+    case 'framework':
+      return 'authority'
+    case 'data':
+      return 'contrarian'
+    case 'story':
+      return 'personal'
+    case 'lead-generation':
+      return 'framework'
+    default:
+      return 'framework'
+  }
+}
+
 class FormulaConverter implements LegacyFormulaConverter {
   
   /**
@@ -39,7 +54,7 @@ class FormulaConverter implements LegacyFormulaConverter {
       id: legacy.id,
       name: legacy.name,
       description: legacy.description,
-      category: legacy.category,
+      category: mapLegacyCategory(legacy.category),
       difficulty: legacy.difficulty,
       estimatedTime: legacy.estimatedTime,
       popularity: legacy.popularity,
