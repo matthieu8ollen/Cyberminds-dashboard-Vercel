@@ -58,8 +58,6 @@ export async function GET(request: NextRequest) {
   // Check for final response first
 const finalResponse = pendingResponses.get(session_id)
 if (finalResponse) {
-  console.log('📨 Returning cached response for session:', session_id)
-  console.log('🔍 CACHED RESPONSE:', JSON.stringify(finalResponse, null, 2))
   
   // Remove after retrieving (one-time use)
   pendingResponses.delete(session_id)
