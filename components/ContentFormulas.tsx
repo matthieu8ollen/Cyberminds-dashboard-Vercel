@@ -478,15 +478,6 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
     console.log('Applying suggestion:', suggestion)
   }
 
-  const handleUseFormula = (formula: EnhancedContentFormula) => {
-    if (onUseFormula) {
-      onUseFormula(formula)
-    } else {
-      console.log('Using formula:', formula)
-      // TODO: Navigate to Writer Suite with this formula
-    }
-  }
-
   // Render different views based on mode
   if (viewMode === 'builder') {
     return (
