@@ -80,7 +80,7 @@ useEffect(() => {
       if (currentFormula?.formula_sections) {
         const sortedSections = currentFormula.formula_sections.sort((a: FormulaSection, b: FormulaSection) => a.section_order - b.section_order)
         
-        const realSections = sortedSections.map((section, index) => {
+        const realSections = sortedSections.map((section: FormulaSection, index: number) => {
           let parsedVariables = null
           let hasVariables = false
           
