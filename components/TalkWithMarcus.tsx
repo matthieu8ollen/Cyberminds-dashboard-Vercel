@@ -300,7 +300,10 @@ setTimeout(() => {
     };
 
     // Generate unique session ID for this request
-    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+console.log('🆔 Generated Session ID:', sessionId);
+console.log('🕐 Timestamp part:', Date.now().toString());
+console.log('🎲 Random part:', Math.random().toString(36).substr(2, 9));
     
     // Send to N8N webhook
     const response = await callMarcusAI(
