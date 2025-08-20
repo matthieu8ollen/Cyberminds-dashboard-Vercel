@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, ArrowRight, CheckCircle, Lightbulb, Zap, Eye, Save, Calendar } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, Lightbulb, Zap, Eye, Save, Calendar, Sparkles } from 'lucide-react'
 import AIAssistant from './AIAssistant'
 import { getContentFormulas, type ContentFormula, type FormulaSection } from '../../lib/supabase'
 
