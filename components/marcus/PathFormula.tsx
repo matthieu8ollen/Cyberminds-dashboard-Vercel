@@ -156,95 +156,6 @@ const renderIdeationContext = () => {
   setCurrentStep('writing')
 }
 
-  const formulas: FormulaTemplate[] = [
-    {
-      id: 'confession',
-      name: 'Confession Formula',
-      description: 'Share vulnerable business lessons through personal mistakes',
-      category: 'story',
-      structure: [
-        'Admission - Hook that takes responsibility',
-        'Context - Why you made this decision', 
-        'Consequence - What went wrong and impact',
-        'Learning - Key insight discovered',
-        'Redemption - How you do it differently now',
-        'CTA - Question inviting sharing'
-      ],
-      example: 'Hiring my best friend as CTO was the hardest mistake I ever made...',
-      whyItWorks: [
-        'Vulnerability builds immediate trust',
-        'Specific details make it relatable', 
-        'Clear lesson provides universal value',
-        'Practical solution helps others avoid mistake'
-      ],
-      bestFor: 'Business relationship lessons, leadership stories'
-    },
-    {
-      id: 'myth-buster',
-      name: 'Myth-Buster Formula',
-      description: 'Challenge conventional wisdom with evidence',
-      category: 'data',
-      structure: [
-        'Common Belief - What everyone thinks is true',
-        'Why It\'s Wrong - Problems with this belief',
-        'Evidence/Data - Proof supporting your position',
-        'Better Approach - What to do instead',
-        'CTA - Question inviting experience sharing'
-      ],
-      example: '90% of SaaS founders are tracking metrics that lie to them...',
-      whyItWorks: [
-        'Bold opening stops the scroll',
-        'Specific problems create urgency',
-        'Data backing establishes credibility',
-        'Clear alternative provides immediate value'
-      ],
-      bestFor: 'Industry insights, contrarian takes'
-    },
-    {
-      id: 'framework',
-      name: '5-Step Framework Formula',
-      description: 'Share systematic approaches to business problems',
-      category: 'framework',
-      structure: [
-        'Problem - Challenge you solved uniquely',
-        'Framework Intro - Your systematic approach',
-        'Step 1-5 - Each with specific guidance',
-        'Why It Works - Psychology/principle behind it',
-        'TL;DR - Condensed version for scanning',
-        'CTA - Which step resonates most?'
-      ],
-      example: 'The 5-Step "Friendship-Proof" Hiring Framework...',
-      whyItWorks: [
-        'Structured advice feels actionable',
-        'Numbers create psychological appeal',
-        'Step-by-step reduces overwhelm',
-        'Scannable format increases shares'
-      ],
-      bestFor: 'Process sharing, tactical advice'
-    },
-    {
-      id: 'value-first',
-      name: 'Value-First Lead Magnet',
-      description: 'Build trust before asking for anything',
-      category: 'lead-magnet',
-      structure: [
-        'Hook - Attention-grabbing insight',
-        'Problem Cost - Stakes of not solving this',
-        'Value Preview - 2-3 best tips as samples',
-        'Social Proof - Your experience/results',
-        'Soft CTA - Natural offer without pressure'
-      ],
-      example: 'I\'ve seen 47 pitch decks. Here\'s why 43 got rejected...',
-      whyItWorks: [
-        'Gives value before asking',
-        'Builds trust through expertise',
-        'Natural transition to offer',
-        'Higher conversion rates'
-      ],
-      bestFor: 'Lead generation, building authority'
-    }
-  ]
-
   const handleFormulaSelect = (formula: FormulaTemplate) => {
     setSelectedFormula(formula)
     setCurrentStep('template')
@@ -278,8 +189,31 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {formulas.map((formula) => (
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+          <span className="ml-3 text-gray-600">Loading formulas...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={loadFormulas}
+            className="mt-2 text-sm text-red-700 underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Formulas Grid */}
+      {!loading && !error && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {formulas.map((formula) => (
           <div
             key={formula.id}
             className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-teal-500 hover:shadow-lg transition-all duration-200 cursor-pointer group"
@@ -334,8 +268,20 @@ const renderIdeationContext = () => {
 
             <p className="text-sm text-gray-700 font-medium">Best for: {formula.bestFor}</p>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+      
+      {/* No formulas state */}
+      {!loading && !error && formulas.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No formulas available</h3>
+          <p className="text-gray-600">Check back later for new content formulas.</p>
+        </div>
+      )}
     </div>
   )
 
