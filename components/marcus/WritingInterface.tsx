@@ -273,14 +273,30 @@ useEffect(() => {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-sm">{index + 1}. {section.title}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{index + 1}. {section.title}</span>
+                        {section.isRequired === false && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Optional</span>
+                        )}
+                      </div>
                       <div className="text-xs mt-1 opacity-75">
-                        {section.content ? `${section.content.length} characters` : 'Not started'}
+                        {section.content ? (
+                          <span>
+                            {section.content.length} chars
+                            {section.wordCountTarget && (
+                              <span className="ml-1">
+                                • ~{Math.round(section.content.split(' ').filter(word => word.length > 0).length)}/{section.wordCountTarget} words
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          'Not started'
+                        )}
                       </div>
                     </div>
                     {section.completed && (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                     )}
                   </div>
                 </button>
@@ -297,13 +313,37 @@ useEffect(() => {
                 {currentSection.title}
               </h2>
               
-              {/* Guidance */}
+              {/* Enhanced Guidance with Rich Metadata */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-start space-x-2">
                   <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
+                  <div className="w-full">
                     <p className="text-sm font-medium text-blue-900 mb-1">Marcus's Guidance:</p>
-                    <p className="text-sm text-blue-800">{currentSection.guidance}</p>
+                    <p className="text-sm text-blue-800 mb-3">{currentSection.guidance}</p>
+                    
+                    {/* Rich Metadata Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-blue-200">
+                      {currentSection.wordCountTarget && (
+                        <div className="text-xs">
+                          <span className="font-medium text-blue-900">Target Length:</span>
+                          <span className="text-blue-700 ml-1">{currentSection.wordCountTarget} words</span>
+                        </div>
+                      )}
+                      
+                      {currentSection.psychologyNote && (
+                        <div className="text-xs">
+                          <span className="font-medium text-blue-900">Psychology:</span>
+                          <span className="text-blue-700 ml-1">{currentSection.psychologyNote}</span>
+                        </div>
+                      )}
+                      
+                      {currentSection.emotionalTarget && (
+                        <div className="text-xs">
+                          <span className="font-medium text-blue-900">Emotional Goal:</span>
+                          <span className="text-blue-700 ml-1">{currentSection.emotionalTarget}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -317,8 +357,21 @@ useEffect(() => {
                   className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
                 />
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <span>{currentSection.content.length} characters</span>
-                  <span>Minimum 20 characters for completion</span>
+                  <span>
+                    {currentSection.content.length} characters
+                    {currentSection.wordCountTarget && (
+                      <span className="ml-2">
+                        (~{Math.round(currentSection.content.split(' ').filter(word => word.length > 0).length)} / {currentSection.wordCountTarget} words)
+                      </span>
+                    )}
+                  </span>
+                  <span>
+                    {currentSection.isRequired === false ? (
+                      <span className="text-blue-600">Optional section</span>
+                    ) : (
+                      <span>Required section</span>
+                    )}
+                  </span>
                 </div>
               </div>
 
