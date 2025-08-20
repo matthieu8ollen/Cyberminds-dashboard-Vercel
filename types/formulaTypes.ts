@@ -8,7 +8,7 @@ export interface EnhancedContentFormula {
   id: string
   name: string
   description: string
-  category: 'story' | 'data' | 'framework' | 'lead-generation' | 'hybrid'
+  category: 'authority' | 'contrarian' | 'personal' | 'framework'
   difficulty: 'beginner' | 'intermediate' | 'advanced'
   estimatedTime: string
   popularity: number
