@@ -22,15 +22,29 @@ interface ContentFormulasProps {
   onUseFormula?: (formula: EnhancedContentFormula) => void
 }
 
+// Map database categories to user-friendly names
+const mapCategoryToUserFriendly = (dbCategory: string): 'authority' | 'contrarian' | 'personal' | 'framework' => {
+  switch (dbCategory) {
+    case 'Authority_Framework':
+      return 'authority'
+    case 'Contrarian_Insight':
+      return 'contrarian'
+    case 'Personal_Story_Lesson':
+      return 'personal'
+    default:
+      return 'framework'
+  }
+}
+
 // Conversion function from database format to component format
 const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
   return {
     id: dbFormula.id,
     name: dbFormula.formula_name,
-    description: dbFormula.funnel_purpose || '',
-    category: dbFormula.formula_category as any || 'framework',
-    difficulty: dbFormula.difficulty_level as any || 'beginner',
-    estimatedTime: '25 min', // Default since not in schema
+    description: dbFormula.funnel_purpose || dbFormula.content_intent || '',
+    category: mapCategoryToUserFriendly(dbFormula.formula_category || ''),
+    difficulty: (dbFormula.difficulty_level?.toLowerCase() as any) || 'intermediate',
+    estimatedTime: `${Math.ceil((dbFormula.estimated_word_count || 200) / 200) * 5} min`,
     popularity: Math.round((dbFormula.effectiveness_score || 0) * 10),
     isCustom: dbFormula.created_by !== null,
     createdAt: dbFormula.created_at,
@@ -73,23 +87,45 @@ const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_section
 }
 
 // Conversion function from component format to database format
-const convertEnhancedToDatabase = (formula: EnhancedContentFormula): { 
-  formula: any, 
-  sections: any[] 
-} => {
-  // Simplified for now - just return empty objects
-  return {
-    formula: {},
-    sections: []
+const convertEnhancedToDatabase = (formula: EnhancedContentFormula, userId: string) => {
+  const formulaData = {
+    formula_name: formula.name,
+    funnel_purpose: formula.description,
+    formula_category: formula.category === 'authority' ? 'Authority_Framework' : 
+                     formula.category === 'contrarian' ? 'Contrarian_Insight' : 
+                     formula.category === 'personal' ? 'Personal_Story_Lesson' : 'Authority_Framework',
+    difficulty_level: formula.difficulty,
+    section_count: formula.sections.length,
+    estimated_word_count: formula.sections.reduce((acc, section) => acc + (section.wordCountTarget || 100), 0),
+    psychological_triggers: formula.psychologicalTriggers?.map(t => t.name) || [],
+    use_cases: formula.tags || [],
+    is_active: true,
+    is_premium: formula.isCustom,
+    created_by: userId,
+    effectiveness_score: formula.popularity / 10
   }
+
+  const sectionsData = formula.sections.map(section => ({
+    section_order: section.position,
+    section_name: section.title,
+    section_purpose: section.description,
+    section_guidelines: section.guidance,
+    section_template: section.placeholder,
+    word_count_target: section.wordCountTarget || 100,
+    is_required: section.isRequired,
+    is_customizable: section.isCustom,
+    psychological_purpose: section.psychologyNote,
+    emotional_target: section.toneGuidance
+  }))
+
+  return { formulaData, sectionsData }
 }
 
 const CATEGORIES = [
-  { id: 'all', label: 'AI Suggested', icon: BookOpen },
-  { id: 'story', label: 'Story-Based', icon: MessageSquare },
-  { id: 'data', label: 'Data-Driven', icon: BarChart3 },
-  { id: 'framework', label: 'Framework', icon: TrendingUp },
-  { id: 'lead-generation', label: 'Lead Generation', icon: Users }
+  { id: 'all', label: 'All Formulas', icon: BookOpen },
+  { id: 'authority', label: 'Authority Framework', icon: TrendingUp },
+  { id: 'contrarian', label: 'Contrarian Insight', icon: BarChart3 },
+  { id: 'personal', label: 'Personal Stories/Lesson', icon: MessageSquare }
 ]
 
 type ViewMode = 'gallery' | 'builder' | 'analyzer'
@@ -161,11 +197,10 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      'story': 'bg-purple-100 text-purple-700 border-purple-200',
-      'data': 'bg-blue-100 text-blue-700 border-blue-200',
-      'framework': 'bg-green-100 text-green-700 border-green-200',
-      'lead-generation': 'bg-orange-100 text-orange-700 border-orange-200',
-      'hybrid': 'bg-pink-100 text-pink-700 border-pink-200'
+      'authority': 'bg-blue-100 text-blue-700 border-blue-200',
+      'contrarian': 'bg-purple-100 text-purple-700 border-purple-200',
+      'personal': 'bg-green-100 text-green-700 border-green-200',
+      'framework': 'bg-gray-100 text-gray-700 border-gray-200'
     }
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-700 border-gray-200'
   }
@@ -180,9 +215,33 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   }
 
   // Builder handlers
-  const handleCreateFormula = (baseFormula?: EnhancedContentFormula) => {
+  const handleCreateFormula = async (baseFormula?: EnhancedContentFormula) => {
+    if (!user?.id) return
+    
     setBuilderFormula(baseFormula || null)
     setViewMode('builder')
+  }
+
+  const handleSaveFormula = async (formula: EnhancedContentFormula) => {
+    if (!user?.id) return
+    
+    try {
+      if (formula.id && formula.isCustom) {
+        // Update existing custom formula
+        await updateContentFormula(formula.id, formula, user.id)
+      } else {
+        // Save new custom formula
+        await saveContentFormula(formula, user.id)
+      }
+      
+      // Reload formulas
+      await loadFormulas()
+      setViewMode('gallery')
+      setBuilderFormula(null)
+    } catch (err) {
+      console.error('Error saving formula:', err)
+      setError('Failed to save formula')
+    }
   }
 
   const handleCancelBuilder = () => {
