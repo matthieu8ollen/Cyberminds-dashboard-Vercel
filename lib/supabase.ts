@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { EnhancedContentFormula } from '@/types/formulaTypes'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -311,14 +312,83 @@ export const saveContentFormula = async (formula: EnhancedContentFormula, userId
   }
 }
 
-export const updateContentFormula = async (formulaId: string, updates: any, sections?: any) => {
-  console.log('Update formula not implemented yet')
-  return { data: null, error: new Error('Not implemented') }
+export const updateContentFormula = async (formulaId: string, formula: EnhancedContentFormula, userId: string) => {
+  try {
+    // Convert to database format
+    const formulaData = {
+      formula_name: formula.name,
+      funnel_purpose: formula.description,
+      formula_category: formula.category,
+      difficulty_level: formula.difficulty,
+      section_count: formula.sections.length,
+      estimated_word_count: formula.sections.reduce((acc, section) => acc + (section.wordCountTarget || 100), 0),
+      psychological_triggers: formula.psychologicalTriggers?.map(t => t.name) || [],
+      use_cases: formula.tags || [],
+      effectiveness_score: formula.popularity || 0,
+      updated_at: new Date().toISOString()
+    }
+
+    // Update formula
+    const { data: updatedFormula, error: formulaError } = await supabase
+      .from('content_formulas')
+      .update(formulaData)
+      .eq('id', formulaId)
+      .select()
+      .single()
+
+    if (formulaError) throw formulaError
+
+    // Delete existing sections
+    await supabase
+      .from('formula_sections')
+      .delete()
+      .eq('formula_id', formulaId)
+
+    // Insert new sections
+    const sectionsData = formula.sections.map(section => ({
+      formula_id: formulaId,
+      section_order: section.position,
+      section_name: section.title,
+      section_purpose: section.description,
+      section_guidelines: section.guidance,
+      section_template: section.placeholder,
+      word_count_target: section.wordCountTarget || 100,
+      is_required: section.isRequired,
+      is_customizable: section.isCustom,
+      psychological_purpose: section.psychologyNote,
+      emotional_target: section.toneGuidance
+    }))
+
+    const { error: sectionsError } = await supabase
+      .from('formula_sections')
+      .insert(sectionsData)
+
+    if (sectionsError) throw sectionsError
+
+    return { data: updatedFormula, error: null }
+  } catch (err) {
+    return { data: null, error: err }
+  }
 }
 
 export const deleteContentFormula = async (formulaId: string) => {
-  console.log('Delete formula not implemented yet')
-  return { error: new Error('Not implemented') }
+  try {
+    // Delete sections first
+    await supabase
+      .from('formula_sections')
+      .delete()
+      .eq('formula_id', formulaId)
+
+    // Delete formula
+    const { error } = await supabase
+      .from('content_formulas')
+      .delete()
+      .eq('id', formulaId)
+
+    return { error }
+  } catch (err) {
+    return { error: err }
+  }
 }
 
 // Auth helpers
