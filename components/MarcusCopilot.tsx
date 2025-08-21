@@ -238,6 +238,8 @@ case 'lead-magnet':
     <PathFormula 
       onBack={handleBackToWelcome}
       ideationData={marcusState.conversationData}
+      aiFormulas={aiFormulas}
+      isLoadingAIFormulas={isLoadingAIFormulas}
       onExitWorkflow={onExitWorkflow}
       onContinueToImages={onContinueToImages}
       onUserStartedWorking={onUserStartedWorking}
