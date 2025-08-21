@@ -251,8 +251,17 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
   }
 
   const handleFormulaClick = (formula: EnhancedContentFormula) => {
+    // Add loading state for modal
     setModalFormula(formula)
     setShowFormulaModal(true)
+    
+    // Scroll to top of modal content
+    setTimeout(() => {
+      const modalElement = document.querySelector('[data-modal-content]')
+      if (modalElement) {
+        modalElement.scrollTop = 0
+      }
+    }, 100)
   }
 
   const handleUseFormula = (formula: EnhancedContentFormula) => {
@@ -275,7 +284,20 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
     const effectiveness = formatEffectivenessScore(modalFormula.popularity)
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setShowFormulaModal(false)
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            setShowFormulaModal(false)
+          }
+        }}
+        tabIndex={-1}
+      >
         <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           {/* Modal Header */}
           <div className="p-6 border-b border-gray-200">
@@ -307,7 +329,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
           </div>
 
           {/* Modal Content */}
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6" data-modal-content>
             {/* Enhanced Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
@@ -400,32 +422,44 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
               </div>
             </div>
 
-            {/* Psychological Triggers */}
-            {modalFormula.psychologicalTriggers && modalFormula.psychologicalTriggers.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Psychological Triggers</h3>
-                <div className="flex flex-wrap gap-2">
-                  {modalFormula.psychologicalTriggers.map((trigger, index) => (
-                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-                      {trigger.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Advanced Details - Collapsible */}
+            {(modalFormula.psychologicalTriggers?.length > 0 || modalFormula.tags?.length > 0) && (
+              <details className="border border-gray-200 rounded-lg">
+                <summary className="cursor-pointer p-4 hover:bg-gray-50 transition-colors">
+                  <span className="font-semibold text-gray-900">Advanced Details</span>
+                  <span className="text-sm text-gray-500 ml-2">(Click to expand)</span>
+                </summary>
+                
+                <div className="p-4 border-t border-gray-200 space-y-4">
+                  {/* Psychological Triggers */}
+                  {modalFormula.psychologicalTriggers && modalFormula.psychologicalTriggers.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Psychological Triggers</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {modalFormula.psychologicalTriggers.map((trigger, index) => (
+                          <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                            {trigger.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-            {/* Tags */}
-            {modalFormula.tags && modalFormula.tags.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Use Cases</h3>
-                <div className="flex flex-wrap gap-2">
-                  {modalFormula.tags.map((tag, index) => (
-                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                      {tag}
-                    </span>
-                  ))}
+                  {/* Use Cases */}
+                  {modalFormula.tags && modalFormula.tags.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Use Cases</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {modalFormula.tags.map((tag, index) => (
+                          <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </details>
             )}
           </div>
 
@@ -713,7 +747,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
         {filteredFormulas.map(formula => (
           <div
             key={formula.id}
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group cursor-pointer"
+            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 group cursor-pointer transform"
             onClick={() => handleFormulaClick(formula)}
           >
             {/* Header */}
