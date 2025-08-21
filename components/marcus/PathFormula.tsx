@@ -227,18 +227,6 @@ const renderIdeationContext = () => {
                   formula.category === 'framework' ? 'bg-green-100 text-green-600' :
                   'bg-orange-100 text-orange-600'
                 }`}>
-                  {/* Update category display names */}
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    formula.category === 'authority' ? 'bg-blue-100 text-blue-700' :
-                    formula.category === 'contrarian' ? 'bg-purple-100 text-purple-700' :
-                    formula.category === 'personal' ? 'bg-green-100 text-green-700' :
-                    'bg-orange-100 text-orange-700'
-                  }`}>
-                    {formula.category === 'authority' ? 'AUTHORITY FRAMEWORK' :
-                     formula.category === 'contrarian' ? 'CONTRARIAN INSIGHT' :
-                     formula.category === 'personal' ? 'PERSONAL STORIES/LESSON' :
-                     'FRAMEWORK'}
-                  </span>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
