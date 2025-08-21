@@ -44,6 +44,7 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
   const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all')
   const [showTopicDropdown, setShowTopicDropdown] = useState(false)
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [selectedIdeaForOverlay, setSelectedIdeaForOverlay] = useState<ContentIdea | null>(null)
 
   // Load saved ideas on mount
   useEffect(() => {
@@ -231,7 +232,8 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
           {filteredIdeas.map((idea) => (
             <div
               key={idea.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              onClick={() => setSelectedIdeaForOverlay(idea)}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition-all cursor-pointer group"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
@@ -275,32 +277,10 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
                 )}
               </div>
               
-              {/* Action Button */}
-<div className="mb-2">
-  <button
-    onClick={() => onUseThisContent?.(idea)}
-    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition"
-  >
-    <ArrowRight className="w-4 h-4" />
-    Use This Content
-  </button>
-</div>
-  
-  {/* Dismiss Actions */}
-  <div className="flex gap-1">
-    <button
-      onClick={() => handleUpdateIdea(idea.id, { status: 'used' })}
-      className="flex-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition"
-    >
-      Mark Used
-    </button>
-    <button
-      onClick={() => handleUpdateIdea(idea.id, { status: 'archived' })}
-      className="flex-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition"
-    >
-      Archive
-    </button>
-  </div>
+              {/* Click indicator */}
+              <div className="text-xs text-gray-400 group-hover:text-gray-500 transition-colors">
+                Click to view details →
+              </div>
 </div>
           ))}
         </div>
