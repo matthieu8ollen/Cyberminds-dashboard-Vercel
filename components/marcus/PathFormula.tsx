@@ -242,7 +242,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* AI Formulas Tab Content */}
-      {!isLoadingAIFormulas && activeTab === 'ai' && (
+      {hasAIFormulas && !isLoadingAIFormulas && activeTab === 'ai' && (
         <div>
           {aiFormulas.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2">
