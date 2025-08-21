@@ -32,10 +32,10 @@ export interface EnhancedContentFormula {
   aiAnalysis?: AIAnalysisResult
   optimizationSuggestions?: OptimizationSuggestion[]
   
-  // Database-aligned fields from CSV
-  effectivenessScore: number
-  reusabilityScore: number
-  engagementPredictionScore: number
+ // Database-aligned fields from CSV
+  effectivenessScore?: number
+  reusabilityScore?: number
+  engagementPredictionScore?: number
   primaryTargetRole: string
   viralPotential: string
   saveWorthiness: string
