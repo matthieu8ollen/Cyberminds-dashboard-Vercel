@@ -23,6 +23,8 @@ interface FormulaTemplate {
 interface PathFormulaProps {
   onBack: () => void
   ideationData?: any
+  aiFormulas?: any[]
+  isLoadingAIFormulas?: boolean
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
   onUserStartedWorking?: () => void
@@ -31,6 +33,8 @@ interface PathFormulaProps {
 export default function PathFormula({ 
   onBack, 
   ideationData, 
+  aiFormulas = [],
+  isLoadingAIFormulas = false,
   onExitWorkflow, 
   onContinueToImages,
   onUserStartedWorking
@@ -47,6 +51,10 @@ export default function PathFormula({
   const [formulas, setFormulas] = useState<FormulaTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Tab system - show AI tab only if we have AI formulas or are loading them
+  const [activeTab, setActiveTab] = useState<'ai' | 'database'>('ai')
+  const hasAIFormulas = aiFormulas.length > 0 || isLoadingAIFormulas
 
   // Load real formulas from database
   useEffect(() => {
@@ -189,8 +197,10 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
+      {/* Database Formulas Tab Content */}
+    <div>
       {/* Loading State */}
-      {loading && (
+      {loading && activeTab === 'database' && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
           <span className="ml-3 text-gray-600">Loading formulas...</span>
@@ -198,7 +208,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* Error State */}
-      {error && (
+      {error && activeTab === 'database' && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-600">{error}</p>
           <button 
@@ -210,8 +220,8 @@ const renderIdeationContext = () => {
         </div>
       )}
 
-      {/* Formulas Grid */}
-      {!loading && !error && (
+      {/* Database Formulas Grid */}
+      {!loading && !error && activeTab === 'database' && (
         <div className="grid gap-6 md:grid-cols-2">
           {formulas.map((formula) => (
           <div
@@ -227,6 +237,10 @@ const renderIdeationContext = () => {
                   formula.category === 'framework' ? 'bg-green-100 text-green-600' :
                   'bg-orange-100 text-orange-600'
                 }`}>
+                  {formula.category === 'story' ? <Target className="w-6 h-6" /> :
+                   formula.category === 'data' ? <BarChart3 className="w-6 h-6" /> :
+                   formula.category === 'framework' ? <BookOpen className="w-6 h-6" /> :
+                   <Sparkles className="w-6 h-6" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
@@ -269,7 +283,7 @@ const renderIdeationContext = () => {
       )}
       
       {/* No formulas state */}
-      {!loading && !error && formulas.length === 0 && (
+      {!loading && !error && formulas.length === 0 && activeTab === 'database' && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-gray-400" />
@@ -278,6 +292,7 @@ const renderIdeationContext = () => {
           <p className="text-gray-600">Check back later for new content formulas.</p>
         </div>
       )}
+    </div>
     </div>
   )
 
