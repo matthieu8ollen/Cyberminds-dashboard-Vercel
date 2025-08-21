@@ -99,7 +99,23 @@ export default function FormulaBuilder({
       stakeholderScores: { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
       version: 1,
       tags: [],
-      isPublic: false
+      isPublic: false,
+      
+      // Database-aligned fields from CSV
+      effectivenessScore: 0,
+      reusabilityScore: 0,
+      engagementPredictionScore: 0,
+      primaryTargetRole: '',
+      viralPotential: '',
+      saveWorthiness: '',
+      overallPerformanceRating: '',
+      overallReusabilityRating: '',
+      voiceTemplate: '',
+      adaptationDifficulty: '',
+      targetAudience: '',
+      authorPersonas: [],
+      companyStages: [],
+      industryFit: []
     }
   })
   
