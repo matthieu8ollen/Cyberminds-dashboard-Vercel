@@ -32,6 +32,22 @@ export interface EnhancedContentFormula {
   aiAnalysis?: AIAnalysisResult
   optimizationSuggestions?: OptimizationSuggestion[]
   
+  // Database-aligned fields from CSV
+  effectivenessScore: number
+  reusabilityScore: number
+  engagementPredictionScore: number
+  primaryTargetRole: string
+  viralPotential: string
+  saveWorthiness: string
+  overallPerformanceRating: string
+  overallReusabilityRating: string
+  voiceTemplate: string
+  adaptationDifficulty: string
+  targetAudience: string
+  authorPersonas: string[]
+  companyStages: string[]
+  industryFit: string[]
+  
   // Metadata
   baseFormulaId?: string // If derived from existing formula
   version: number
