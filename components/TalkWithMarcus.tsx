@@ -29,19 +29,31 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   const { startIdeation } = useWorkflow()
   const [messages, setMessages] = useState<Message[]>([])
   
-  const saveIdeaToLibrary = async (title: string, description: string, tags: string[]) => {
-    if (!user) return false
-    
-    try {
-      const { data, error } = await createContentIdea({
-        user_id: user.id,
-        title,
-        description,
-        tags,
-        content_pillar: 'ai_generated',
-        source_type: 'ai_generated',
-        status: 'active'
-      })
+  const saveIdeaToLibrary = async (title: string, description: string, tags: string[], enrichedData?: any) => {
+  if (!user) return false
+  
+  try {
+    const { data, error } = await createContentIdea({
+      user_id: user.id,
+      title,
+      description,
+      tags,
+      content_pillar: 'ai_generated',
+      source_type: 'ai_generated',
+      source_data: enrichedData ? {
+        session_id: enrichedData.session_id,
+        source_page: 'talk_with_marcus_ai',
+        content_type: enrichedData.content_type,
+        hooks: enrichedData.hooks,
+        selected_hook: enrichedData.selected_hook,
+        selected_hook_index: enrichedData.selected_hook_index,
+        personal_story: enrichedData.personal_story,
+        pain_points_and_struggles: enrichedData.pain_points_and_struggles,
+        concrete_evidence: enrichedData.concrete_evidence,
+        audience_and_relevance: enrichedData.audience_and_relevance
+      } : { session_id: currentSession?.id, source_page: 'talk_with_marcus_ai' },
+      status: 'active'
+    })
       
       if (error) throw error
       console.log('Idea saved to library:', data)
@@ -768,10 +780,11 @@ const sendToWritersSuite = (topic: any) => {
   if (user && topicsData?.[0]) {
     const topicData = topicsData[0] as any
     const success = await saveIdeaToLibrary(
-      topicData?.title || 'AI Generated Topic',
-      selectedHook || topicData?.hooks?.[0] || '',
-      topicData?.key_takeaways || []
-    )
+  topicData?.title || 'AI Generated Topic',
+  selectedHook || topicData?.hooks?.[0] || '',
+  topicData?.key_takeaways || [],
+  topicData
+)
     if (success) {
       console.log('💾 Idea saved to library, exiting without workflow')
       setShowTopicOverlay(false)
