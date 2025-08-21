@@ -585,10 +585,43 @@ onUseThisContent={(idea) => {
   if (writerSuiteMode === 'selection') {
     return (
       <WriterSuiteSelection
-  onModeSelect={(mode) => {
-    if (mode === 'writer-suite') {
-      setWriterSuiteMode('marcus')
-    } else if (mode === 'standard') {
+  onModeSelect={async (mode) => {
+  if (mode === 'writer-suite') {
+    setWriterSuiteMode('marcus')
+    
+    // Send webhook when Marcus mode is selected with rich ideation data
+    if (ideationData && inStrictWorkflow && workflowRoute === 'ideas') {
+      try {
+        const payload = {
+          title: ideationData.title || ideationData.topic,
+          content_type: ideationData.content_type || 'personal_story',
+          selected_hook: ideationData.selected_hook || ideationData.angle,
+          selected_hook_index: ideationData.selected_hook_index || 0,
+          hooks: ideationData.hooks || [ideationData.angle],
+          key_takeaways: ideationData.key_takeaways || ideationData.takeaways || [],
+          personal_story: ideationData.personal_story || '',
+          pain_points_and_struggles: ideationData.pain_points_and_struggles || '',
+          concrete_evidence: ideationData.concrete_evidence || '',
+          audience_and_relevance: ideationData.audience_and_relevance || '',
+          user_id: user?.id,
+          session_id: ideationData.session_id,
+          timestamp: new Date().toISOString()
+        }
+
+        await fetch('https://testcyber.app.n8n.cloud/webhook/1f6e3c3f-b68c-4f71-b83f-7330b528db58', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        })
+        
+        console.log('✅ Webhook sent for Marcus content formulas')
+      } catch (error) {
+        console.error('❌ Webhook failed:', error)
+      }
+    }
+  } else if (mode === 'standard') {
       console.log('📋 WriterSuiteSelection → Standard Mode')
       
       if (inStrictWorkflow) {
