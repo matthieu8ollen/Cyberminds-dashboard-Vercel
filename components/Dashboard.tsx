@@ -637,8 +637,7 @@ onUseThisContent={(idea) => {
       console.log('📋 WriterSuiteSelection → Standard Mode')
       
       if (inStrictWorkflow) {
-        console.log('✅ Exiting strict workflow to Standard Mode')
-        exitWorkflow()
+        console.log('✅ Staying in strict workflow, going to Standard Mode')
         setInStandardMode(true)
         setActivePage('standard')
       } else {
@@ -710,6 +709,17 @@ return (
   setInStandardMode(false)
   setActivePage('production')
 }}
+    onExitWorkflow={() => {
+      console.log('🚪 Exit workflow from StandardGenerator')
+      exitWorkflow()
+      setInStandardMode(false)
+      setActivePage('production')
+    }}
+    onContinueToImages={(contentId: string) => {
+      console.log('🖼️ Continue to images from StandardGenerator:', contentId)
+      localStorage.setItem('workflowContentId', contentId)
+      setActivePage('images')
+    }}
     ideationData={ideationData}
   />
 )
