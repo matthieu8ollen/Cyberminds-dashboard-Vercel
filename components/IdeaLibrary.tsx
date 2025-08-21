@@ -139,7 +139,7 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
           </div>
           
           <div className="text-sm text-gray-500">
-            {filteredIdeas.length} saved ideas
+            {currentIdeas.length} ideas in {activeSection === 'active' ? 'Fresh Ideas' : activeSection === 'used' ? 'Used' : 'Archived'}
           </div>
         </div>
 
