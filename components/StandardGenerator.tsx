@@ -605,6 +605,17 @@ function StandardResults({
     }, 'standard')
     
     if (saved) {
+      // Mark idea as used if we have idea_id
+      if (ideationData?.idea_id) {
+        try {
+          const { updateContentIdea } = await import('../lib/supabase')
+          await updateContentIdea(ideationData.idea_id, { status: 'used' })
+          console.log('✅ Marked idea as used:', ideationData.idea_id)
+        } catch (error) {
+          console.error('❌ Failed to mark idea as used:', error)
+        }
+      }
+      
       showToast('success', 'Content saved to Production Pipeline!')
       // Trigger completion after successful save
       if (onComplete) onComplete()
