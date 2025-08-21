@@ -197,6 +197,92 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
+      {/* Tab System - Only show if we have AI formulas */}
+      {hasAIFormulas && (
+        <div className="border-b border-gray-200 mb-8">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'ai'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4" />
+                <span>AI Suggested</span>
+                {isLoadingAIFormulas && <Loader2 className="w-3 h-3 animate-spin" />}
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('database')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'database'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-4 h-4" />
+                <span>Database Formulas</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State for AI Formulas */}
+      {isLoadingAIFormulas && activeTab === 'ai' && (
+        <div className="text-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Getting AI Suggestions</h3>
+          <p className="text-gray-600">Marcus is analyzing your ideation data to suggest the perfect formulas...</p>
+        </div>
+      )}
+
+      {/* AI Formulas Tab Content */}
+      {!isLoadingAIFormulas && activeTab === 'ai' && (
+        <div>
+          {aiFormulas.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {aiFormulas.map((formula: any, index: number) => (
+                <div
+                  key={`ai-${index}`}
+                  className="bg-gradient-to-r from-purple-50 to-teal-50 border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                  onClick={() => handleFormulaSelect(formula)}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-teal-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
+                        <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
+                          AI SUGGESTED
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                  </div>
+                  <p className="text-gray-600 mb-4">{formula.description}</p>
+                  <p className="text-sm text-purple-700 font-medium">✨ Tailored for your content</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No AI suggestions available</h3>
+              <p className="text-gray-600">Try the database formulas instead.</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Database Formulas Tab Content */}
     {(!hasAIFormulas || activeTab === 'database') && (
       <div>
