@@ -521,7 +521,8 @@ const sendToWritersSuite = (topic: any) => {
       takeaways: topic.key_takeaways || [],
       selectedHookIndex: topic.selectedHookIndex,
       source_page: 'talk_with_marcus_ai',
-      session_id: currentSession?.id
+      session_id: currentSession?.id,
+      idea_id: topic.idea_id  // Pass idea_id through workflow
     });
   }
 };
@@ -857,14 +858,34 @@ const sendToWritersSuite = (topic: any) => {
     </button>
     
     <button
-      onClick={() => {
-  const selectedTopic = {
-    ...(topicsData[0] as any),
-    selectedHook: selectedHook || (topicsData[0] as any)?.hooks?.[0],
-    selectedHookIndex: selectedHookIndex || 0
-  };
-  sendToWritersSuite(selectedTopic);
-  setShowTopicOverlay(false);
+      onClick={async () => {
+  if (user && topicsData?.[0]) {
+    const topicData = topicsData[0] as any
+    
+    // First save to library with 'active' status
+    const { data: savedIdea } = await createContentIdea({
+      user_id: user.id,
+      title: topicData?.title || 'AI Generated Topic',
+      description: selectedHook || topicData?.hooks?.[0] || '',
+      tags: topicData?.key_takeaways || [],
+      content_pillar: 'ai_generated',
+      source_type: 'ai_generated',
+      source_data: topicData,
+      status: 'active'
+    })
+
+    if (savedIdea) {
+      // Then start workflow with idea_id included
+      const selectedTopic = {
+        ...(topicsData[0] as any),
+        selectedHook: selectedHook || (topicsData[0] as any)?.hooks?.[0],
+        selectedHookIndex: selectedHookIndex || 0,
+        idea_id: savedIdea.id  // Add idea_id to track through workflow
+      };
+      sendToWritersSuite(selectedTopic);
+      setShowTopicOverlay(false);
+    }
+  }
 }}
       className="bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 transition font-medium"
     >
