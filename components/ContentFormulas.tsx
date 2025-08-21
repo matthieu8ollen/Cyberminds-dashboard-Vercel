@@ -84,7 +84,15 @@ const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_section
     
     // Required fields for EnhancedContentFormula
     ctaPositions: [],
-    psychologicalTriggers: [],
+    psychologicalTriggers: (dbFormula.psychological_triggers || []).map((trigger: string, index: number) => ({
+      id: `trigger_${index}`,
+      name: trigger,
+      description: '',
+      category: 'authority' as any,
+      strength: 5,
+      applicableSections: [],
+      implementation: ''
+    })),
     usageCount: 0,
     stakeholderScores: { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
     version: 1,
