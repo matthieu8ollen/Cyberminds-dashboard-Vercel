@@ -606,10 +606,10 @@ function StandardResults({
     
     if (saved) {
       // Mark idea as used if we have idea_id
-      if (ideationData?.idea_id) {
+      if (ideationData && 'idea_id' in ideationData && ideationData.idea_id) {
         try {
           const { updateContentIdea } = await import('../lib/supabase')
-          await updateContentIdea(ideationData.idea_id, { status: 'used' })
+          await updateContentIdea(ideationData.idea_id as string, { status: 'used' })
           console.log('✅ Marked idea as used:', ideationData.idea_id)
         } catch (error) {
           console.error('❌ Failed to mark idea as used:', error)
