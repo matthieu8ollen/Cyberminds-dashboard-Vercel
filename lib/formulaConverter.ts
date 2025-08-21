@@ -71,14 +71,30 @@ class FormulaConverter implements LegacyFormulaConverter {
       usageCount: 0,
       stakeholderScores,
       
-      // Metadata
+     // Metadata
       version: 1,
       tags: this.generateTags(legacy),
       isPublic: !legacy.isCustom,
       
       // AI Analysis placeholder
       aiAnalysis: undefined,
-      optimizationSuggestions: []
+      optimizationSuggestions: [],
+      
+      // Database-aligned fields with defaults
+      effectivenessScore: 0,
+      reusabilityScore: 0,
+      engagementPredictionScore: 0,
+      primaryTargetRole: '',
+      viralPotential: '',
+      saveWorthiness: '',
+      overallPerformanceRating: '',
+      overallReusabilityRating: '',
+      voiceTemplate: '',
+      adaptationDifficulty: '',
+      targetAudience: '',
+      authorPersonas: [],
+      companyStages: [],
+      industryFit: []
     }
   }
 
