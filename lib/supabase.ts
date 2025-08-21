@@ -242,11 +242,11 @@ export const getContentFormulas = async (userId?: string) => {
 
     if (sectionsError) return { data: null, error: sectionsError }
 
-    // Join manually
-    const result = formulas?.map(formula => ({
-      ...formula,
-      formula_sections: sections?.filter(s => s.formula_id === formula.id) || []
-    })) || []
+    // Join manually - FIX: Use formula_id instead of id
+const result = formulas?.map(formula => ({
+  ...formula,
+  formula_sections: sections?.filter(s => s.formula_id === formula.formula_id) || []
+})) || []
 
     console.log('📊 Manual join success:', result.length, 'formulas')
     return { data: result, error: null }
