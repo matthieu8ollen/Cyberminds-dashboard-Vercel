@@ -51,6 +51,22 @@ const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_section
     updatedAt: dbFormula.updated_at,
     userId: dbFormula.created_by,
     
+    // Add missing database fields
+    effectivenessScore: dbFormula.effectiveness_score || 0,
+    reusabilityScore: dbFormula.reusability_score || 0,
+    engagementPredictionScore: dbFormula.engagement_prediction_score || 0,
+    primaryTargetRole: dbFormula.primary_target_role || '',
+    viralPotential: dbFormula.viral_potential || '',
+    saveWorthiness: dbFormula.save_worthiness || '',
+    overallPerformanceRating: dbFormula.overall_performance_rating || '',
+    overallReusabilityRating: dbFormula.overall_reusability_rating || '',
+    voiceTemplate: dbFormula.voice_template || '',
+    adaptationDifficulty: dbFormula.adaptation_difficulty || '',
+    targetAudience: dbFormula.target_audience || '',
+    authorPersonas: dbFormula.author_personas || [],
+    companyStages: dbFormula.company_stage_fit || [],
+    industryFit: dbFormula.industry_fit || [],
+    
     // Convert sections
     sections: (dbFormula.formula_sections || []).map(section => ({
       id: section.id,
