@@ -51,7 +51,7 @@ const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_section
     updatedAt: dbFormula.updated_at,
     userId: dbFormula.created_by,
     
-    // Add missing database fields
+    // Database-aligned fields from CSV
     effectivenessScore: dbFormula.effectiveness_score || 0,
     reusabilityScore: dbFormula.reusability_score || 0,
     engagementPredictionScore: dbFormula.engagement_prediction_score || 0,
