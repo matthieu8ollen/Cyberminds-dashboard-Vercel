@@ -489,7 +489,17 @@ const sendToWritersSuite = (topic: any) => {
   console.log('Sending to Writer Suite:', topic);
   if (onNavigateToCreate) {
     onNavigateToCreate('power', {
+      title: topic.title,
       topic: topic.title,
+      content_type: topic.content_type || 'personal_story',
+      hooks: topic.hooks || [],
+      selected_hook: topic.selectedHook || topic.hooks?.[0] || '',
+      selected_hook_index: topic.selectedHookIndex || 0,
+      key_takeaways: topic.key_takeaways || [],
+      personal_story: topic.personal_story || '',
+      pain_points_and_struggles: topic.pain_points_and_struggles || '',
+      concrete_evidence: topic.concrete_evidence || '',
+      audience_and_relevance: topic.audience_and_relevance || '',
       angle: topic.selectedHook || topic.hooks?.[0] || '',
       takeaways: topic.key_takeaways || [],
       selectedHookIndex: topic.selectedHookIndex,
