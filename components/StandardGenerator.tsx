@@ -107,6 +107,8 @@ const [context, setContext] = useState(
     onBack={() => setShowResults(false)}
     onSwitchMode={onSwitchMode}
     onComplete={onComplete}
+    onExitWorkflow={onExitWorkflow}
+    onContinueToImages={onContinueToImages}
   />
 )
 }
@@ -329,7 +331,9 @@ function StandardResults({
   ideationData,
   onBack, 
   onSwitchMode,
-  onComplete
+  onComplete,
+  onExitWorkflow,
+  onContinueToImages
 }: { 
   topic: string
   contentType: string
@@ -338,6 +342,8 @@ function StandardResults({
   onBack: () => void
   onSwitchMode: (mode: 'express' | 'power') => void
   onComplete?: () => void
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
 }) {
   const [selectedDraft, setSelectedDraft] = useState('bold')
   const [showPreview, setShowPreview] = useState(true)
