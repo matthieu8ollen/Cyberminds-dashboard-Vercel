@@ -496,7 +496,7 @@ const startWorkflowDirect = (targetPage: 'writer-suite' | 'standard') => {
   // Atomic navigation - all state changes together
   if (targetPage === 'writer-suite') {
     setActivePage('writer-suite')
-    setWriterSuiteMode('marcus')  // Go directly to Marcus, skip selection
+    setWriterSuiteMode('selection')  // Direct users see selection page
   } else {
     setInStandardMode(true)
     setActivePage('standard')
