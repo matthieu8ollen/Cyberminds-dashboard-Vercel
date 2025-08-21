@@ -36,6 +36,17 @@ const mapCategoryToUserFriendly = (dbCategory: string): 'authority' | 'contraria
   }
 }
 
+// Map internal categories to display names
+const getCategoryDisplayName = (category: string): string => {
+  switch (category) {
+    case 'authority': return 'Authority Framework'
+    case 'contrarian': return 'Contrarian Insight'
+    case 'personal': return 'Personal Stories/Lesson'
+    case 'framework': return 'Framework'
+    default: return 'Framework'
+  }
+}
+
 // Conversion function from database format to component format
 const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
   return {
@@ -274,9 +285,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
                 <p className="text-gray-600">{modalFormula.description}</p>
                 <div className="flex items-center gap-3 mt-3">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(modalFormula.category)}`}>
-                    {modalFormula.category === 'authority' ? 'Authority Framework' : 
-                     modalFormula.category === 'contrarian' ? 'Contrarian Insight' : 
-                     modalFormula.category === 'personal' ? 'Personal Stories/Lesson' : 'Framework'}
+                    {getCategoryDisplayName(modalFormula.category)}
                   </span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(modalFormula.difficulty)}`}>
                     {modalFormula.difficulty}
@@ -657,7 +666,9 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(formula.category)}`}>
-                    {formula.category.replace('-', ' ')}
+                    {formula.category === 'authority' ? 'Authority Framework' : 
+                     formula.category === 'contrarian' ? 'Contrarian Insight' : 
+                     formula.category === 'personal' ? 'Personal Stories/Lesson' : 'Framework'}
                   </span>
                   {formula.isCustom && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200">
