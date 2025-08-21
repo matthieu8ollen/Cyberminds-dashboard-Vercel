@@ -542,22 +542,21 @@ const getProfileDisplayName = () => {
 
 // Selective Navigation Protection (only when workflow active)
 const handleProtectedNavigation = (targetPage: ActivePage) => {
-  // Only protect if in workflow AND user has actually started working
-  if (inStrictWorkflow && userHasStartedWorking) {
+  if (inStrictWorkflow) {
     const confirmed = window.confirm(
-      "You'll lose your current progress if you navigation away. Are you sure you want to continue?"
+      "You'll lose your current progress if you navigate away. Are you sure you want to continue?"
     )
     if (confirmed) {
       clearWorkflowState()
-      setUserHasStartedWorking(false)
       setActivePage(targetPage)
     }
     // If cancelled, do nothing - stay where we are
   } else {
-    // Normal navigation when not in workflow or user hasn't started working
+    // Normal navigation when not in workflow
     setActivePage(targetPage)
   }
 }
+  
   // Ideas Tab Logic
 const shouldShowIdeasTab = () => {
   return activePage === 'ideas'
