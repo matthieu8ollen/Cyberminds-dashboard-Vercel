@@ -198,9 +198,10 @@ const renderIdeationContext = () => {
       </div>
 
       {/* Database Formulas Tab Content */}
-    <div>
-      {/* Loading State */}
-      {loading && activeTab === 'database' && (
+    {(!hasAIFormulas || activeTab === 'database') && (
+      <div>
+        {/* Loading State */}
+        {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
           <span className="ml-3 text-gray-600">Loading formulas...</span>
@@ -208,7 +209,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* Error State */}
-      {error && activeTab === 'database' && (
+      {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-600">{error}</p>
           <button 
@@ -221,7 +222,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* Database Formulas Grid */}
-      {!loading && !error && activeTab === 'database' && (
+      {!loading && !error && (
         <div className="grid gap-6 md:grid-cols-2">
           {formulas.map((formula) => (
           <div
@@ -283,7 +284,7 @@ const renderIdeationContext = () => {
       )}
       
       {/* No formulas state */}
-      {!loading && !error && formulas.length === 0 && activeTab === 'database' && (
+      {!loading && !error && formulas.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-gray-400" />
@@ -292,7 +293,8 @@ const renderIdeationContext = () => {
           <p className="text-gray-600">Check back later for new content formulas.</p>
         </div>
       )}
-    </div>
+      </div>
+    )}
     </div>
   )
 
