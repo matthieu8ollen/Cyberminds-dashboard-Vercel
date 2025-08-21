@@ -92,41 +92,6 @@ const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_section
     isPublic: !dbFormula.is_premium
   }
 }
-    
-    // Default values for enhanced properties
-    ctaPositions: [],
-    psychologicalTriggers: (dbFormula.psychological_triggers || []).map((trigger, index) => ({
-      id: `trigger_${index}`,
-      name: trigger,
-      description: '',
-      category: 'authority' as any,
-      strength: 5,
-      applicableSections: [],
-      implementation: ''
-    })),
-    usageCount: 0,
-    stakeholderScores: { cfo: 5, cmo: 5, ceo: 5, vc: 5 },
-    version: 1,
-    tags: dbFormula.use_cases || [],
-    isPublic: !dbFormula.created_by,
-    
-    // Database-aligned fields from CSV
-    effectivenessScore: dbFormula.effectiveness_score || 0,
-    reusabilityScore: dbFormula.reusability_score || 0,
-    engagementPredictionScore: dbFormula.engagement_prediction_score || 0,
-    primaryTargetRole: dbFormula.primary_target_role || '',
-    viralPotential: dbFormula.viral_potential || '',
-    saveWorthiness: dbFormula.save_worthiness || '',
-    overallPerformanceRating: dbFormula.overall_performance_rating || '',
-    overallReusabilityRating: dbFormula.overall_reusability_rating || '',
-    voiceTemplate: dbFormula.voice_template || '',
-    adaptationDifficulty: dbFormula.adaptation_difficulty || '',
-    targetAudience: dbFormula.target_audience || '',
-    authorPersonas: dbFormula.author_personas || [],
-    companyStages: dbFormula.company_stage_fit || [],
-    industryFit: dbFormula.industry_fit || []
-  }
-}
 
 // Conversion function from component format to database format
 const convertEnhancedToDatabase = (formula: EnhancedContentFormula, userId: string) => {
