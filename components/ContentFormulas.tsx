@@ -363,20 +363,40 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Formula Structure</h3>
               <div className="space-y-3">
-                {modalFormula.sections.map((section, index) => (
-                  <div key={section.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-6 h-6 bg-teal-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                      {index + 1}
+                {modalFormula.sections.map((section, index) => {
+                  // Check for template variables in section
+                  const hasTemplateVars = section.placeholder && section.placeholder.includes('[') && section.placeholder.includes(']')
+                  
+                  return (
+                    <div key={section.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-6 h-6 bg-teal-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{section.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{section.description}</p>
+                            {section.wordCountTarget && (
+                              <p className="text-xs text-gray-500 mt-1">Target: {section.wordCountTarget} words</p>
+                            )}
+                          </div>
+                          {hasTemplateVars && (
+                            <div className="flex items-center space-x-1 ml-2">
+                              <Sparkles className="w-4 h-4 text-purple-500" />
+                              <span className="text-xs text-purple-600 font-medium">Smart Template</span>
+                            </div>
+                          )}
+                        </div>
+                        {hasTemplateVars && (
+                          <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700">
+                            <strong>Template Preview:</strong> {section.placeholder}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{section.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{section.description}</p>
-                      {section.wordCountTarget && (
-                        <p className="text-xs text-gray-500 mt-1">Target: {section.wordCountTarget} words</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
