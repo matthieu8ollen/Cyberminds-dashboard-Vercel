@@ -19,6 +19,8 @@ interface MarcusCopilotProps {
   onComplete?: (data: any) => void
   onBack?: () => void
   ideationData?: any
+  aiFormulas?: any[]
+  isLoadingAIFormulas?: boolean
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
   onUserStartedWorking?: () => void
@@ -29,6 +31,8 @@ export default function MarcusCopilot({
   onComplete, 
   onBack, 
   ideationData, 
+  aiFormulas = [],
+  isLoadingAIFormulas = false,
   onExitWorkflow, 
   onContinueToImages,
   onUserStartedWorking
