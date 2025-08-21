@@ -39,11 +39,8 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
   const [ideas, setIdeas] = useState<ContentIdea[]>([])
   const [loading, setLoading] = useState(false)
   
-  // Filters
-  const [topicFilter, setTopicFilter] = useState<FilterType>('all')
-  const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all')
-  const [showTopicDropdown, setShowTopicDropdown] = useState(false)
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  // Status sections instead of filters
+  const [activeSection, setActiveSection] = useState<'active' | 'used' | 'archived'>('active')
   const [selectedIdeaForOverlay, setSelectedIdeaForOverlay] = useState<ContentIdea | null>(null)
 
   // Load saved ideas on mount
@@ -68,11 +65,13 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
   }
 }
 
-  const filteredIdeas = ideas.filter(idea => {
-    const matchesTopic = topicFilter === 'all' || idea.content_pillar === topicFilter
-    const matchesCategory = categoryFilter === 'all' || idea.tags.includes(categoryFilter.replace('_', '-'))
-    return matchesTopic && matchesCategory
-  })
+  const sectionedIdeas = {
+    active: ideas.filter(idea => idea.status === 'active'),
+    used: ideas.filter(idea => idea.status === 'used'), 
+    archived: ideas.filter(idea => idea.status === 'archived')
+  }
+  
+  const currentIdeas = sectionedIdeas[activeSection]
 
   const getCategoryIcon = (pillar: string) => {
     switch (pillar) {
@@ -144,69 +143,38 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Topic Filter */}
-          <div className="relative">
-            <button
-              onClick={() => setShowTopicDropdown(!showTopicDropdown)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              <Filter className="w-4 h-4 text-gray-500" />
-              {CONTENT_PILLARS.find(p => p.value === topicFilter)?.label || 'All Topics'}
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </button>
-            
-            {showTopicDropdown && (
-              <div className="absolute top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                {CONTENT_PILLARS.map((pillar) => (
-                  <button
-                    key={pillar.value}
-                    onClick={() => {
-                      setTopicFilter(pillar.value as FilterType)
-                      setShowTopicDropdown(false)
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                      topicFilter === pillar.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                    }`}
-                  >
-                    {pillar.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Category Filter */}
-          <div className="relative">
-            <button
-              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              <Tag className="w-4 h-4 text-gray-500" />
-              {CATEGORIES.find(c => c.value === categoryFilter)?.label || 'All Categories'}
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </button>
-            
-            {showCategoryDropdown && (
-              <div className="absolute top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category.value}
-                    onClick={() => {
-                      setCategoryFilter(category.value as CategoryType)
-                      setShowCategoryDropdown(false)
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                      categoryFilter === category.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Status Sections */}
+        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+          <button
+            onClick={() => setActiveSection('active')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeSection === 'active' 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Fresh Ideas ({sectionedIdeas.active.length})
+          </button>
+          <button
+            onClick={() => setActiveSection('used')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeSection === 'used' 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Used ({sectionedIdeas.used.length})
+          </button>
+          <button
+            onClick={() => setActiveSection('archived')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeSection === 'archived' 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Archived ({sectionedIdeas.archived.length})
+          </button>
         </div>
       </div>
 
@@ -216,7 +184,7 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
           <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your saved ideas...</p>
         </div>
-      ) : filteredIdeas.length === 0 ? (
+) : currentIdeas.length === 0 ? (
         <div className="text-center py-12">
           <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No ideas found</h3>
@@ -229,7 +197,7 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredIdeas.map((idea) => (
+          {currentIdeas.map((idea) => (
             <div
               key={idea.id}
               onClick={() => setSelectedIdeaForOverlay(idea)}
