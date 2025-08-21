@@ -189,9 +189,11 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
           <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No ideas found</h3>
           <p className="text-gray-600">
-            {topicFilter === 'all' && categoryFilter === 'all' 
+            {activeSection === 'active' 
               ? "You haven't saved any ideas yet. Visit the Ideas Hub to start brainstorming!"
-              : "No ideas match your current filters. Try adjusting your selection."
+              : activeSection === 'used'
+                ? "No used ideas yet. Complete a content creation workflow to see ideas here."
+                : "No archived ideas yet."
             }
           </p>
         </div>
