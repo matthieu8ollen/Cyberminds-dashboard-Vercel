@@ -453,12 +453,24 @@ const startWorkflowFromLibrary = (mode: 'standard' | 'power', idea: ContentIdea)
   setWorkflowRoute('library')
   setIdeaFromLibrary(idea)
   
-  // Convert idea to ideationData format
+  // Extract rich data from source_data if available, fallback to basic fields
+  const richData = idea.source_data || {}
   const ideationData = {
+    title: idea.title,
     topic: idea.title,
+    content_type: richData.content_type || 'personal_story',
+    hooks: richData.hooks || [idea.description || ''],
+    selected_hook: richData.selected_hook || idea.description || '',
+    selected_hook_index: richData.selected_hook_index || 0,
+    key_takeaways: richData.key_takeaways || idea.tags || [],
+    personal_story: richData.personal_story || '',
+    pain_points_and_struggles: richData.pain_points_and_struggles || '',
+    concrete_evidence: richData.concrete_evidence || '',
+    audience_and_relevance: richData.audience_and_relevance || '',
     angle: idea.description || '',
     takeaways: idea.tags || [],
-    source_page: 'idea_library'
+    source_page: 'idea_library',
+    session_id: richData.session_id
   }
   setIdeationData(ideationData)
   
