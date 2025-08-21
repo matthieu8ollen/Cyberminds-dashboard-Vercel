@@ -6,6 +6,8 @@ interface WriterSuiteProps {
   onComplete?: (data: any) => void
   onBack?: () => void
   ideationData?: any
+  aiFormulas?: any[]
+  isLoadingAIFormulas?: boolean
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
   onUserStartedWorking?: () => void
@@ -15,6 +17,8 @@ export default function WriterSuite({
   onComplete, 
   onBack, 
   ideationData, 
+  aiFormulas = [],
+  isLoadingAIFormulas = false,
   onExitWorkflow, 
   onContinueToImages,
   onUserStartedWorking
@@ -24,6 +28,8 @@ export default function WriterSuite({
     onComplete={onComplete}
     onBack={onBack}
     ideationData={ideationData}
+    aiFormulas={aiFormulas}
+    isLoadingAIFormulas={isLoadingAIFormulas}
     onExitWorkflow={onExitWorkflow}
     onContinueToImages={onContinueToImages}
     onUserStartedWorking={onUserStartedWorking}
