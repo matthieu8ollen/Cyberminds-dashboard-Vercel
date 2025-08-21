@@ -13,6 +13,8 @@ interface StandardGeneratorProps {
   onSwitchMode: (mode: 'express' | 'power') => void
   onBack: () => void
   onComplete?: () => void
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
   ideationData?: {
     topic: string
     angle: string
@@ -22,7 +24,7 @@ interface StandardGeneratorProps {
   }
 }
 
-export default function StandardGenerator({ onSwitchMode, onBack, onComplete, ideationData }: StandardGeneratorProps) {
+export default function StandardGenerator({ onSwitchMode, onBack, onComplete, onExitWorkflow, onContinueToImages, ideationData }: StandardGeneratorProps) {
   const [topic, setTopic] = useState(ideationData?.topic || '')
 const [contentType, setContentType] = useState('framework')
 const [tone, setTone] = useState('insightful_cfo')
@@ -525,110 +527,100 @@ function StandardResults({
             )}
           </div>
 
-          {/* Actions */}
+          {/* Actions - Uniform with Writing Interface */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
             
-            <div className="space-y-3">
-  <button 
-    onClick={async () => {
-      try {
-        const currentDraft = drafts.find(d => d.type === selectedDraft)
-        const saved = await saveDraft({
-          content_text: currentDraft?.content || '',
-          content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-          tone_used: tone,
-          prompt_input: topic,
-          is_saved: true,
-          title: `Standard Mode - ${topic}`,
-          ideation_session_id: ideationData?.session_id,
-          source_page: ideationData?.source_page
-        }, 'standard')
-        
-        if (saved) {
-          showToast('success', 'Content saved to Production Pipeline!')
-          setSelectedContent(saved)
-          setShowScheduleModal(true)
-        }
-      } catch (error) {
-        showToast('error', 'Failed to save content')
-      }
-    }}
-    className="w-full bg-slate-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-700 transition"
-  >
-    Schedule Post
-  </button>
-  <button 
-    onClick={async () => {
-  try {
-    const currentDraft = drafts.find(d => d.type === selectedDraft)
-    const saved = await saveDraft({
-      content_text: currentDraft?.content || '',
-      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-      tone_used: tone,
-      prompt_input: topic,
-      is_saved: true,
-      title: `Standard Mode - ${topic}`,
-      status: 'draft',
-      ideation_session_id: ideationData?.session_id,
-      source_page: ideationData?.source_page
-    }, 'standard')
-    
-    if (saved) {
-      showToast('success', 'Draft saved! Opening image generation...')
-      // Trigger completion after successful save
-      if (onComplete) onComplete()
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save draft')
-  }
-}}
-    className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center space-x-2"
-  >
-    <Camera className="w-4 h-4" />
-    <span>Save & Add Image</span>
-  </button>
-  <button 
-    onClick={async () => {
-  try {
-    const currentDraft = drafts.find(d => d.type === selectedDraft)
-    const saved = await saveDraft({
-      content_text: currentDraft?.content || '',
-      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
-      tone_used: tone,
-      prompt_input: topic,
-      is_saved: true,
-      title: `Standard Mode - ${topic}`,
-      status: 'draft',
-      ideation_session_id: ideationData?.session_id,
-      source_page: ideationData?.source_page
-    }, 'standard')
-    
-    if (saved) {
-      // Mark idea as used if we have idea_id
-      if (ideationData && 'idea_id' in ideationData && ideationData.idea_id) {
-        try {
-          const { updateContentIdea } = await import('../lib/supabase')
-          await updateContentIdea(ideationData.idea_id as string, { status: 'used' })
-          console.log('✅ Marked idea as used:', ideationData.idea_id)
-        } catch (error) {
-          console.error('❌ Failed to mark idea as used:', error)
-        }
-      }
-      
-      showToast('success', 'Content saved to Production Pipeline!')
-      // Trigger completion after successful save
-      if (onComplete) onComplete()
-    }
-  } catch (error) {
-    showToast('error', 'Failed to save draft')
-  }
-}}
-    className="w-full text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition"
-  >
-    Save as Draft Only
-  </button>
-</div>
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={() => setEditingDraft(editingDraft === selectedDraft ? null : selectedDraft)}
+                className="flex items-center justify-center space-x-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>✏️ Edit Content</span>
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const currentDraft = drafts.find(d => d.type === selectedDraft)
+                    const saved = await saveDraft({
+                      content_text: currentDraft?.content || '',
+                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+                      tone_used: tone,
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Standard Mode - ${topic}`,
+                      status: 'draft',
+                      ideation_session_id: ideationData?.session_id,
+                      source_page: ideationData?.source_page
+                    }, 'standard')
+                    
+                    if (saved) {
+                      // Mark idea as used if we have idea_id
+                      if (ideationData && 'idea_id' in ideationData && ideationData.idea_id) {
+                        try {
+                          const { updateContentIdea } = await import('../lib/supabase')
+                          await updateContentIdea(ideationData.idea_id as string, { status: 'used' })
+                          console.log('✅ Marked idea as used:', ideationData.idea_id)
+                        } catch (error) {
+                          console.error('❌ Failed to mark idea as used:', error)
+                        }
+                      }
+                      
+                      showToast('success', 'Content saved to Production Pipeline!')
+                      if (onExitWorkflow) {
+                        onExitWorkflow()
+                      }
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save content')
+                  }
+                }}
+                className="flex items-center justify-center space-x-2 px-4 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>💾 Save & Exit Workflow</span>
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const currentDraft = drafts.find(d => d.type === selectedDraft)
+                    const saved = await saveDraft({
+                      content_text: currentDraft?.content || '',
+                      content_type: contentType as 'framework' | 'story' | 'trend' | 'mistake' | 'metrics',
+                      tone_used: tone,
+                      prompt_input: topic,
+                      is_saved: true,
+                      title: `Standard Mode - ${topic}`,
+                      status: 'draft',
+                      ideation_session_id: ideationData?.session_id,
+                      source_page: ideationData?.source_page
+                    }, 'standard')
+                    
+                    if (saved) {
+                      showToast('success', 'Content saved! Adding image...')
+                      if (onContinueToImages) {
+                        onContinueToImages(saved.id)
+                      }
+                    }
+                  } catch (error) {
+                    showToast('error', 'Failed to save content')
+                  }
+                }}
+                className="flex items-center justify-center space-x-2 px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z" />
+                </svg>
+                <span>🖼️ Add Image</span>
+              </button>
+            </div>
           </div>
 
           {/* Mode Switch */}
