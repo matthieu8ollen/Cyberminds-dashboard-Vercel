@@ -284,6 +284,117 @@ export default function IdeaLibrary({ onUseInStandardMode, onUseInWriterSuite, o
 </div>
           ))}
         </div>
+     )}
+
+      {/* Rich Data Overlay Modal */}
+      {selectedIdeaForOverlay && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">{selectedIdeaForOverlay.title}</h3>
+              <button
+                onClick={() => setSelectedIdeaForOverlay(null)}
+                className="text-gray-400 hover:text-gray-600 p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Description</h4>
+                  <p className="text-gray-700">{selectedIdeaForOverlay.description}</p>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Tags</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedIdeaForOverlay.tags.map((tag, index) => (
+                      <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rich Data from source_data */}
+                {selectedIdeaForOverlay.source_data && (
+                  <div className="space-y-4">
+                    {selectedIdeaForOverlay.source_data.content_type && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Content Type</h4>
+                        <p className="text-gray-700 capitalize">{selectedIdeaForOverlay.source_data.content_type.replace('_', ' ')}</p>
+                      </div>
+                    )}
+
+                    {selectedIdeaForOverlay.source_data.hooks && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Available Hooks</h4>
+                        <div className="space-y-2">
+                          {selectedIdeaForOverlay.source_data.hooks.map((hook: string, index: number) => (
+                            <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                              <span className="text-sm font-medium text-gray-600">Option {index + 1}:</span>
+                              <p className="text-gray-800 mt-1">"{hook}"</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedIdeaForOverlay.source_data.pain_points_and_struggles && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Pain Points & Struggles</h4>
+                        <p className="text-gray-700">{selectedIdeaForOverlay.source_data.pain_points_and_struggles}</p>
+                      </div>
+                    )}
+
+                    {selectedIdeaForOverlay.source_data.personal_story && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Personal Story</h4>
+                        <p className="text-gray-700">{selectedIdeaForOverlay.source_data.personal_story}</p>
+                      </div>
+                    )}
+
+                    {selectedIdeaForOverlay.source_data.concrete_evidence && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Concrete Evidence</h4>
+                        <p className="text-gray-700">{selectedIdeaForOverlay.source_data.concrete_evidence}</p>
+                      </div>
+                    )}
+
+                    {selectedIdeaForOverlay.source_data.audience_and_relevance && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Audience & Relevance</h4>
+                        <p className="text-gray-700">{selectedIdeaForOverlay.source_data.audience_and_relevance}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <div className="border-t border-gray-200 p-6">
+              <button
+                onClick={() => {
+                  onUseThisContent?.(selectedIdeaForOverlay)
+                  setSelectedIdeaForOverlay(null)
+                }}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white text-lg font-medium rounded-lg hover:bg-teal-700 transition"
+              >
+                <ArrowRight className="w-5 h-5" />
+                Use This Topic
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
