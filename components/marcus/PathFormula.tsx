@@ -52,10 +52,9 @@ export default function PathFormula({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Tab system - show AI tab only if user came through ideation path
+  // Tab system - show AI tab only if we have AI formulas or are loading them
   const [activeTab, setActiveTab] = useState<'ai' | 'database'>('ai')
   const hasAIFormulas = aiFormulas.length > 0 || isLoadingAIFormulas
-  const showAITab = !!ideationData // Show AI features if user came through ideation
 
   // Load real formulas from database
   useEffect(() => {
@@ -198,8 +197,8 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
-      {/* Tab System - Only show if user came through ideation */}
-      {showAITab && (
+      {/* Tab System - Only show if we have AI formulas */}
+      {hasAIFormulas && (
         <div className="border-b border-gray-200 mb-8">
           <div className="flex space-x-8">
             <button
@@ -234,7 +233,7 @@ const renderIdeationContext = () => {
       )}
 
      {/* Loading State for AI Formulas */}
-      {showAITab && isLoadingAIFormulas && activeTab === 'ai' && (
+      {isLoadingAIFormulas && activeTab === 'ai' && (
         <div className="text-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Getting AI Suggestions</h3>
@@ -243,7 +242,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* AI Formulas Tab Content */}
-      {showAITab && !isLoadingAIFormulas && activeTab === 'ai' && (
+      {ideationData && !isLoadingAIFormulas && activeTab === 'ai' && (
         <div>
           {aiFormulas.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2">
@@ -285,7 +284,7 @@ const renderIdeationContext = () => {
       )}
 
       {/* Database Formulas Tab Content */}
-    {(!showAITab || activeTab === 'database') && (
+    {(!hasAIFormulas || activeTab === 'database') && (
       <div>
         {/* Loading State */}
         {loading && (
