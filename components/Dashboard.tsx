@@ -81,6 +81,8 @@ const [writerSuiteMode, setWriterSuiteMode] = useState<'selection' | 'marcus'>('
 const [inStrictWorkflow, setInStrictWorkflow] = useState(false)
 const [workflowRoute, setWorkflowRoute] = useState<'ideas' | 'library' | 'direct' | null>(null)
   const [userHasStartedWorking, setUserHasStartedWorking] = useState(false)
+  const [isLoadingAIFormulas, setIsLoadingAIFormulas] = useState(false)
+  const [aiFormulas, setAiFormulas] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<ContentType>('framework')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([])
@@ -598,10 +600,9 @@ onUseThisContent={(idea) => {
       <WriterSuiteSelection
   onModeSelect={async (mode) => {
   if (mode === 'writer-suite') {
-    setWriterSuiteMode('marcus')
-    
     // Send webhook when Marcus mode is selected with rich ideation data
-    if (ideationData && inStrictWorkflow && workflowRoute === 'ideas') {
+    if (ideationData && inStrictWorkflow && (workflowRoute === 'ideas' || workflowRoute === 'library')) {
+      setIsLoadingAIFormulas(true)
       try {
         const payload = {
           title: ideationData.title || ideationData.topic,
@@ -619,7 +620,7 @@ onUseThisContent={(idea) => {
           timestamp: new Date().toISOString()
         }
 
-        await fetch('https://testcyber.app.n8n.cloud/webhook/1f6e3c3f-b68c-4f71-b83f-7330b528db58', {
+        const response = await fetch('https://testcyber.app.n8n.cloud/webhook/1f6e3c3f-b68c-4f71-b83f-7330b528db58', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -627,11 +628,18 @@ onUseThisContent={(idea) => {
           body: JSON.stringify(payload)
         })
         
+        const data = await response.json()
+        setAiFormulas(data.formulas || [])
         console.log('✅ Webhook sent for Marcus content formulas')
       } catch (error) {
         console.error('❌ Webhook failed:', error)
+        setAiFormulas([])
+      } finally {
+        setIsLoadingAIFormulas(false)
       }
     }
+    
+    setWriterSuiteMode('marcus')
   } else if (mode === 'standard') {
       console.log('📋 WriterSuiteSelection → Standard Mode')
       
@@ -666,6 +674,8 @@ return (
     setWriterSuiteMode('selection')
   }}
   ideationData={ideationData}
+  aiFormulas={aiFormulas}
+  isLoadingAIFormulas={isLoadingAIFormulas}
   onExitWorkflow={() => {
     console.log('🚪 Exit workflow from PathFormula')
     exitWorkflow()
