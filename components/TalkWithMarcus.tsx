@@ -486,10 +486,14 @@ const handleClarificationResponse = (response: any) => {
 const handleContentResponse = (response: any) => {
   addMessage('marcus', "I've got some great topic ideas for you! Check them out:");
   setShowTopicOverlay(true);
-  setTopicsData(response.topics);
-  setContentCategory(response.content_category);
-  // Reset selection states
-  setSelectedHook(response.topics?.[0]?.hooks?.[0] || '');
+  
+  // Handle both old format (response.topics array) and new format (single topic object)
+  const topicsArray = response.topics ? response.topics : [response];
+  setTopicsData(topicsArray);
+  setContentCategory(response.content_category || 'personal_story');
+  
+  // Reset selection states with new data structure
+  setSelectedHook(topicsArray[0]?.hooks?.[0] || '');
   setSelectedHookIndex(0);
 };
 
