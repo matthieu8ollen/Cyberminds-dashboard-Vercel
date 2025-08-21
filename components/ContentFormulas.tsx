@@ -666,9 +666,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(formula.category)}`}>
-                    {formula.category === 'authority' ? 'Authority Framework' : 
-                     formula.category === 'contrarian' ? 'Contrarian Insight' : 
-                     formula.category === 'personal' ? 'Personal Stories/Lesson' : 'Framework'}
+                    {getCategoryDisplayName(formula.category)}
                   </span>
                   {formula.isCustom && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200">
