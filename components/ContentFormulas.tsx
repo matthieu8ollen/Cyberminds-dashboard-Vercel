@@ -308,21 +308,56 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
 
           {/* Modal Content */}
           <div className="p-6 space-y-6">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Enhanced Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-600 mb-1">Estimated Time</h4>
-                <p className="text-lg font-semibold text-gray-900">{modalFormula.estimatedTime}</p>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Effectiveness Score</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.effectivenessScore || modalFormula.popularity}/10</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Reusability</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.reusabilityScore || 'N/A'}</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-gray-600 mb-1">Sections</h4>
                 <p className="text-lg font-semibold text-gray-900">{modalFormula.sections.length}</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-600 mb-1">Effectiveness</h4>
-                <p className="text-lg font-semibold text-gray-900">{modalFormula.popularity}/10</p>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Estimated Time</h4>
+                <p className="text-lg font-semibold text-gray-900">{modalFormula.estimatedTime}</p>
               </div>
             </div>
+
+            {/* Target Roles & Audience */}
+            {(modalFormula.primaryTargetRole || modalFormula.targetAudience) && (
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">Target Audience</h4>
+                {modalFormula.primaryTargetRole && (
+                  <p className="text-sm text-blue-800 mb-1">Primary Role: {modalFormula.primaryTargetRole}</p>
+                )}
+                {modalFormula.targetAudience && (
+                  <p className="text-sm text-blue-800">Audience: {modalFormula.targetAudience}</p>
+                )}
+              </div>
+            )}
+
+            {/* Performance Indicators */}
+            {(modalFormula.viralPotential || modalFormula.saveWorthiness) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {modalFormula.viralPotential && (
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-green-900 mb-1">Viral Potential</h4>
+                    <p className="text-sm text-green-800">{modalFormula.viralPotential}</p>
+                  </div>
+                )}
+                {modalFormula.saveWorthiness && (
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-purple-900 mb-1">Save Worthiness</h4>
+                    <p className="text-sm text-purple-800">{modalFormula.saveWorthiness}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Formula Structure */}
             <div>
@@ -680,67 +715,22 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
                     </span>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-teal-600 transition-colors">
-                  {formula.name}
-                </h3>
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-teal-600 transition-colors flex-1">
+                    {formula.name}
+                  </h3>
+                  <Eye className="w-5 h-5 text-gray-400 group-hover:text-teal-600 transition-colors flex-shrink-0 ml-2" />
+                </div>
                 <p className="text-gray-600 text-sm mt-1">{formula.description}</p>
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Simplified Stats */}
             <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-              <div className="flex items-center space-x-4">
-                <span className={getDifficultyColor(formula.difficulty)}>
-                  {formula.difficulty}
-                </span>
-                <span>{formula.estimatedTime}</span>
-              </div>
-              {!formula.isCustom && (
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span>{formula.popularity}%</span>
-                </div>
-              )}
-            </div>
-
-            {/* Enhanced Structure Preview */}
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-700 mb-2">Structure ({formula.sections.length} sections):</p>
-              <div className="space-y-1">
-                {formula.sections.slice(0, 3).map((section, index) => (
-                  <div key={section.id} className="flex items-center space-x-2 text-xs text-gray-600">
-                    <div className="w-1.5 h-1.5 bg-teal-500 rounded-full"></div>
-                    <span className="truncate">{section.title}</span>
-                  </div>
-                ))}
-                {formula.sections.length > 3 && (
-                  <div className="text-xs text-gray-500 ml-3.5">
-                    +{formula.sections.length - 3} more sections
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Enhanced Features Indicators */}
-            <div className="flex items-center space-x-3 text-xs text-gray-500 mb-4">
-              {formula.psychologicalTriggers.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  <Sparkles className="w-3 h-3" />
-                  <span>{formula.psychologicalTriggers.length} triggers</span>
-                </div>
-              )}
-              {formula.ctaPositions.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  <TrendingUp className="w-3 h-3" />
-                  <span>{formula.ctaPositions.length} CTAs</span>
-                </div>
-              )}
-              {formula.aiAnalysis && (
-                <div className="flex items-center space-x-1">
-                  <BarChart3 className="w-3 h-3" />
-                  <span>Score: {formula.aiAnalysis.overallScore}/10</span>
-                </div>
-              )}
+              <span className={getDifficultyColor(formula.difficulty)}>
+                {formula.difficulty}
+              </span>
+              <span>{formula.sections.length} sections</span>
             </div>
 
             {/* Actions */}
