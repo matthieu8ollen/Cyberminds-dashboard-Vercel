@@ -223,6 +223,46 @@ useEffect(() => {
     }
   }
 
+  const getVariableSuggestions = (variableName: string, ideationData?: any): string[] => {
+    const suggestions: string[] = []
+    
+    // Smart suggestions based on variable name
+    switch (variableName.toLowerCase()) {
+      case 'topic':
+      case 'subject':
+        if (ideationData?.topic) suggestions.push(ideationData.topic)
+        suggestions.push('SaaS metrics', 'Financial planning', 'Team management')
+        break
+        
+      case 'problem':
+      case 'challenge':
+        suggestions.push('Cash flow issues', 'Team scaling', 'Market uncertainty')
+        break
+        
+      case 'solution':
+      case 'approach':
+        suggestions.push('Systematic framework', 'Data-driven process', 'Strategic methodology')
+        break
+        
+      case 'number':
+      case 'statistic':
+        suggestions.push('73%', '5x increase', '90 days')
+        break
+        
+      case 'company':
+      case 'business':
+        suggestions.push('SaaS startup', 'Tech company', 'Growing business')
+        break
+        
+      case 'role':
+      case 'position':
+        suggestions.push('CFO', 'Finance Director', 'VP Finance')
+        break
+    }
+    
+    return suggestions.slice(0, 3) // Limit to 3 suggestions
+  }
+
   const renderTemplateHelper = () => {
     const currentSection = sections[currentSectionIndex]
     if (!currentSection?.hasTemplateVariables) return null
@@ -246,17 +286,44 @@ useEffect(() => {
         </div>
 
         {showTemplateHelper && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-xs text-purple-700 mb-3">
               Fill in these variables to auto-populate your template:
             </p>
             
+            {/* Pre-populate from ideation data if available */}
+            {ideationData && (
+              <div className="bg-teal-50 border border-teal-200 rounded p-3 mb-3">
+                <h5 className="text-xs font-medium text-teal-900 mb-2">Suggested from your ideation:</h5>
+                <div className="text-xs text-teal-700 space-y-1">
+                  {ideationData.topic && <div><strong>Topic:</strong> {ideationData.topic}</div>}
+                  {ideationData.angle && <div><strong>Angle:</strong> {ideationData.angle}</div>}
+                </div>
+              </div>
+            )}
+            
             {variables.map(variable => (
-              <div key={variable.name}>
-                <label className="block text-xs font-medium text-purple-800 mb-1">
+              <div key={variable.name} className="space-y-2">
+                <label className="block text-xs font-medium text-purple-800">
                   {variable.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   {variable.required && <span className="text-red-500 ml-1">*</span>}
                 </label>
+                
+                {/* Smart suggestions based on variable name */}
+                {getVariableSuggestions(variable.name, ideationData).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {getVariableSuggestions(variable.name, ideationData).map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleTemplateVariableChange(variable.name, suggestion)}
+                        className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 <input
                   type="text"
                   value={templateVariables[variable.name] || ''}
@@ -267,21 +334,33 @@ useEffect(() => {
               </div>
             ))}
 
-            <button
-              onClick={() => {
-                const populatedTemplate = applyTemplateVariables(currentSection.placeholder, templateVariables)
-                handleSectionChange(populatedTemplate)
-              }}
-              className="w-full mt-3 px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition"
-            >
-              Apply Template
-            </button>
+            <div className="flex space-x-2 pt-2">
+              <button
+                onClick={() => {
+                  const populatedTemplate = applyTemplateVariables(currentSection.placeholder, templateVariables)
+                  handleSectionChange(populatedTemplate)
+                }}
+                className="flex-1 px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition"
+              >
+                Apply Template
+              </button>
+              
+              <button
+                onClick={() => {
+                  // Clear all variables
+                  setTemplateVariables({})
+                }}
+                className="px-4 py-2 border border-purple-300 text-purple-700 text-sm rounded hover:bg-purple-50 transition"
+              >
+                Clear All
+              </button>
+            </div>
           </div>
         )}
       </div>
     )
   }
-
+  
   const goToNextSection = () => {
     if (currentSectionIndex < sections.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1)
