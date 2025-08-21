@@ -70,6 +70,7 @@ export default function TalkWithMarcus({ onIdeationComplete, onNavigateToCreate 
   const [showTopicOverlay, setShowTopicOverlay] = useState(false)
   const [selectedHook, setSelectedHook] = useState('')
   const [selectedHookIndex, setSelectedHookIndex] = useState(0)
+  const [showContextDetails, setShowContextDetails] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -715,6 +716,57 @@ const sendToWritersSuite = (topic: any) => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Context & Details - Expandable Section */}
+                  {(topic.pain_points_and_struggles || topic.personal_story || topic.concrete_evidence || topic.audience_and_relevance) && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+                      <button
+                        onClick={() => setShowContextDetails(!showContextDetails)}
+                        className="flex items-center justify-between w-full text-left"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <h4 className="font-semibold text-slate-900">Context & Details</h4>
+                        </div>
+                        <svg className={`w-4 h-4 text-slate-600 transition-transform ${showContextDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      {showContextDetails && (
+                        <div className="mt-4 space-y-3 text-sm text-slate-700">
+                          {topic.pain_points_and_struggles && (
+                            <div>
+                              <strong className="text-slate-800">Pain Points & Struggles:</strong>
+                              <p className="mt-1">{topic.pain_points_and_struggles}</p>
+                            </div>
+                          )}
+                          {topic.personal_story && (
+                            <div>
+                              <strong className="text-slate-800">Personal Story:</strong>
+                              <p className="mt-1">{topic.personal_story}</p>
+                            </div>
+                          )}
+                          {topic.concrete_evidence && (
+                            <div>
+                              <strong className="text-slate-800">Concrete Evidence:</strong>
+                              <p className="mt-1">{topic.concrete_evidence}</p>
+                            </div>
+                          )}
+                          {topic.audience_and_relevance && (
+                            <div>
+                              <strong className="text-slate-800">Audience & Relevance:</strong>
+                              <p className="mt-1">{topic.audience_and_relevance}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                  {/* Main Content Area */}
 <div className="flex space-x-6 mb-6">
