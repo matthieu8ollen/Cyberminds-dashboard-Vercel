@@ -147,13 +147,6 @@ const convertEnhancedToDatabase = (formula: EnhancedContentFormula, userId: stri
   return { formulaData, sectionsData }
 }
 
-const CATEGORIES = [
-  { id: 'all', label: 'All Formulas', icon: BookOpen },
-  { id: 'authority', label: 'Authority Framework', icon: TrendingUp },
-  { id: 'contrarian', label: 'Contrarian Insight', icon: BarChart3 },
-  { id: 'personal', label: 'Personal Stories/Lesson', icon: MessageSquare }
-]
-
 type ViewMode = 'gallery' | 'builder' | 'analyzer'
 
 export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula }: ContentFormulasProps) {
