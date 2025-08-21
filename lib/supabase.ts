@@ -191,6 +191,11 @@ export interface ContentFormula {
   primary_target_role?: string
   complete_template?: string
   formula_id?: string
+  voice_template?: string
+  viral_potential?: string
+  save_worthiness?: string
+  overall_performance_rating?: string
+  overall_reusability_rating?: string
 }
 
 export interface FormulaSection {
