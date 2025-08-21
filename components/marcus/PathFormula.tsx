@@ -420,12 +420,24 @@ const renderFinalPreview = () => (
         const saved = await saveDraft(contentData, 'marcus')
         
         if (saved) {
-  showToast('success', 'Content saved to Production Pipeline!')
-  console.log('🚪 Calling onExitWorkflow callback')
-  if (onExitWorkflow) {
-    onExitWorkflow()
-  }
-}
+          // Mark idea as used if we have idea_id
+          if (ideationData?.idea_id) {
+            try {
+              const { updateContentIdea } = await import('../../lib/supabase')
+              await updateContentIdea(ideationData.idea_id, { status: 'used' })
+              console.log('✅ Marked idea as used:', ideationData.idea_id)
+            } catch (error) {
+              console.error('❌ Failed to mark idea as used:', error)
+            }
+          }
+          
+          showToast('success', 'Content saved to Production Pipeline!')
+          console.log('🚪 Calling onExitWorkflow callback')
+          if (onExitWorkflow) {
+            onExitWorkflow()
+          }
+        }
+        
       } catch (error) {
         showToast('error', 'Failed to save content')
       }
