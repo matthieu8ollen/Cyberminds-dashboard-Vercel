@@ -410,6 +410,7 @@ const renderIdeationContext = () => {
       )}
     </div>
   )
+}
 
   const renderTemplatePreview = () => {
     if (!selectedFormula) return null
