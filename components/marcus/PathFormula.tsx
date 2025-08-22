@@ -286,11 +286,7 @@ const renderIdeationContext = () => {
   </div>
 )}
 
-     {/* Enhanced Database Formulas */}
-<div>
-
-      {/* Database Formulas with AI Enhancements */}
-{(
+     {/* Database Formulas with AI Enhancements */}
       <div>
         {/* Loading State */}
         {loading && (
@@ -401,6 +397,7 @@ const renderIdeationContext = () => {
           ))}
         </div>
       )}
+      </div>
       
       {/* No formulas state */}
       {!loading && !error && formulas.length === 0 && (
@@ -413,7 +410,6 @@ const renderIdeationContext = () => {
         </div>
       )}
       </div>
-    )}
     </div>
   )
 
