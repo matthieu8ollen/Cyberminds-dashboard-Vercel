@@ -63,6 +63,33 @@ export default function PathFormula({
   // AI enhancement system - enhance database formulas with AI recommendations
 const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 
+// Enhance database formulas with AI recommendations
+const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
+  if (!aiRecommendations || aiRecommendations.length === 0) {
+    return dbFormulas
+  }
+
+  return dbFormulas.map(dbFormula => {
+    // Find matching AI recommendation by formula_id
+    const aiMatch = aiRecommendations.find(ai => ai.formula_id === dbFormula.id)
+    
+    if (aiMatch) {
+      // Enhance with AI data
+      return {
+        ...dbFormula,
+        _aiData: {
+          confidence: aiMatch.match_score,
+          whyPerfect: aiMatch.why_it_works,
+          source: aiMatch.source,
+          formulaNumber: aiMatch.sequence
+        }
+      }
+    }
+    
+    return dbFormula
+  })
+}
+
   // Transform backend AI response to FormulaTemplate format
   const transformAIFormula = (backendFormula: any): FormulaTemplate => {
     return {
@@ -98,9 +125,17 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
   }
   
   // Load real formulas from database
-  useEffect(() => {
-    loadFormulas()
-  }, [user])
+useEffect(() => {
+  loadFormulas()
+}, [user])
+
+// Enhance formulas when AI data arrives
+useEffect(() => {
+  if (formulas.length > 0) {
+    const enhanced = enhanceFormulasWithAI(formulas, aiFormulas)
+    setEnhancedFormulas(enhanced)
+  }
+}, [formulas, aiFormulas])
 
   const loadFormulas = async () => {
     setLoading(true)
@@ -281,7 +316,7 @@ const renderIdeationContext = () => {
       {/* Database Formulas Grid */}
       {!loading && !error && (
         <div className="grid gap-6 md:grid-cols-2">
-          {formulas.map((formula) => (
+          {enhancedFormulas.map((formula) => (
           <div
             key={formula.id}
             className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-teal-500 hover:shadow-lg transition-all duration-200 cursor-pointer group"
@@ -301,8 +336,16 @@ const renderIdeationContext = () => {
                    <Sparkles className="w-6 h-6" />}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+  <div className="flex items-center space-x-2 mb-1">
+    <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
+    {formula._aiData && (
+      <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700 flex items-center space-x-1">
+        <Sparkles className="w-3 h-3" />
+        <span>AI RECOMMENDED</span>
+      </span>
+    )}
+  </div>
+  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                     formula.category === 'story' ? 'bg-purple-100 text-purple-700' :
                     formula.category === 'data' ? 'bg-blue-100 text-blue-700' :
                     formula.category === 'framework' ? 'bg-green-100 text-green-700' :
