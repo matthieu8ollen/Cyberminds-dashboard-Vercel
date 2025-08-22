@@ -19,6 +19,12 @@ interface FormulaTemplate {
   example: string
   whyItWorks: string[]
   bestFor: string
+  _aiData?: {
+    confidence?: string
+    whyPerfect?: string
+    characteristics?: string[]
+    formulaNumber?: string
+  }
 }
 
 interface PathFormulaProps {
