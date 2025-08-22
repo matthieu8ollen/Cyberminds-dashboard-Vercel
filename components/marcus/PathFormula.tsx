@@ -253,8 +253,9 @@ const renderIdeationContext = () => {
   setCurrentStep('writing')
 }
 
-  const renderFormulaSelection = () => (
-  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  const renderFormulaSelection = () => {
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     {/* Ideation Context */}
     {renderIdeationContext()}
     
