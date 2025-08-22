@@ -378,6 +378,25 @@ const renderIdeationContext = () => {
             </div>
 
             <p className="text-sm text-gray-700 font-medium">Best for: {formula.bestFor}</p>
+            
+            {/* AI Recommendation Explanation */}
+            {formula._aiData && (
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-start space-x-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-medium text-purple-900">Why Marcus recommends this:</h4>
+                    <p className="text-sm text-purple-800 leading-relaxed">{formula._aiData.whyPerfect}</p>
+                  </div>
+                </div>
+                {formula._aiData.confidence && (
+                  <div className="flex items-center justify-between text-xs text-purple-700">
+                    <span>Match Score: {formula._aiData.confidence}%</span>
+                    {formula._aiData.source && <span>Source: {formula._aiData.source}</span>}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           ))}
         </div>
