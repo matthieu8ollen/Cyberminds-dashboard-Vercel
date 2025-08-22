@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle, Loader2, Star } from 'lucide-react'
 import WritingInterface from './WritingInterface'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
@@ -57,6 +57,39 @@ export default function PathFormula({
   const [activeTab, setActiveTab] = useState<'ai' | 'database'>('ai')
   const hasAIFormulas = aiFormulas.length > 0 || isLoadingAIFormulas
 
+  // Transform backend AI response to FormulaTemplate format
+  const transformAIFormula = (backendFormula: any): FormulaTemplate => {
+    return {
+      id: backendFormula.formula_id || `ai-${backendFormula.formula_number}`,
+      name: backendFormula.formula_name || 'AI Suggested Formula',
+      description: backendFormula.why_perfect || 'Personalized formula for your content',
+      category: mapBackendCategory(backendFormula.category),
+      structure: backendFormula.key_characteristics || ['AI-optimized structure'],
+      example: `AI-suggested: ${backendFormula.formula_name}`,
+      whyItWorks: backendFormula.key_characteristics || ['AI-optimized for your content'],
+      bestFor: backendFormula.why_perfect || 'Your specific content needs',
+      // Store original backend data for enhanced display
+      _aiData: {
+        confidence: backendFormula.extraction_confidence,
+        whyPerfect: backendFormula.why_perfect,
+        characteristics: backendFormula.key_characteristics,
+        formulaNumber: backendFormula.formula_number
+      }
+    }
+  }
+
+  const mapBackendCategory = (backendCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
+    const categoryMap: Record<string, 'story' | 'data' | 'framework' | 'lead-magnet'> = {
+      'personal_story': 'story',
+      'data_driven': 'data', 
+      'framework': 'framework',
+      'lead_generation': 'lead-magnet',
+      'contrarian_insight': 'data',
+      'authority_building': 'framework'
+    }
+    return categoryMap[backendCategory?.toLowerCase()] || 'framework'
+  }
+  
   // Load real formulas from database
   useEffect(() => {
     loadFormulas()
@@ -243,34 +276,78 @@ const renderIdeationContext = () => {
       )}
 
       {/* AI Formulas Tab Content */}
-      {ideationData && !isLoadingAIFormulas && activeTab === 'ai' && (
+      {!isLoadingAIFormulas && activeTab === 'ai' && (
         <div>
           {aiFormulas.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2">
-              {aiFormulas.map((formula: any, index: number) => (
-                <div
-                  key={`ai-${index}`}
-                  className="bg-gradient-to-r from-purple-50 to-teal-50 border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                  onClick={() => handleFormulaSelect(formula)}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-teal-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Sparkles className="w-6 h-6 text-white" />
+              {aiFormulas.map((backendFormula: any, index: number) => {
+                const formula = transformAIFormula(backendFormula)
+                const confidence = parseInt(backendFormula.extraction_confidence) || 0
+                return (
+                  <div
+                    key={`ai-${index}`}
+                    className="bg-gradient-to-r from-purple-50 to-teal-50 border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                    onClick={() => handleFormulaSelect(formula)}
+                  >
+                    {/* Header with confidence */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-teal-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{backendFormula.formula_name}</h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
+                              AI SUGGESTED
+                            </span>
+                            {confidence > 0 && (
+                              <div className="flex items-center space-x-1">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  confidence >= 80 ? 'bg-green-500' : 
+                                  confidence >= 60 ? 'bg-yellow-500' : 'bg-gray-400'
+                                }`}></div>
+                                <span className="text-xs text-gray-600">{confidence}% confidence</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{formula.name}</h3>
-                        <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
-                          AI SUGGESTED
-                        </span>
-                      </div>
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+
+                    {/* Why Perfect explanation */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-purple-900 mb-2">Why this is perfect for you:</h4>
+                      <p className="text-gray-700 text-sm leading-relaxed">{backendFormula.why_perfect}</p>
+                    </div>
+
+                    {/* Key characteristics */}
+                    {backendFormula.key_characteristics && backendFormula.key_characteristics.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-purple-900 mb-2">Key characteristics:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {backendFormula.key_characteristics.slice(0, 3).map((char: string, charIndex: number) => (
+                            <span 
+                              key={charIndex} 
+                              className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
+                            >
+                              {char}
+                            </span>
+                          ))}
+                          {backendFormula.key_characteristics.length > 3 && (
+                            <span className="text-xs text-gray-500">
+                              +{backendFormula.key_characteristics.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="text-sm text-purple-700 font-medium">✨ Tailored for your content</p>
                   </div>
-                  <p className="text-gray-600 mb-4">{formula.description}</p>
-                  <p className="text-sm text-purple-700 font-medium">✨ Tailored for your content</p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="text-center py-12">
