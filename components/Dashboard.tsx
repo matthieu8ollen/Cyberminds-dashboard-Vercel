@@ -508,17 +508,19 @@ const exitWorkflow = () => {
   setInStrictWorkflow(false)
   setWorkflowRoute(null)
   setIdeationData(null)
+  setAiFormulas([]) // Clear AI recommendations when exiting workflow
   
   // Clear WorkflowContext database state
   clearProgress()
 }
-
+  
 const clearWorkflowState = () => {
   console.log('🧹 Clearing all workflow state')
   setInStrictWorkflow(false)
   setWorkflowRoute(null)
   setIdeationData(null)
   setIdeaFromLibrary(null)
+  setAiFormulas([]) // Clear AI recommendations when clearing workflow state
   
   // Clear WorkflowContext database state
   clearProgress()
