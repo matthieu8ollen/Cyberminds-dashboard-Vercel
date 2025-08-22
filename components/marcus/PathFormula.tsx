@@ -63,6 +63,9 @@ export default function PathFormula({
   // AI enhancement system - enhance database formulas with AI recommendations
 const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 
+// Tab state management
+const [activeTab, setActiveTab] = useState<'ai-suggested' | 'framework' | 'data' | 'story' | 'lead-magnet'>('framework')
+
 // Enhance database formulas with AI recommendations
 const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
   if (!aiRecommendations || aiRecommendations.length === 0) {
@@ -136,6 +139,32 @@ useEffect(() => {
     setEnhancedFormulas(enhanced)
   }
 }, [formulas, aiFormulas])
+
+// Tab logic and filtering
+const hasAIRecommendations = aiFormulas.length > 0
+const availableTabs = hasAIRecommendations 
+  ? ['ai-suggested', 'framework', 'data', 'story', 'lead-magnet']
+  : ['framework', 'data', 'story', 'lead-magnet']
+
+// Set default tab based on AI availability
+useEffect(() => {
+  if (hasAIRecommendations && !availableTabs.includes(activeTab)) {
+    setActiveTab('ai-suggested')
+  } else if (!hasAIRecommendations && activeTab === 'ai-suggested') {
+    setActiveTab('framework')
+  }
+}, [hasAIRecommendations, activeTab, availableTabs])
+
+// Get formulas for current tab
+const getFormulasForTab = () => {
+  if (activeTab === 'ai-suggested') {
+    return enhancedFormulas.filter(formula => formula._aiData)
+  } else {
+    return enhancedFormulas.filter(formula => formula.category === activeTab)
+  }
+}
+
+const currentTabFormulas = getFormulasForTab()
 
   const loadFormulas = async () => {
   setLoading(true)
@@ -274,6 +303,43 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 mb-8">
+        <div className="flex space-x-8 overflow-x-auto">
+          {availableTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 whitespace-nowrap ${
+                activeTab === tab
+                  ? 'border-teal-500 text-teal-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                {tab === 'ai-suggested' && <Sparkles className="w-4 h-4" />}
+                {tab === 'framework' && <BookOpen className="w-4 h-4" />}
+                {tab === 'data' && <BarChart3 className="w-4 h-4" />}
+                {tab === 'story' && <Target className="w-4 h-4" />}
+                {tab === 'lead-magnet' && <Star className="w-4 h-4" />}
+                <span>
+                  {tab === 'ai-suggested' ? 'AI Suggested' :
+                   tab === 'framework' ? 'Framework' :
+                   tab === 'data' ? 'Data' :
+                   tab === 'story' ? 'Story' :
+                   'Lead Magnet'}
+                </span>
+                {tab === 'ai-suggested' && hasAIRecommendations && (
+                  <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                    {aiFormulas.filter(ai => enhancedFormulas.some(f => f.id === ai.formula_id)).length}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
     {/* Full Loading Screen When AI Processing */}
 {isLoadingAIFormulas && (
   <div className="flex flex-col items-center justify-center py-24">
@@ -307,10 +373,10 @@ const renderIdeationContext = () => {
         </div>
       )}
 
-     {/* Database Formulas Grid */}
+     {/* Formulas Grid */}
       {!loading && !error && !isLoadingAIFormulas && (
         <div className="grid gap-6 md:grid-cols-2">
-          {enhancedFormulas.map((formula) => (
+          {currentTabFormulas.map((formula) => (
           <div
             key={formula.id}
             className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-teal-500 hover:shadow-lg transition-all duration-200 cursor-pointer group"
@@ -396,8 +462,31 @@ const renderIdeationContext = () => {
         </div>
       )}
       
-      {/* No formulas state */}
-      {!loading && !error && formulas.length === 0 && (
+      {/* Empty state for current tab */}
+      {!loading && !error && !isLoadingAIFormulas && currentTabFormulas.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            {activeTab === 'ai-suggested' ? (
+              <Sparkles className="w-8 h-8 text-purple-400" />
+            ) : (
+              <BookOpen className="w-8 h-8 text-gray-400" />
+            )}
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {activeTab === 'ai-suggested' 
+              ? 'No AI recommendations available' 
+              : `No ${activeTab} formulas available`}
+          </h3>
+          <p className="text-gray-600">
+            {activeTab === 'ai-suggested' 
+              ? 'Try starting from Ideas Hub for personalized recommendations.' 
+              : 'Check back later for new content formulas.'}
+          </p>
+        </div>
+      )}
+
+      {/* Global empty state */}
+      {!loading && !error && !isLoadingAIFormulas && formulas.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-gray-400" />
