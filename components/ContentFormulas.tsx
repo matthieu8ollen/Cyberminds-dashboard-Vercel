@@ -826,6 +826,9 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
       )}
         </>
       )}
+
+      {/* Formula Modal */}
+      {showFormulaModal && renderFormulaModal()}
     </div>
   )
 }
