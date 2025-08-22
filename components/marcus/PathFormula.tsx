@@ -65,7 +65,15 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 
 // Enhance database formulas with AI recommendations
 const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
+  console.log('🔧 Enhancement Function Called:', {
+    dbFormulasCount: dbFormulas.length,
+    aiRecommendationsCount: aiRecommendations.length,
+    dbFormulaIds: dbFormulas.map(f => f.id),
+    aiFormulaIds: aiRecommendations.map(ai => ai.formula_id)
+  })
+  
   if (!aiRecommendations || aiRecommendations.length === 0) {
+    console.log('🔧 No AI recommendations, returning original formulas')
     return dbFormulas
   }
 
@@ -74,6 +82,7 @@ const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations:
     const aiMatch = aiRecommendations.find(ai => ai.formula_id === dbFormula.id)
     
     if (aiMatch) {
+      console.log('🔧 Found AI match for formula:', dbFormula.id, aiMatch)
       // Enhance with AI data
       return {
         ...dbFormula,
@@ -131,8 +140,15 @@ useEffect(() => {
 
 // Enhance formulas when AI data arrives
 useEffect(() => {
+  console.log('🔧 Enhancement Effect Triggered:', { 
+    formulasLength: formulas.length, 
+    aiFormulasLength: aiFormulas.length,
+    aiFormulas: aiFormulas
+  })
+  
   if (formulas.length > 0) {
     const enhanced = enhanceFormulasWithAI(formulas, aiFormulas)
+    console.log('🔧 Enhanced Formulas Result:', enhanced.filter(f => f._aiData).length, 'formulas enhanced')
     setEnhancedFormulas(enhanced)
   }
 }, [formulas, aiFormulas])
@@ -274,16 +290,14 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
-    {/* AI Processing Status */}
+    {/* Full Loading Screen When AI Processing */}
 {isLoadingAIFormulas && (
-  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-    <div className="flex items-center space-x-3">
-      <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
-      <div>
-        <h4 className="font-medium text-purple-900">AI Analysis in Progress</h4>
-        <p className="text-sm text-purple-700">Marcus is analyzing your ideation data to recommend the best formulas...</p>
-      </div>
+  <div className="flex flex-col items-center justify-center py-24">
+    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full flex items-center justify-center mb-6">
+      <Loader2 className="w-8 h-8 animate-spin text-white" />
     </div>
+    <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Analysis in Progress</h3>
+    <p className="text-gray-600 text-center max-w-md">Marcus is analyzing your ideation data to recommend the perfect formulas for your content...</p>
   </div>
 )}
 
@@ -309,8 +323,8 @@ const renderIdeationContext = () => {
         </div>
       )}
 
-      {/* Database Formulas Grid */}
-      {!loading && !error && (
+     {/* Database Formulas Grid */}
+      {!loading && !error && !isLoadingAIFormulas && (
         <div className="grid gap-6 md:grid-cols-2">
           {enhancedFormulas.map((formula) => (
           <div
