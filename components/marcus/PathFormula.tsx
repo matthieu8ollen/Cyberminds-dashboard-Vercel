@@ -636,5 +636,5 @@ const renderFinalPreview = () => (
     return renderFinalPreview()
   default:
     return renderFormulaSelection()
-}
+  }
 }
