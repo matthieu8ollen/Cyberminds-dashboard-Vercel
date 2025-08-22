@@ -8,6 +8,7 @@ import { useToast } from '../ToastNotifications'
 import { GeneratedContent, getContentFormulas, type ContentFormula, type FormulaSection } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import LinkedInPreview from '../LinkedInPreview'
+import { formatDatabaseTextArray, formatDatabaseText } from '../../lib/textUtils'
 
 interface FormulaTemplate {
   id: string
@@ -92,19 +93,19 @@ export default function PathFormula({
     
     return {
       id: dbFormula.id,
-      name: dbFormula.formula_name,
-      description: dbFormula.funnel_purpose || dbFormula.content_intent || '',
+      name: formatDatabaseText(dbFormula.formula_name),
+      description: formatDatabaseText(dbFormula.funnel_purpose || dbFormula.content_intent || ''),
       category: mapCategoryToDisplay(dbFormula.formula_category || ''),
       structure: sortedSections.map(section => 
-        `${section.section_name} - ${section.section_purpose}`
+        `${formatDatabaseText(section.section_name)} - ${formatDatabaseText(section.section_purpose)}`
       ),
-      example: dbFormula.complete_template?.split('\n')[0] || `${dbFormula.formula_name} example...`,
-      whyItWorks: dbFormula.psychological_triggers || [
+      example: dbFormula.complete_template?.split('\n')[0] || `${formatDatabaseText(dbFormula.formula_name)} example...`,
+      whyItWorks: formatDatabaseTextArray(dbFormula.psychological_triggers || [
         'Proven framework structure',
         'Optimized for engagement',
         'Based on successful patterns'
-      ],
-      bestFor: dbFormula.primary_target_role || 'Professional content creation'
+      ]),
+      bestFor: formatDatabaseText(dbFormula.primary_target_role || 'Professional content creation')
     }
   }
 
@@ -426,17 +427,24 @@ const renderIdeationContext = () => {
           </div>
 
           <div className="mb-8">
-            <h3 className="font-semibold text-gray-900 mb-3">Why This Template Works:</h3>
-            <div className="grid gap-3 md:grid-cols-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Why This Template Works</h3>
+            <div className="grid gap-4 lg:grid-cols-2">
               {selectedFormula.whyItWorks.map((reason, index) => (
-                <div key={index} className="flex items-start space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{reason}</span>
+                <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-green-900 font-medium leading-relaxed">
+                        {formatDatabaseText(reason)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-
           <div className="flex justify-center">
             <button
               onClick={handleStartWriting}
