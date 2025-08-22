@@ -397,7 +397,6 @@ const renderIdeationContext = () => {
           ))}
         </div>
       )}
-      </div>
       
       {/* No formulas state */}
       {!loading && !error && formulas.length === 0 && (
