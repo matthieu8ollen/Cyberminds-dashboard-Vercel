@@ -799,40 +799,6 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
             <div className="text-sm text-gray-700 font-medium">
               <span className="text-gray-500">Best for:</span> {formula.primaryTargetRole || formula.targetAudience || 'Professional content creation'}
             </div>
-                  e.stopPropagation()
-                  setSelectedFormula(formula)
-                }}
-                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                title="Preview"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-              
-              {formula.isCustom && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleCreateFormula(formula)
-                  }}
-                  className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                  title="Edit"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </button>
-              )}
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedFormula(formula)
-                  setViewMode('analyzer')
-                }}
-                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                title="Analyze"
-              >
-                <BarChart3 className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         ))}
       </div>
