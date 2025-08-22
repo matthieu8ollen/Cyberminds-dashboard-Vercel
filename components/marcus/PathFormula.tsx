@@ -183,7 +183,7 @@ useEffect(() => {
     const sortedSections = dbFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
     
     return {
-      id: dbFormula.id,
+      id: dbFormula.formula_id || dbFormula.id, // Use formula_id for AI matching, fallback to id
       name: formatDatabaseText(dbFormula.formula_name),
       description: formatDatabaseText(dbFormula.funnel_purpose || dbFormula.content_intent || ''),
       category: mapCategoryToDisplay(dbFormula.formula_category || ''),
@@ -199,7 +199,7 @@ useEffect(() => {
       bestFor: formatDatabaseText(dbFormula.primary_target_role || 'Professional content creation')
     }
   }
-
+  
   const mapCategoryToDisplay = (dbCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
     switch (dbCategory) {
       case 'Authority_Framework':
