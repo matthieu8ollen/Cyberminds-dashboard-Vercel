@@ -48,7 +48,7 @@ const getCategoryDisplayName = (category: string): string => {
 }
 
 // Automatically format any underscore text for display
-const autoFormatText = (text: any): string => {
+const formatFieldValue = (text: any): string => {
   if (text === null || text === undefined || text === '') return 'Not specified'
   
   // Handle arrays
