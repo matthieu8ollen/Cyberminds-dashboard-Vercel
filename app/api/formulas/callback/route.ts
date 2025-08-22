@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🎯 Received formula response from backend:', body)
     
-    const { session_id, response_type, formulas } = body
+    const { session_id, response_type, recommended_formulas } = body
     
     if (!session_id) {
       return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
     
     // Store the complete formula response
     formulaResponses.set(session_id, {
-      response_type,
-      formulas: formulas || [],
-      success: body.success,
+  response_type,
+  recommended_formulas: recommended_formulas || [],
+  success: body.success,
       timestamp: body.timestamp || Date.now(),
       summary: body.summary,
       processing_metadata: body.processing_metadata,
