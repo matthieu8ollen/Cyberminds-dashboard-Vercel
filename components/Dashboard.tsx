@@ -679,8 +679,8 @@ onUseThisContent={(idea) => {
             console.log('🔄 Formula workflow started, polling for response...')
             const formulaResponse = await pollForFormulaResponse(sessionId)
             
-            if (formulaResponse && formulaResponse.formulas) {
-              setAiFormulas(formulaResponse.formulas)
+            if (formulaResponse && formulaResponse.recommended_formulas) {
+              setAiFormulas(formulaResponse.recommended_formulas)
               console.log('✅ Received formula recommendations:', formulaResponse)
             } else {
               console.log('⏱️ Formula response timeout - falling back to database only')
