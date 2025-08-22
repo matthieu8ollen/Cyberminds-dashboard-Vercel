@@ -66,24 +66,25 @@ export default function PathFormula({
   // Transform backend AI response to FormulaTemplate format
   const transformAIFormula = (backendFormula: any): FormulaTemplate => {
     return {
-      id: backendFormula.formula_id || `ai-${backendFormula.formula_number}`,
-      name: backendFormula.formula_name || 'AI Suggested Formula',
-      description: backendFormula.why_perfect || 'Personalized formula for your content',
+      id: backendFormula.formula_id || `ai-${backendFormula.sequence}`,
+      name: backendFormula.name || 'AI Suggested Formula',
+      description: backendFormula.why_it_works || 'Personalized formula for your content',
       category: mapBackendCategory(backendFormula.category),
-      structure: backendFormula.key_characteristics || ['AI-optimized structure'],
-      example: `AI-suggested: ${backendFormula.formula_name}`,
-      whyItWorks: backendFormula.key_characteristics || ['AI-optimized for your content'],
-      bestFor: backendFormula.why_perfect || 'Your specific content needs',
+      structure: ['AI-optimized structure'],
+      example: `AI-suggested: ${backendFormula.name}`,
+      whyItWorks: [backendFormula.why_it_works || 'AI-optimized for your content'],
+      bestFor: backendFormula.why_it_works || 'Your specific content needs',
       // Store original backend data for enhanced display
       _aiData: {
-        confidence: backendFormula.extraction_confidence,
-        whyPerfect: backendFormula.why_perfect,
-        characteristics: backendFormula.key_characteristics,
-        formulaNumber: backendFormula.formula_number
+        confidence: backendFormula.match_score,
+        whyPerfect: backendFormula.why_it_works,
+        characteristics: [], // No longer provided by backend
+        formulaNumber: backendFormula.sequence,
+        source: backendFormula.source
       }
     }
   }
-
+  
   const mapBackendCategory = (backendCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
     const categoryMap: Record<string, 'story' | 'data' | 'framework' | 'lead-magnet'> = {
       'personal_story': 'story',
@@ -288,7 +289,7 @@ const renderIdeationContext = () => {
             <div className="grid gap-6 md:grid-cols-2">
               {aiFormulas.map((backendFormula: any, index: number) => {
                 const formula = transformAIFormula(backendFormula)
-                const confidence = parseInt(backendFormula.extraction_confidence) || 0
+                const confidence = parseInt(backendFormula.match_score) || 0
                 return (
                   <div
                     key={`ai-${index}`}
@@ -302,7 +303,7 @@ const renderIdeationContext = () => {
                           <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{backendFormula.formula_name}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">{backendFormula.name}</h3>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
                               AI SUGGESTED
@@ -313,7 +314,7 @@ const renderIdeationContext = () => {
                                   confidence >= 80 ? 'bg-green-500' : 
                                   confidence >= 60 ? 'bg-yellow-500' : 'bg-gray-400'
                                 }`}></div>
-                                <span className="text-xs text-gray-600">{confidence}% confidence</span>
+                                <span className="text-xs text-gray-600">{confidence}% match</span>
                               </div>
                             )}
                           </div>
@@ -325,28 +326,16 @@ const renderIdeationContext = () => {
                     {/* Why Perfect explanation */}
                     <div className="mb-4">
                       <h4 className="text-sm font-medium text-purple-900 mb-2">Why this is perfect for you:</h4>
-                      <p className="text-gray-700 text-sm leading-relaxed">{backendFormula.why_perfect}</p>
+                      <p className="text-gray-700 text-sm leading-relaxed">{backendFormula.why_it_works}</p>
                     </div>
 
-                    {/* Key characteristics */}
-                    {backendFormula.key_characteristics && backendFormula.key_characteristics.length > 0 && (
+                    {/* Source information */}
+                    {backendFormula.source && (
                       <div className="mb-4">
-                        <h4 className="text-sm font-medium text-purple-900 mb-2">Key characteristics:</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {backendFormula.key_characteristics.slice(0, 3).map((char: string, charIndex: number) => (
-                            <span 
-                              key={charIndex} 
-                              className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
-                            >
-                              {char}
-                            </span>
-                          ))}
-                          {backendFormula.key_characteristics.length > 3 && (
-                            <span className="text-xs text-gray-500">
-                              +{backendFormula.key_characteristics.length - 3} more
-                            </span>
-                          )}
-                        </div>
+                        <h4 className="text-sm font-medium text-purple-900 mb-2">Source:</h4>
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                          {backendFormula.source}
+                        </span>
                       </div>
                     )}
 
