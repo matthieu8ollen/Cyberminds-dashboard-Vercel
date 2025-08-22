@@ -750,58 +750,55 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 group cursor-pointer transform"
             onClick={() => handleFormulaClick(formula)}
           >
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(formula.category)}`}>
-                    {getCategoryDisplayName(formula.category)}
-                  </span>
-                  {formula.isCustom && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200">
-                      Custom
-                    </span>
-                  )}
-                  {formula.aiAnalysis && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      AI Enhanced
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-teal-600 transition-colors flex-1">
-                    {formula.name}
-                  </h3>
-                  <Eye className="w-5 h-5 text-gray-400 group-hover:text-teal-600 transition-colors flex-shrink-0 ml-2" />
-                </div>
-                <p className="text-gray-600 text-sm mt-1">{formula.description}</p>
+            {/* Header with Category Badge */}
+            <div className="flex items-start justify-between mb-3">
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                formula.category === 'authority' ? 'bg-blue-100 text-blue-700' :
+                formula.category === 'contrarian' ? 'bg-orange-100 text-orange-700' :
+                formula.category === 'personal' ? 'bg-purple-100 text-purple-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {getCategoryDisplayName(formula.category).toUpperCase()}
+              </span>
+              {formula.isCustom && (
+                <span className="text-xs px-2 py-1 rounded-full font-medium bg-teal-100 text-teal-700">
+                  CUSTOM
+                </span>
+              )}
+            </div>
+
+            {/* Title */}
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              {formula.name}
+            </h3>
+
+            {/* Description */}
+            <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+              {formula.description}
+            </p>
+
+            {/* Structure Preview */}
+            <div className="space-y-2 mb-4">
+              <p className="text-sm font-medium text-gray-900">Structure:</p>
+              <div className="text-sm text-gray-600">
+                {formula.sections.slice(0, 3).map((section, index) => (
+                  <div key={index} className="flex items-center space-x-2 mb-1">
+                    <div className="w-1.5 h-1.5 bg-teal-500 rounded-full flex-shrink-0"></div>
+                    <span className="truncate">{section.title}</span>
+                  </div>
+                ))}
+                {formula.sections.length > 3 && (
+                  <div className="text-xs text-gray-500 ml-3.5">
+                    +{formula.sections.length - 3} more sections
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Simplified Stats */}
-            <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-              <span className={getDifficultyColor(formula.difficulty)}>
-                {formula.difficulty}
-              </span>
-              <span>{formula.sections.length} sections</span>
+            {/* Best For Section */}
+            <div className="text-sm text-gray-700 font-medium">
+              <span className="text-gray-500">Best for:</span> {formula.primaryTargetRole || formula.targetAudience || 'Professional content creation'}
             </div>
-
-            {/* Actions */}
-            <div className="flex space-x-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleUseFormula(formula)
-                }}
-                className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition flex items-center justify-center space-x-1"
-              >
-                <span>Use Formula</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={(e) => {
                   e.stopPropagation()
                   setSelectedFormula(formula)
                 }}
