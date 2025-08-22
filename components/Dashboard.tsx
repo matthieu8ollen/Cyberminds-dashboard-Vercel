@@ -633,67 +633,75 @@ onUseThisContent={(idea) => {
       <WriterSuiteSelection
   onModeSelect={async (mode) => {
   if (mode === 'writer-suite') {
+    // Immediately transition to Marcus - don't make user wait
+    setWriterSuiteMode('marcus')
+    
     // Send webhook when Marcus mode is selected with rich ideation data
     if (ideationData && inStrictWorkflow && (workflowRoute === 'ideas' || workflowRoute === 'library')) {
       setIsLoadingAIFormulas(true)
-      try {
-        const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-        const callbackUrl = process.env.NEXT_PUBLIC_SITE_URL 
-          ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/formulas/callback`
-          : 'http://localhost:3000/api/formulas/callback'
+      
+      // Start background webhook + polling process
+      const processAIFormulas = async () => {
+        try {
+          const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+          const callbackUrl = process.env.NEXT_PUBLIC_SITE_URL 
+            ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/formulas/callback`
+            : 'http://localhost:3000/api/formulas/callback'
 
-        const payload = {
-          title: ideationData.title || ideationData.topic,
-          content_type: ideationData.content_type || 'personal_story',
-          selected_hook: ideationData.selected_hook || ideationData.angle,
-          selected_hook_index: ideationData.selected_hook_index || 0,
-          hooks: ideationData.hooks || [ideationData.angle],
-          key_takeaways: ideationData.key_takeaways || ideationData.takeaways || [],
-          personal_story: ideationData.personal_story || '',
-          pain_points_and_struggles: ideationData.pain_points_and_struggles || '',
-          concrete_evidence: ideationData.concrete_evidence || '',
-          audience_and_relevance: ideationData.audience_and_relevance || '',
-          user_id: user?.id,
-          session_id: sessionId,
-          callback_url: callbackUrl,
-          timestamp: new Date().toISOString()
-        }
-
-        const response = await fetch('https://testcyber.app.n8n.cloud/webhook/1f6e3c3f-b68c-4f71-b83f-7330b528db58', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
-        })
-        
-        const data = await response.json()
-        
-        if (data.message === "Workflow was started" || data.success) {
-          console.log('🔄 Formula workflow started, polling for response...')
-          const formulaResponse = await pollForFormulaResponse(sessionId)
-          
-          if (formulaResponse && formulaResponse.formulas) {
-            setAiFormulas(formulaResponse.formulas)
-            console.log('✅ Received formula recommendations:', formulaResponse)
-          } else {
-            console.log('⏱️ Formula response timeout or error')
-            setAiFormulas([])
+          const payload = {
+            title: ideationData.title || ideationData.topic,
+            content_type: ideationData.content_type || 'personal_story',
+            selected_hook: ideationData.selected_hook || ideationData.angle,
+            selected_hook_index: ideationData.selected_hook_index || 0,
+            hooks: ideationData.hooks || [ideationData.angle],
+            key_takeaways: ideationData.key_takeaways || ideationData.takeaways || [],
+            personal_story: ideationData.personal_story || '',
+            pain_points_and_struggles: ideationData.pain_points_and_struggles || '',
+            concrete_evidence: ideationData.concrete_evidence || '',
+            audience_and_relevance: ideationData.audience_and_relevance || '',
+            user_id: user?.id,
+            session_id: sessionId,
+            callback_url: callbackUrl,
+            timestamp: new Date().toISOString()
           }
-        } else {
-          setAiFormulas(data.formulas || [])
+
+          const response = await fetch('https://testcyber.app.n8n.cloud/webhook/1f6e3c3f-b68c-4f71-b83f-7330b528db58', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          })
+          
+          const data = await response.json()
+          
+          if (data.message === "Workflow was started" || data.success) {
+            console.log('🔄 Formula workflow started, polling for response...')
+            const formulaResponse = await pollForFormulaResponse(sessionId)
+            
+            if (formulaResponse && formulaResponse.formulas) {
+              setAiFormulas(formulaResponse.formulas)
+              console.log('✅ Received formula recommendations:', formulaResponse)
+            } else {
+              console.log('⏱️ Formula response timeout - falling back to database only')
+              setAiFormulas([])
+            }
+          } else {
+            setAiFormulas(data.formulas || [])
+          }
+          
+          console.log('✅ Webhook process completed')
+        } catch (error) {
+          console.error('❌ Webhook failed:', error)
+          setAiFormulas([])
+        } finally {
+          setIsLoadingAIFormulas(false)
         }
-        
-        console.log('✅ Webhook sent for Marcus content formulas')
-      } catch (error) {
-        console.error('❌ Webhook failed:', error)
-        setAiFormulas([])
-      } finally {
-        setIsLoadingAIFormulas(false)
       }
+      
+      // Run in background without blocking UI
+      processAIFormulas()
     }
-    
-    setWriterSuiteMode('marcus')
   } else if (mode === 'standard') {
       console.log('📋 WriterSuiteSelection → Standard Mode')
       
