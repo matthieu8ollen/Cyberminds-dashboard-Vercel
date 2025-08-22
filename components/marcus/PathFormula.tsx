@@ -24,6 +24,7 @@ interface FormulaTemplate {
     whyPerfect?: string
     characteristics?: string[]
     formulaNumber?: string
+    source?: string
   }
 }
 
