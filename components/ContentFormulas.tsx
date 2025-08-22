@@ -47,6 +47,30 @@ const getCategoryDisplayName = (category: string): string => {
   }
 }
 
+// Automatically format any underscore text for display
+const autoFormatText = (text: any): string => {
+  if (text === null || text === undefined || text === '') return 'Not specified'
+  
+  // Handle arrays
+  if (Array.isArray(text)) {
+    if (text.length === 0) return 'Not specified'
+    return text.map(item => autoFormatText(item)).join(', ')
+  }
+  
+  // Convert to string
+  const str = String(text)
+  
+  // If it contains underscores, format it
+  if (str.includes('_')) {
+    return str
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+  
+  return str
+}
+
 // Conversion function from database format to component format
 const convertDatabaseToEnhanced = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): EnhancedContentFormula => {
   return {
@@ -355,10 +379,10 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
               <div className="bg-blue-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-blue-900 mb-2">Target Audience</h4>
                 {modalFormula.primaryTargetRole && (
-                  <p className="text-sm text-blue-800 mb-1">Primary Role: {modalFormula.primaryTargetRole}</p>
+                  <p className="text-sm text-blue-800 mb-1">Primary Role: {formatFieldValue(modalFormula.primaryTargetRole)}</p>
                 )}
                 {modalFormula.targetAudience && (
-                  <p className="text-sm text-blue-800">Audience: {modalFormula.targetAudience}</p>
+                  <p className="text-sm text-blue-800">Audience: {formatFieldValue(modalFormula.targetAudience)}</p>
                 )}
               </div>
             )}
@@ -369,13 +393,13 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
                 {modalFormula.viralPotential && (
                   <div className="bg-green-50 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-green-900 mb-1">Viral Potential</h4>
-                    <p className="text-sm text-green-800">{modalFormula.viralPotential}</p>
+                    <p className="text-sm text-green-800">{formatFieldValue(modalFormula.viralPotential)}</p>
                   </div>
                 )}
                 {modalFormula.saveWorthiness && (
                   <div className="bg-purple-50 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-purple-900 mb-1">Save Worthiness</h4>
-                    <p className="text-sm text-purple-800">{modalFormula.saveWorthiness}</p>
+                    <p className="text-sm text-purple-800">{formatFieldValue(modalFormula.saveWorthiness)}</p>
                   </div>
                 )}
               </div>
@@ -797,7 +821,7 @@ export default function ContentFormulas({ onBack, onCreateFormula, onUseFormula 
 
             {/* Best For Section */}
             <div className="text-sm text-gray-700 font-medium">
-              <span className="text-gray-500">Best for:</span> {formula.primaryTargetRole || formula.targetAudience || 'Professional content creation'}
+              <span className="text-gray-500">Best for:</span> {formatFieldValue(formula.primaryTargetRole || formula.targetAudience) || 'Professional content creation'}
             </div>
           </div>
         ))}
