@@ -54,7 +54,7 @@ const formatFieldValue = (text: any): string => {
   // Handle arrays
   if (Array.isArray(text)) {
     if (text.length === 0) return 'Not specified'
-    return text.map(item => autoFormatText(item)).join(', ')
+    return text.map(item => formatFieldValue(item)).join(', ')
   }
   
   // Convert to string
