@@ -679,11 +679,16 @@ onUseThisContent={(idea) => {
             console.log('🔄 Formula workflow started, polling for response...')
             const formulaResponse = await pollForFormulaResponse(sessionId)
             
+            console.log('🔍 DEBUG: Full formula response:', JSON.stringify(formulaResponse, null, 2))
+            console.log('🔍 DEBUG: Has recommended_formulas?', !!formulaResponse?.recommended_formulas)
+            console.log('🔍 DEBUG: Response keys:', formulaResponse ? Object.keys(formulaResponse) : 'null')
+            
             if (formulaResponse && formulaResponse.recommended_formulas) {
               setAiFormulas(formulaResponse.recommended_formulas)
               console.log('✅ Received formula recommendations:', formulaResponse)
             } else {
               console.log('⏱️ Formula response timeout - falling back to database only')
+              console.log('🔍 DEBUG: Why condition failed - formulaResponse:', !!formulaResponse, 'recommended_formulas:', !!formulaResponse?.recommended_formulas)
               setAiFormulas([])
             }
           } else {
