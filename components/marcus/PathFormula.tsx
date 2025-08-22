@@ -288,7 +288,6 @@ const renderIdeationContext = () => {
 )}
 
      {/* Database Formulas with AI Enhancements */}
-      <div>
         {/* Loading State */}
         {loading && (
         <div className="flex items-center justify-center py-12">
@@ -410,7 +409,6 @@ const renderIdeationContext = () => {
           <p className="text-gray-600">Check back later for new content formulas.</p>
         </div>
       )}
-      </div>
     </div>
   )
 
