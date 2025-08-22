@@ -65,15 +65,7 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 
 // Enhance database formulas with AI recommendations
 const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
-  console.log('🔧 Enhancement Function Called:', {
-    dbFormulasCount: dbFormulas.length,
-    aiRecommendationsCount: aiRecommendations.length,
-    dbFormulaIds: dbFormulas.map(f => f.id),
-    aiFormulaIds: aiRecommendations.map(ai => ai.formula_id)
-  })
-  
   if (!aiRecommendations || aiRecommendations.length === 0) {
-    console.log('🔧 No AI recommendations, returning original formulas')
     return dbFormulas
   }
 
@@ -82,7 +74,6 @@ const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations:
     const aiMatch = aiRecommendations.find(ai => ai.formula_id === dbFormula.id)
     
     if (aiMatch) {
-      console.log('🔧 Found AI match for formula:', dbFormula.id, aiMatch)
       // Enhance with AI data
       return {
         ...dbFormula,
@@ -98,7 +89,7 @@ const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations:
     return dbFormula
   })
 }
-
+  
   // Transform backend AI response to FormulaTemplate format
   const transformAIFormula = (backendFormula: any): FormulaTemplate => {
     return {
@@ -140,43 +131,36 @@ useEffect(() => {
 
 // Enhance formulas when AI data arrives
 useEffect(() => {
-  console.log('🔧 Enhancement Effect Triggered:', { 
-    formulasLength: formulas.length, 
-    aiFormulasLength: aiFormulas.length,
-    aiFormulas: aiFormulas
-  })
-  
   if (formulas.length > 0) {
     const enhanced = enhanceFormulasWithAI(formulas, aiFormulas)
-    console.log('🔧 Enhanced Formulas Result:', enhanced.filter(f => f._aiData).length, 'formulas enhanced')
     setEnhancedFormulas(enhanced)
   }
 }, [formulas, aiFormulas])
 
   const loadFormulas = async () => {
-    setLoading(true)
-    setError(null)
+  setLoading(true)
+  setError(null)
+  
+  try {
+    const { data, error } = await getContentFormulas(user?.id)
     
-    try {
-      const { data, error } = await getContentFormulas(user?.id)
-      
-      if (error) {
-        console.error('Error loading formulas:', error)
-        setError('Failed to load formulas')
-        return
-      }
-
-      if (data) {
-        const convertedFormulas = data.map(convertDatabaseToFormula)
-        setFormulas(convertedFormulas)
-      }
-    } catch (err) {
-      console.error('Error loading formulas:', err)
+    if (error) {
+      console.error('Error loading formulas:', error)
       setError('Failed to load formulas')
-    } finally {
-      setLoading(false)
+      return
     }
+
+    if (data) {
+      const convertedFormulas = data.map(convertDatabaseToFormula)
+      setFormulas(convertedFormulas)
+    }
+  } catch (err) {
+    console.error('Error loading formulas:', err)
+    setError('Failed to load formulas')
+  } finally {
+    setLoading(false)
   }
+}
 
   // Convert database format to component format
   const convertDatabaseToFormula = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): FormulaTemplate => {
