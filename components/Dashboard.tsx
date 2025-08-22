@@ -569,6 +569,39 @@ const getVisibleIdeasTab = () => {
   return ['hub', 'library']
 }
 
+  // Poll for formula response from callback
+  const pollForFormulaResponse = async (sessionId: string) => {
+    const maxAttempts = 40 // 60 seconds max wait
+    let attempts = 0
+    
+    const poll = async (): Promise<any> => {
+      try {
+        const response = await fetch(`/api/formulas/callback?session_id=${sessionId}`)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          console.log('📨 Received formula response:', result.data)
+          return result.data
+        }
+        
+        attempts++
+        if (attempts >= maxAttempts) {
+          console.log('⏱️ Formula response timeout')
+          return null
+        }
+        
+        // Wait 1.5 seconds before next poll
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        return poll()
+      } catch (error) {
+        console.error('❌ Error polling for formula response:', error)
+        return null
+      }
+    }
+    
+    return poll()
+  }
+
   // Page Content Rendering
   const renderPageContent = () => {
     switch (activePage) {
@@ -604,6 +637,11 @@ onUseThisContent={(idea) => {
     if (ideationData && inStrictWorkflow && (workflowRoute === 'ideas' || workflowRoute === 'library')) {
       setIsLoadingAIFormulas(true)
       try {
+        const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+        const callbackUrl = process.env.NEXT_PUBLIC_SITE_URL 
+          ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/formulas/callback`
+          : 'http://localhost:3000/api/formulas/callback'
+
         const payload = {
           title: ideationData.title || ideationData.topic,
           content_type: ideationData.content_type || 'personal_story',
@@ -616,7 +654,8 @@ onUseThisContent={(idea) => {
           concrete_evidence: ideationData.concrete_evidence || '',
           audience_and_relevance: ideationData.audience_and_relevance || '',
           user_id: user?.id,
-          session_id: ideationData.session_id,
+          session_id: sessionId,
+          callback_url: callbackUrl,
           timestamp: new Date().toISOString()
         }
 
@@ -629,7 +668,22 @@ onUseThisContent={(idea) => {
         })
         
         const data = await response.json()
-        setAiFormulas(data.formulas || [])
+        
+        if (data.message === "Workflow was started" || data.success) {
+          console.log('🔄 Formula workflow started, polling for response...')
+          const formulaResponse = await pollForFormulaResponse(sessionId)
+          
+          if (formulaResponse && formulaResponse.formulas) {
+            setAiFormulas(formulaResponse.formulas)
+            console.log('✅ Received formula recommendations:', formulaResponse)
+          } else {
+            console.log('⏱️ Formula response timeout or error')
+            setAiFormulas([])
+          }
+        } else {
+          setAiFormulas(data.formulas || [])
+        }
+        
         console.log('✅ Webhook sent for Marcus content formulas')
       } catch (error) {
         console.error('❌ Webhook failed:', error)
