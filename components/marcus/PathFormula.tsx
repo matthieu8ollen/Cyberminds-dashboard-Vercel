@@ -148,12 +148,12 @@ const availableTabs = hasAIRecommendations
 
 // Set default tab based on AI availability
 useEffect(() => {
-  if (hasAIRecommendations && !availableTabs.includes(activeTab)) {
+  if (hasAIRecommendations) {
     setActiveTab('ai-suggested')
   } else if (!hasAIRecommendations && activeTab === 'ai-suggested') {
     setActiveTab('framework')
   }
-}, [hasAIRecommendations, activeTab, availableTabs])
+}, [hasAIRecommendations])
 
 // Get formulas for current tab
 const getFormulasForTab = () => {
@@ -303,10 +303,11 @@ const renderIdeationContext = () => {
         </button>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <div className="flex space-x-8 overflow-x-auto">
-          {availableTabs.map((tab) => (
+      {/* Tab Navigation - Only show when not loading AI */}
+      {!isLoadingAIFormulas && (
+        <div className="border-b border-gray-200 mb-8">
+          <div className="flex space-x-8 overflow-x-auto">
+            {availableTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -331,7 +332,7 @@ const renderIdeationContext = () => {
                 </span>
                 {tab === 'ai-suggested' && hasAIRecommendations && (
                   <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
-                    {aiFormulas.filter(ai => enhancedFormulas.some(f => f.id === ai.formula_id)).length}
+                    {enhancedFormulas.filter(f => f._aiData).length}
                   </span>
                 )}
               </div>
