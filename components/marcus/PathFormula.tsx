@@ -340,6 +340,7 @@ const renderIdeationContext = () => {
           ))}
         </div>
       </div>
+      )}
 
     {/* Full Loading Screen When AI Processing */}
 {isLoadingAIFormulas && (
