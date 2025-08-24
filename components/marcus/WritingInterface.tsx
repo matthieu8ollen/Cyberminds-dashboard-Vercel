@@ -1,668 +1,1067 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ArrowLeft, ArrowRight, CheckCircle, Lightbulb, Zap, Eye, Save, Calendar, Sparkles } from 'lucide-react'
-import AIAssistant from './AIAssistant'
-import { getContentFormulas, type ContentFormula, type FormulaSection } from '../../lib/supabase'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  CheckCircle, 
+  Eye, 
+  Sparkles, 
+  BookOpen,
+  Target,
+  BarChart3,
+  Users,
+  Heart,
+  Mic,
+  ChevronLeft,
+  ChevronRight,
+  Brain,
+  Lightbulb,
+  Edit3,
+  Wand2
+} from 'lucide-react'
+import { useContent } from '../../contexts/ContentContext'
+import { useToast } from '../ToastNotifications'
+import { GeneratedContent } from '../../lib/supabase'
+
+// ============================================================================
+// INTERFACES & TYPES
+// ============================================================================
 
 interface FormulaTemplate {
   id: string
   name: string
   description: string
+  category: 'story' | 'data' | 'framework' | 'lead-magnet'
   structure: string[]
   example: string
-}
-
-interface WritingInterfaceProps {
-  formula: FormulaTemplate
-  onBack: () => void
-  onComplete: (content: string) => void
-  ideationData?: any
-  initialContent?: string
+  whyItWorks: string[]
+  bestFor: string
+  _aiData?: {
+    confidence?: string
+    whyPerfect?: string
+    characteristics?: string[]
+    formulaNumber?: string
+    source?: string
+  }
 }
 
 interface SectionData {
+  id: string
   title: string
   content: string
   guidance: string
   placeholder: string
   completed: boolean
   wordCountTarget?: number
+  wordCountMin?: number
   psychologyNote?: string
   emotionalTarget?: string
   isRequired?: boolean
-  templateVariables?: Record<string, any>
-  hasTemplateVariables?: boolean
+  contentChecks: string[]
+  completedChecks: string[]
 }
 
 interface TemplateVariable {
   name: string
-  type: string
+  label: string
+  value: string
+  aiSuggestion?: string
   required: boolean
-  description: string
-  value?: string
+  type: 'text' | 'textarea'
+  placeholder: string
 }
 
-export default function WritingInterface({ formula, onBack, onComplete, ideationData, initialContent }: WritingInterfaceProps) {
+interface ContentCheck {
+  id: string
+  label: string
+  completed: boolean
+  description: string
+}
+
+interface WritingGuidanceTab {
+  id: string
+  label: string
+  icon: any
+  content: string[]
+  active: boolean
+}
+
+interface WritingInterfaceProps {
+  formula: FormulaTemplate
+  onBack: () => void
+  onComplete: (content: string) => void
+  ideationData?: {
+    topic?: string
+    angle?: string
+    takeaways?: string[]
+  }
+  initialContent?: string
+  backendExample?: {
+    example_post?: string
+    section_examples?: Record<string, string>
+    tips_and_guidance?: string[]
+    template_variables?: Record<string, string>
+  }
+  inStrictWorkflow?: boolean
+  onExitWorkflow?: () => void
+  onContinueToImages?: (contentId: string) => void
+}
+
+type PreviewMode = 'auto' | 'template' | 'example'
+type GuidanceTabId = 'matters' | 'essentials' | 'techniques' | 'reader' | 'arc' | 'voice'
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export default function WritingInterface({
+  formula,
+  onBack,
+  onComplete,
+  ideationData,
+  initialContent,
+  backendExample,
+  inStrictWorkflow = false,
+  onExitWorkflow,
+  onContinueToImages
+}: WritingInterfaceProps) {
+  const { saveDraft } = useContent()
+  const { showToast } = useToast()
+
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
+
+  // UI State
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('auto')
+  const [activeGuidanceTab, setActiveGuidanceTab] = useState<GuidanceTabId>('matters')
+  
+  // Content State
   const [sections, setSections] = useState<SectionData[]>([])
-  const [showPreview, setShowPreview] = useState(false)
-  const [templateVariables, setTemplateVariables] = useState<Record<string, string>>({})
-  const [showTemplateHelper, setShowTemplateHelper] = useState(false)
+  const [templateVariables, setTemplateVariables] = useState<TemplateVariable[]>([])
+  const [contentChecks, setContentChecks] = useState<ContentCheck[]>([])
+  
+  // Auto-flicker for preview
+  const [autoFlickerIndex, setAutoFlickerIndex] = useState(0)
 
-  // Initialize sections based on formula
-useEffect(() => {
-  // If we have initial content, try to split it and populate sections
-  if (initialContent) {
-    const contentSections = initialContent.split('\n\n').filter(section => section.trim())
-    const populatedSections = formula.structure.map((step, index) => {
+  // ============================================================================
+  // INITIALIZATION
+  // ============================================================================
+
+  // Initialize sections from formula structure
+  useEffect(() => {
+    const initializedSections: SectionData[] = formula.structure.map((step, index) => {
       const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
       
       return {
-        title,
-        content: contentSections[index] || '',
-        guidance: getGuidanceForSection(formula.id, title, index),
-        placeholder: getPlaceholderForSection(formula.id, title, index),
-        completed: contentSections[index] ? contentSections[index].trim().length > 20 : false
+        id: `section-${index}`,
+        title: title.trim(),
+        content: backendExample?.section_examples?.[title.trim()] || '',
+        guidance: guidance || getGuidanceForSection(formula.id, title.trim(), index),
+        placeholder: getPlaceholderForSection(formula.id, title.trim(), index),
+        completed: false,
+        wordCountTarget: getWordCountTarget(title.trim()),
+        wordCountMin: Math.floor(getWordCountTarget(title.trim()) * 0.7),
+        psychologyNote: getPsychologyNote(title.trim()),
+        emotionalTarget: getEmotionalTarget(title.trim()),
+        isRequired: isRequiredSection(title.trim()),
+        contentChecks: getContentChecks(title.trim()),
+        completedChecks: []
       }
     })
     
-    setSections(populatedSections)
-    return
-  }
-  
-  // Load real section data from database for this formula
-  const loadRealSectionData = async () => {
-    try {
-      const { data } = await getContentFormulas()
-      const currentFormula = data?.find(f => f.id === formula.id)
-      
-      if (currentFormula?.formula_sections) {
-        const sortedSections = currentFormula.formula_sections.sort((a: FormulaSection, b: FormulaSection) => a.section_order - b.section_order)
-        
-        const realSections = sortedSections.map((section: FormulaSection, index: number) => {
-          let parsedVariables = null
-          let hasVariables = false
-          
-          // Parse template variables if they exist
-          if (section.template_variables) {
-            try {
-              parsedVariables = typeof section.template_variables === 'string' 
-                ? JSON.parse(section.template_variables) 
-                : section.template_variables
-              hasVariables = Object.keys(parsedVariables).length > 0
-            } catch (error) {
-              console.warn('Failed to parse template variables:', error)
-            }
-          }
-          
-          return {
-            title: section.section_name,
-            content: '',
-            guidance: section.section_guidelines || "Write this section with your authentic voice and specific examples.",
-            placeholder: section.section_template || `Write your ${section.section_name.toLowerCase()} here...`,
-            completed: false,
-            wordCountTarget: section.word_count_target,
-            psychologyNote: section.psychological_purpose,
-            emotionalTarget: section.emotional_target,
-            isRequired: section.is_required,
-            templateVariables: parsedVariables,
-            hasTemplateVariables: hasVariables
-          }
-        })
-        
-        setSections(realSections)
-        return
-      }
-    } catch (error) {
-      console.error('Failed to load real section data:', error)
-    }
-    
-    // Fallback to formula structure
-    const fallbackSections = formula.structure.map((step, index) => {
-      const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
-      
-      return {
-        title,
-        content: '',
-        guidance: guidance || "Write this section with your authentic voice and specific examples.",
-        placeholder: `Write your ${title.toLowerCase()} here...`,
-        completed: false
-      }
-    })
-    
-    setSections(fallbackSections)
-  }
-  
-  loadRealSectionData()
-}, [formula, initialContent])
+    setSections(initializedSections)
+  }, [formula, backendExample])
 
-  const getGuidanceForSection = (formulaId: string, title: string, index: number): string => {
-    // Use real section data if available
-    const currentSection = sections[index]
-    if (currentSection?.guidance) {
-      return currentSection.guidance
+  // Initialize template variables
+  useEffect(() => {
+    const variables = extractTemplateVariables(formula, ideationData, backendExample)
+    setTemplateVariables(variables)
+  }, [formula, ideationData, backendExample])
+
+  // Initialize content checks
+  useEffect(() => {
+    const checks = initializeContentChecks(formula.category)
+    setContentChecks(checks)
+  }, [formula.category])
+
+  // Auto-flicker effect for preview mode
+  useEffect(() => {
+    if (previewMode === 'auto') {
+      const interval = setInterval(() => {
+        setAutoFlickerIndex(prev => (prev + 1) % 2) // 0 = template, 1 = example
+      }, 2000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [previewMode])
+
+  // ============================================================================
+  // COMPUTED VALUES
+  // ============================================================================
+
+  const currentSection = sections[currentSectionIndex]
+  const overallProgress = sections.filter(s => s.completed).length
+  const totalSections = sections.length
+  const progressPercentage = (overallProgress / totalSections) * 100
+
+  const completedContentChecks = contentChecks.filter(check => check.completed).length
+  const totalContentChecks = contentChecks.length
+
+  const assembledContent = useMemo(() => {
+    return sections
+      .filter(section => section.content.trim())
+      .map(section => section.content.trim())
+      .join('\n\n')
+  }, [sections])
+
+  // ============================================================================
+  // HELPER FUNCTIONS
+  // ============================================================================
+
+  function getGuidanceForSection(formulaId: string, title: string, index: number): string {
+    const guidanceMap: Record<string, string> = {
+      'Hook': 'Create an attention-grabbing opening that stops the scroll. Use specific details, questions, or contrarian statements.',
+      'Problem': 'Identify a specific pain point your audience faces. Make it relatable and urgent.',
+      'Framework': 'Present your systematic approach. Use numbered steps or clear structure.',
+      'Solution': 'Provide actionable advice that directly addresses the problem.',
+      'CTA': 'End with a question or call-to-action that encourages engagement.',
+      'Context': 'Set the scene for your story. Help readers understand the situation.',
+      'Learning': 'Extract the key lesson or insight from your experience.',
+      'Evidence': 'Support your position with data, examples, or specific details.'
     }
     
-    // Fallback guidance based on section title
-    if (title.toLowerCase().includes('hook') || title.toLowerCase().includes('opener')) {
-      return "Create a compelling opening that stops the scroll. Make it specific, relatable, and attention-grabbing."
-    }
-    if (title.toLowerCase().includes('cta') || title.toLowerCase().includes('call to action')) {
-      return "End with a natural call-to-action that encourages engagement. Ask a specific question related to your content."
-    }
-    if (title.toLowerCase().includes('proof') || title.toLowerCase().includes('evidence')) {
-      return "Provide credible evidence, data, or examples that support your main point. Be specific and cite sources when possible."
-    }
-    
-    return "Write this section with your authentic voice and specific examples. Focus on providing value to your audience."
-  }
-  
-  const getPlaceholderForSection = (formulaId: string, title: string, index: number): string => {
-    // Use real section template if available
-    const currentSection = sections[index]
-    if (currentSection?.placeholder) {
-      return currentSection.placeholder
-    }
-    
-    return `Write your ${title.toLowerCase()} here...`
-  }
-  
-  const handleSectionChange = (content: string) => {
-    setSections(prev => prev.map((section, index) => 
-      index === currentSectionIndex 
-        ? { ...section, content, completed: content.trim().length > 20 }
-        : section
-    ))
+    return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
   }
 
-  const parseTemplateVariables = (template: string): TemplateVariable[] => {
-    const variableRegex = /\[([^\]]+)\]/g
+  function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
+    const currentVar = templateVariables.find(v => v.name.toLowerCase().includes(title.toLowerCase()))
+    if (currentVar?.aiSuggestion) {
+      return currentVar.aiSuggestion
+    }
+    
+    return `Write your ${title.toLowerCase()} here... Focus on providing value to your audience.`
+  }
+
+  function getWordCountTarget(title: string): number {
+    const targetMap: Record<string, number> = {
+      'Hook': 30,
+      'Problem': 50,
+      'Framework': 100,
+      'Solution': 80,
+      'CTA': 25,
+      'Context': 60,
+      'Learning': 40
+    }
+    
+    return targetMap[title] || 50
+  }
+
+  function getPsychologyNote(title: string): string {
+    const psychologyMap: Record<string, string> = {
+      'Hook': 'Use pattern interrupts and curiosity gaps to capture attention',
+      'Problem': 'Trigger pain points and create urgency for solution',
+      'Framework': 'Provide structure and reduce cognitive load',
+      'Solution': 'Offer clear path forward and build confidence'
+    }
+    
+    return psychologyMap[title] || 'Focus on connecting with your audience emotionally'
+  }
+
+  function getEmotionalTarget(title: string): string {
+    const emotionMap: Record<string, string> = {
+      'Hook': 'Curiosity, Intrigue',
+      'Problem': 'Concern, Recognition',
+      'Framework': 'Confidence, Clarity',
+      'Solution': 'Relief, Hope'
+    }
+    
+    return emotionMap[title] || 'Engagement'
+  }
+
+  function isRequiredSection(title: string): boolean {
+    return ['Hook', 'Problem', 'Solution', 'CTA'].includes(title)
+  }
+
+  function getContentChecks(title: string): string[] {
+    const checksMap: Record<string, string[]> = {
+      'Hook': ['Specific details', 'Attention-grabbing', 'Relevant to audience'],
+      'Problem': ['Clear pain point', 'Relatable situation', 'Creates urgency'],
+      'Framework': ['Numbered steps', 'Logical flow', 'Actionable guidance'],
+      'Solution': ['Specific advice', 'Directly addresses problem', 'Easy to implement']
+    }
+    
+    return checksMap[title] || ['Clear message', 'Value provided', 'Engaging content']
+  }
+
+  function extractTemplateVariables(
+    formula: FormulaTemplate, 
+    ideationData?: any, 
+    backendExample?: any
+  ): TemplateVariable[] {
+    // Extract variables from formula structure and backend suggestions
     const variables: TemplateVariable[] = []
-    let match
-
-    while ((match = variableRegex.exec(template)) !== null) {
-      const variableName = match[1]
-      if (!variables.find(v => v.name === variableName)) {
-        variables.push({
-          name: variableName,
-          type: 'string',
+    
+    if (formula.category === 'story') {
+      variables.push(
+        {
+          name: 'THEME',
+          label: 'Main Theme',
+          value: ideationData?.topic || '',
+          aiSuggestion: backendExample?.template_variables?.THEME || 'Your main topic or theme',
           required: true,
-          description: `Value for ${variableName}`,
-          value: templateVariables[variableName] || ''
-        })
-      }
+          type: 'text',
+          placeholder: 'e.g., VC funding vs Bootstrap'
+        },
+        {
+          name: 'PERSONAL_EXPERIENCE',
+          label: 'Personal Experience',
+          value: '',
+          aiSuggestion: backendExample?.template_variables?.PERSONAL_EXPERIENCE || 'Your relevant experience',
+          required: true,
+          type: 'text',
+          placeholder: 'e.g., experienced both paths'
+        }
+      )
+    } else if (formula.category === 'framework') {
+      variables.push(
+        {
+          name: 'PROBLEM_AREA',
+          label: 'Problem Area',
+          value: ideationData?.topic || '',
+          aiSuggestion: backendExample?.template_variables?.PROBLEM_AREA || 'The problem you solve',
+          required: true,
+          type: 'text',
+          placeholder: 'e.g., SaaS pricing strategy'
+        },
+        {
+          name: 'FRAMEWORK_NAME',
+          label: 'Framework Name',
+          value: '',
+          aiSuggestion: backendExample?.template_variables?.FRAMEWORK_NAME || 'Your framework name',
+          required: true,
+          type: 'text',
+          placeholder: 'e.g., The 5-Step Revenue Framework'
+        }
+      )
     }
-
+    
     return variables
   }
 
-  const applyTemplateVariables = (template: string, variables: Record<string, string>): string => {
-    let result = template
-    Object.entries(variables).forEach(([key, value]) => {
-      const regex = new RegExp(`\\[${key}\\]`, 'g')
-      result = result.replace(regex, value || `[${key}]`)
-    })
-    return result
+  function initializeContentChecks(category: string): ContentCheck[] {
+    const baseChecks: ContentCheck[] = [
+      {
+        id: 'theme_contrast',
+        label: 'Theme contrast',
+        completed: false,
+        description: 'Clear differentiation of perspectives or approaches'
+      },
+      {
+        id: 'personal_element',
+        label: 'Personal element',
+        completed: false,
+        description: 'Includes personal experience or perspective'
+      },
+      {
+        id: 'value_promise',
+        label: 'Value promise',
+        completed: false,
+        description: 'Clear value proposition for the reader'
+      },
+      {
+        id: 'specific_details',
+        label: 'Specific details',
+        completed: false,
+        description: 'Concrete examples and specific information'
+      },
+      {
+        id: 'emotional_hook',
+        label: 'Emotional hook',
+        completed: false,
+        description: 'Emotionally engaging content that resonates'
+      }
+    ]
+    
+    return baseChecks
   }
 
-  const handleTemplateVariableChange = (variableName: string, value: string) => {
-    setTemplateVariables(prev => ({
-      ...prev,
-      [variableName]: value
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  const handleSectionChange = useCallback((content: string) => {
+    setSections(prev => prev.map((section, index) => {
+      if (index === currentSectionIndex) {
+        const wordCount = content.trim().split(/\s+/).length
+        const completed = content.trim().length > 20 && wordCount >= (section.wordCountMin || 10)
+        
+        // Update content checks
+        const updatedChecks = section.contentChecks.filter(check => 
+          content.toLowerCase().includes(check.toLowerCase())
+        )
+        
+        return {
+          ...section,
+          content,
+          completed,
+          completedChecks: updatedChecks
+        }
+      }
+      return section
     }))
+  }, [currentSectionIndex])
 
-    // Auto-update current section content if it uses this variable
-    const currentSection = sections[currentSectionIndex]
-    if (currentSection?.hasTemplateVariables) {
-      const updatedTemplate = applyTemplateVariables(currentSection.placeholder, {
-        ...templateVariables,
-        [variableName]: value
-      })
-      handleSectionChange(updatedTemplate)
+  const handleTemplateVariableChange = useCallback((name: string, value: string) => {
+    setTemplateVariables(prev => prev.map(variable => 
+      variable.name === name ? { ...variable, value } : variable
+    ))
+  }, [])
+
+  const handleSectionNavigation = useCallback((sectionIndex: number) => {
+    if (sectionIndex >= 0 && sectionIndex < sections.length) {
+      setCurrentSectionIndex(sectionIndex)
     }
-  }
+  }, [sections.length])
 
-  const getVariableSuggestions = (variableName: string, ideationData?: any): string[] => {
-    const suggestions: string[] = []
-    
-    // Smart suggestions based on variable name
-    switch (variableName.toLowerCase()) {
-      case 'topic':
-      case 'subject':
-        if (ideationData?.topic) suggestions.push(ideationData.topic)
-        suggestions.push('SaaS metrics', 'Financial planning', 'Team management')
-        break
-        
-      case 'problem':
-      case 'challenge':
-        suggestions.push('Cash flow issues', 'Team scaling', 'Market uncertainty')
-        break
-        
-      case 'solution':
-      case 'approach':
-        suggestions.push('Systematic framework', 'Data-driven process', 'Strategic methodology')
-        break
-        
-      case 'number':
-      case 'statistic':
-        suggestions.push('73%', '5x increase', '90 days')
-        break
-        
-      case 'company':
-      case 'business':
-        suggestions.push('SaaS startup', 'Tech company', 'Growing business')
-        break
-        
-      case 'role':
-      case 'position':
-        suggestions.push('CFO', 'Finance Director', 'VP Finance')
-        break
-    }
-    
-    return suggestions.slice(0, 3) // Limit to 3 suggestions
-  }
-
-  const renderTemplateHelper = () => {
-    const currentSection = sections[currentSectionIndex]
-    if (!currentSection?.hasTemplateVariables) return null
-
-    const variables = parseTemplateVariables(currentSection.placeholder)
-    if (variables.length === 0) return null
-
-    return (
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <h4 className="text-sm font-medium text-purple-900">Template Variables</h4>
-          </div>
-          <button
-            onClick={() => setShowTemplateHelper(!showTemplateHelper)}
-            className="text-purple-600 hover:text-purple-800 text-sm"
-          >
-            {showTemplateHelper ? 'Hide' : 'Show'} Helper
-          </button>
-        </div>
-
-        {showTemplateHelper && (
-          <div className="space-y-4">
-            <p className="text-xs text-purple-700 mb-3">
-              Fill in these variables to auto-populate your template:
-            </p>
-            
-            {/* Pre-populate from ideation data if available */}
-            {ideationData && (
-              <div className="bg-teal-50 border border-teal-200 rounded p-3 mb-3">
-                <h5 className="text-xs font-medium text-teal-900 mb-2">Suggested from your ideation:</h5>
-                <div className="text-xs text-teal-700 space-y-1">
-                  {ideationData.topic && <div><strong>Topic:</strong> {ideationData.topic}</div>}
-                  {ideationData.angle && <div><strong>Angle:</strong> {ideationData.angle}</div>}
-                </div>
-              </div>
-            )}
-            
-            {variables.map(variable => (
-              <div key={variable.name} className="space-y-2">
-                <label className="block text-xs font-medium text-purple-800">
-                  {variable.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  {variable.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-                
-                {/* Smart suggestions based on variable name */}
-                {getVariableSuggestions(variable.name, ideationData).length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {getVariableSuggestions(variable.name, ideationData).map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleTemplateVariableChange(variable.name, suggestion)}
-                        className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                
-                <input
-                  type="text"
-                  value={templateVariables[variable.name] || ''}
-                  onChange={(e) => handleTemplateVariableChange(variable.name, e.target.value)}
-                  placeholder={variable.description}
-                  className="w-full px-3 py-2 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-            ))}
-
-            <div className="flex space-x-2 pt-2">
-              <button
-                onClick={() => {
-                  const populatedTemplate = applyTemplateVariables(currentSection.placeholder, templateVariables)
-                  handleSectionChange(populatedTemplate)
-                }}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition"
-              >
-                Apply Template
-              </button>
-              
-              <button
-                onClick={() => {
-                  // Clear all variables
-                  setTemplateVariables({})
-                }}
-                className="px-4 py-2 border border-purple-300 text-purple-700 text-sm rounded hover:bg-purple-50 transition"
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-  
-  const goToNextSection = () => {
-    if (currentSectionIndex < sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1)
-    }
-  }
-
-  const goToPreviousSection = () => {
+  const handlePreviousSection = useCallback(() => {
     if (currentSectionIndex > 0) {
       setCurrentSectionIndex(currentSectionIndex - 1)
     }
-  }
+  }, [currentSectionIndex])
 
-  const generateFullContent = (): string => {
-    return sections.map(section => section.content).filter(content => content.trim()).join('\n\n')
-  }
+  const handleNextSection = useCallback(() => {
+    if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1)
+    }
+  }, [currentSectionIndex, sections.length])
 
-  const handlePreview = () => {
-    setShowPreview(true)
-  }
+  const handlePreview = useCallback(() => {
+    if (assembledContent.trim()) {
+      onComplete(assembledContent)
+    } else {
+      showToast('warning', 'Please add some content before previewing')
+    }
+  }, [assembledContent, onComplete, showToast])
 
-  const handleComplete = () => {
-    const fullContent = generateFullContent()
-    onComplete(fullContent)
-  }
+  const handleAIAnalysis = useCallback(async () => {
+    // TODO: Implement AI analysis call
+    showToast('info', 'AI analysis feature coming soon')
+  }, [showToast])
 
-  const completedSections = sections.filter(section => section.completed).length
-  const progress = (completedSections / sections.length) * 100
+  const handleEnhanceSection = useCallback(async () => {
+    // TODO: Implement AI enhancement call
+    showToast('info', 'AI enhancement feature coming soon')
+  }, [showToast])
 
-  if (sections.length === 0) {
-    return <div>Loading...</div>
-  }
+  // Workflow handlers
+  const handleSaveAndExit = useCallback(async () => {
+    if (!assembledContent.trim()) {
+      showToast('warning', 'Please add some content before saving')
+      return
+    }
 
-  const currentSection = sections[currentSectionIndex]
+    try {
+      const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+        user_id: '',
+        content_text: assembledContent,
+        content_type: 'framework',
+        tone_used: 'professional',
+        prompt_input: formula?.name || 'Content Formula',
+        is_saved: true,
+        title: formula?.name,
+        status: 'draft'
+      }
+      
+      const saved = await saveDraft(contentData, 'marcus')
+      
+      if (saved) {
+        showToast('success', 'Content saved to Production Pipeline!')
+        if (onExitWorkflow) {
+          onExitWorkflow()
+        }
+      }
+    } catch (error) {
+      showToast('error', 'Failed to save content')
+    }
+  }, [assembledContent, formula, saveDraft, showToast, onExitWorkflow])
 
-  if (showPreview) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Content Preview</h1>
-            <p className="text-gray-600">Review your content before finishing</p>
+  const handleContinueToImages = useCallback(async () => {
+    if (!assembledContent.trim()) {
+      showToast('warning', 'Please add some content before continuing')
+      return
+    }
+
+    try {
+      const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+        user_id: '',
+        content_text: assembledContent,
+        content_type: 'framework',
+        tone_used: 'professional',
+        prompt_input: formula?.name || 'Content Formula',
+        is_saved: true,
+        title: formula?.name,
+        status: 'draft'
+      }
+      
+      const saved = await saveDraft(contentData, 'marcus')
+      
+      if (saved && onContinueToImages) {
+        showToast('success', 'Content saved! Adding image...')
+        onContinueToImages(saved.id)
+      }
+    } catch (error) {
+      showToast('error', 'Failed to save content')
+    }
+  }, [assembledContent, formula, saveDraft, showToast, onContinueToImages])
+
+  // Real-time content validation
+  useEffect(() => {
+    const checkContent = () => {
+      const content = assembledContent.toLowerCase()
+      
+      setContentChecks(prev => prev.map(check => {
+        let completed = false
+        
+        switch (check.id) {
+          case 'theme_contrast':
+            completed = content.includes('vs') || content.includes('versus') || content.includes('but') || content.includes('however')
+            break
+          case 'personal_element':
+            completed = content.includes('i ') || content.includes('my ') || content.includes('we ') || content.includes('our ')
+            break
+          case 'value_promise':
+            completed = content.includes('learn') || content.includes('discover') || content.includes('get') || content.includes('find out')
+            break
+          case 'specific_details':
+            completed = /\d+/.test(content) || content.includes('%') || content.includes('$')
+            break
+          case 'emotional_hook':
+            completed = content.includes('?') || content.includes('!') || content.includes('secret') || content.includes('mistake')
+            break
+        }
+        
+        return { ...check, completed }
+      }))
+    }
+    
+    checkContent()
+  }, [assembledContent])
+
+  // ============================================================================
+  // GUIDANCE TAB CONTENT
+  // ============================================================================
+
+  const guidanceTabs: WritingGuidanceTab[] = [
+    {
+      id: 'matters',
+      label: 'Why This Matters',
+      icon: Brain,
+      active: activeGuidanceTab === 'matters',
+      content: [
+        'This creates an "insider secret" promise. Your audience desperately wants validation that they\'re not missing critical knowledge.',
+        'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.',
+        'This psychological trigger of "insider knowledge" makes readers feel they\'re getting exclusive information.',
+        backendExample?.tips_and_guidance?.[0] || 'Focus on the psychological impact of your message.'
+      ]
+    },
+    {
+      id: 'essentials',
+      label: 'Story Essentials',
+      icon: Target,
+      active: activeGuidanceTab === 'essentials',
+      content: [
+        '✓ Personal stakes - What did you have to lose?',
+        '✓ Specific moment - When exactly did this happen?',
+        '✓ Emotional state - How did you feel?',
+        '✓ Clear outcome - What was the result?',
+        '✓ Universal lesson - What can others learn?'
+      ]
+    },
+    {
+      id: 'techniques',
+      label: 'Writing Techniques',
+      icon: Edit3,
+      active: activeGuidanceTab === 'techniques',
+      content: [
+        'Use present tense for immediate scenes: "I walk into the meeting room..."',
+        'Include sensory details: sounds, sights, physical sensations',
+        'Show don\'t tell: "My hands were shaking" vs "I was nervous"',
+        'Use specific numbers and details for credibility',
+        'End sections with transition hooks to maintain flow'
+      ]
+    },
+    {
+      id: 'reader',
+      label: 'Know Your Reader',
+      icon: Users,
+      active: activeGuidanceTab === 'reader',
+      content: [
+        `Your audience: ${formula.category === 'story' ? 'Professionals who have faced similar challenges' : 'People looking for structured solutions'}`,
+        'They want: Practical insights they can immediately apply',
+        'They fear: Making costly mistakes or missing opportunities',
+        'They value: Authentic experiences and proven frameworks',
+        ideationData?.angle ? `Your angle: ${ideationData.angle}` : 'Connect with their current situation'
+      ]
+    },
+    {
+      id: 'arc',
+      label: 'Emotional Arc',
+      icon: Heart,
+      active: activeGuidanceTab === 'arc',
+      content: [
+        '1. Hook: Curiosity and intrigue',
+        '2. Problem: Recognition and concern',
+        '3. Stakes: Tension and investment',
+        '4. Solution: Relief and hope',
+        '5. Outcome: Satisfaction and learning',
+        'Each section should build emotional momentum toward the resolution'
+      ]
+    },
+    {
+      id: 'voice',
+      label: 'Voice & Tone',
+      icon: Mic,
+      active: activeGuidanceTab === 'voice',
+      content: [
+        'Conversational but professional',
+        'Confident without being arrogant',
+        'Vulnerable about mistakes, strong about lessons learned',
+        'Use contractions: "don\'t" not "do not"',
+        'Avoid jargon unless your audience expects it',
+        'Write like you\'re talking to a colleague over coffee'
+      ]
+    }
+  ]
+
+  // ============================================================================
+  // RENDER FUNCTIONS
+  // ============================================================================
+
+  const renderSidebar = () => (
+    <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${
+      sidebarCollapsed ? 'w-16' : 'w-80'
+    }`}>
+      {/* Sidebar Header */}
+      <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+        {!sidebarCollapsed && (
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-gray-900">{formula.name}</h2>
+            <p className="text-sm text-gray-600">Section {currentSectionIndex + 1} of {totalSections}</p>
           </div>
-          <button
-            onClick={() => setShowPreview(false)}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Editing</span>
-          </button>
-        </div>
+        )}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+        </button>
+      </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="prose max-w-none">
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {generateFullContent()}
+      {/* Progress Bar */}
+      {!sidebarCollapsed && (
+        <div className="px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Progress</span>
+            <span className="text-sm text-gray-600">{overallProgress}/{totalSections}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-teal-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+          <div className="flex mt-2 space-x-1">
+            {sections.map((section, index) => (
+              <div
+                key={section.id}
+                className={`w-3 h-3 rounded-full ${
+                  section.completed 
+                    ? 'bg-green-500' 
+                    : index === currentSectionIndex 
+                      ? 'bg-blue-500' 
+                      : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Section Navigation */}
+      <div className="flex-1 overflow-y-auto">
+        {sections.map((section, index) => (
+          <button
+            key={section.id}
+            onClick={() => handleSectionNavigation(index)}
+            className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+              index === currentSectionIndex ? 'bg-teal-50 border-l-4 border-l-teal-600' : ''
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                section.completed 
+                  ? 'bg-green-500 text-white' 
+                  : index === currentSectionIndex 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-200 text-gray-600'
+              }`}>
+                {section.completed ? '✓' : index + 1}
+              </div>
+              {!sidebarCollapsed && (
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{section.title}</div>
+                  <div className="text-xs text-gray-500">
+                    {section.content.trim().split(/\s+/).length} words
+                    {section.wordCountTarget && ` / ${section.wordCountTarget} target`}
+                  </div>
+                </div>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderCurrentSectionHeader = () => (
+    <div className="border-b border-gray-200 p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{currentSection?.title}</h1>
+          <p className="text-gray-600 mt-1">{currentSection?.guidance}</p>
+        </div>
+        <button
+          onClick={onBack}
+          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+      </div>
+    </div>
+  )
+
+  const renderContentChecklist = () => (
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-900">Content Checklist</h3>
+        <span className="text-sm font-medium text-gray-600">
+          {completedContentChecks}/{totalContentChecks} 
+        </span>
+      </div>
+      <div className="space-y-2">
+        {contentChecks.map((check) => (
+          <div key={check.id} className="flex items-center space-x-2">
+            <CheckCircle className={`w-4 h-4 ${check.completed ? 'text-green-500' : 'text-gray-300'}`} />
+            <span className={`text-sm ${check.completed ? 'text-green-700' : 'text-gray-600'}`}>
+              {check.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderTemplateVariables = () => (
+    <div className="mb-6">
+      <h3 className="font-semibold text-gray-900 mb-4">Template Variables</h3>
+      <div className="space-y-4">
+        {templateVariables.map((variable) => (
+          <div key={variable.name}>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {variable.label} {variable.required && <span className="text-red-500">*</span>}
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={variable.value}
+                onChange={(e) => handleTemplateVariableChange(variable.name, e.target.value)}
+                placeholder={variable.placeholder}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+              {variable.aiSuggestion && !variable.value && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                    🤖 AI
+                  </span>
+                </div>
+              )}
+            </div>
+            {variable.aiSuggestion && (
+              <button
+                onClick={() => handleTemplateVariableChange(variable.name, variable.aiSuggestion!)}
+                className="mt-1 text-xs text-purple-600 hover:text-purple-800"
+              >
+                Use suggestion: "{variable.aiSuggestion}"
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderLivePreview = () => {
+    const getPreviewContent = () => {
+      if (previewMode === 'template') {
+        return sections.map(s => s.placeholder).join('\n\n')
+      } else if (previewMode === 'example') {
+        return backendExample?.example_post || sections.map(s => s.placeholder).join('\n\n')
+      } else {
+        // Auto mode - flicker between template and current content
+        if (assembledContent.trim()) {
+          return assembledContent
+        } else {
+          return autoFlickerIndex === 0 
+            ? sections.map(s => s.placeholder).join('\n\n')
+            : backendExample?.example_post || "Here's what they don't tell you about VC funding vs Bootstrap until you experienced both paths..."
+        }
+      }
+    }
+
+    const wordCount = getPreviewContent().trim().split(/\s+/).length
+    const variableCount = templateVariables.filter(v => v.value.trim()).length
+
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900">Live Preview</h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setPreviewMode('auto')}
+              className={`px-3 py-1 text-xs rounded-lg transition ${
+                previewMode === 'auto' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Auto
+            </button>
+            <button
+              onClick={() => setPreviewMode('template')}
+              className={`px-3 py-1 text-xs rounded-lg transition ${
+                previewMode === 'template' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Template
+            </button>
+            <button
+              onClick={() => setPreviewMode('example')}
+              className={`px-3 py-1 text-xs rounded-lg transition ${
+                previewMode === 'example' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Example
+            </button>
+          </div>
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-lg p-4 min-h-32 mb-3">
+          <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+            {getPreviewContent()}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>📏 {wordCount} words</span>
+          <span>📝 Variables: {variableCount}/{templateVariables.length}</span>
+        </div>
+      </div>
+    )
+  }
+
+  const renderWritingGuidanceTabs = () => (
+    <div className="mb-6">
+      <div className="border-b border-gray-200 mb-4">
+        <div className="flex overflow-x-auto space-x-1">
+          {guidanceTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveGuidanceTab(tab.id as GuidanceTabId)}
+              className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                tab.active 
+                  ? 'border-teal-500 text-teal-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+        {guidanceTabs.find(tab => tab.active)?.content.map((item, index) => (
+          <div key={index} className="text-sm text-gray-700 mb-2 last:mb-0">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderAIButtons = () => (
+    <div className="flex space-x-3 mb-6">
+      <button
+        onClick={handleAIAnalysis}
+        className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+      >
+        <Brain className="w-4 h-4" />
+        <span>🤖 Analyze Tone & Style</span>
+      </button>
+      <button
+        onClick={handleEnhanceSection}
+        className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition"
+      >
+        <Wand2 className="w-4 h-4" />
+        <span>✨ Enhance This Section</span>
+      </button>
+    </div>
+  )
+
+  const renderWritingArea = () => (
+    <div className="mb-6">
+      <textarea
+        value={currentSection?.content || ''}
+        onChange={(e) => handleSectionChange(e.target.value)}
+        placeholder={currentSection?.placeholder || 'Start writing...'}
+        className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+        style={{ fontSize: '16px', lineHeight: '1.6' }}
+      />
+      
+      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+        <span>
+          {currentSection?.content.trim().split(/\s+/).filter(w => w).length || 0} words
+          {currentSection?.wordCountTarget && ` / ${currentSection.wordCountTarget} target`}
+        </span>
+        <span>
+          {currentSection?.psychologyNote}
+        </span>
+      </div>
+    </div>
+  )
+
+  const renderNavigationButtons = () => (
+    <div className="flex items-center justify-between">
+      <button
+        onClick={handlePreviousSection}
+        disabled={currentSectionIndex === 0}
+        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${
+          currentSectionIndex === 0 
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Previous</span>
+      </button>
+      
+      <div className="flex space-x-3">
+        <button
+          onClick={handlePreview}
+          className="px-4 py-2 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition"
+        >
+          Preview
+        </button>
+        
+        <button
+          onClick={handleNextSection}
+          disabled={currentSectionIndex === sections.length - 1}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${
+            currentSectionIndex === sections.length - 1
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-teal-600 text-white hover:bg-teal-700'
+          }`}
+        >
+          <span>Next</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+
+  const renderWorkflowActions = () => {
+    if (!inStrictWorkflow) return null
+
+    return (
+      <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-t border-teal-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <CheckCircle className="w-5 h-5 text-teal-600" />
+            <div>
+              <h3 className="font-semibold text-teal-900">Complete Your Content</h3>
+              <p className="text-sm text-teal-700">Save your work and continue your workflow</p>
             </div>
           </div>
+          
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleSaveAndExit}
+              className="flex items-center space-x-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+            >
+              <span>💾 Save & Exit Workflow</span>
+            </button>
+            <button
+              onClick={handleContinueToImages}
+              className="flex items-center space-x-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+            >
+              <span>🖼️ Add Image</span>
+            </button>
+          </div>
         </div>
+      </div>
+    )
+  }
 
-        <div className="flex justify-center space-x-4">
-          <button
-            onClick={() => setShowPreview(false)}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-          >
-            Continue Editing
-          </button>
-          <button
-            onClick={handleComplete}
-            className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center space-x-2"
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span>Complete & Save</span>
-          </button>
-        </div>
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
+
+  if (!currentSection) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{formula.name}</h1>
-          <p className="text-gray-600">Section {currentSectionIndex + 1} of {sections.length}</p>
-        </div>
-        <button
-          onClick={onBack}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Template</span>
-        </button>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Progress</span>
-          <span>{completedSections} of {sections.length} sections completed</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-teal-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left Sidebar - Section Navigation */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sections</h3>
-            <div className="space-y-3">
-              {sections.map((section, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSectionIndex(index)}
-                  className={`w-full text-left p-3 rounded-lg transition ${
-                    index === currentSectionIndex
-                      ? 'bg-teal-50 border-2 border-teal-200 text-teal-900'
-                      : section.completed
-                      ? 'bg-green-50 border border-green-200 text-green-800'
-                      : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{index + 1}. {section.title}</span>
-                        {section.isRequired === false && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Optional</span>
-                        )}
-                      </div>
-                      <div className="text-xs mt-1 opacity-75">
-                        {section.content ? (
-                          <span>
-                            {section.content.length} chars
-                            {section.wordCountTarget && (
-                              <span className="ml-1">
-                                • ~{Math.round(section.content.split(' ').filter(word => word.length > 0).length)}/{section.wordCountTarget} words
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          'Not started'
-                        )}
-                      </div>
-                    </div>
-                    {section.completed && (
-                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-                {currentSection.title}
-              </h2>
+    <div className="h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      {renderSidebar()}
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        {renderCurrentSectionHeader()}
+        
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column */}
+              <div>
+                {renderContentChecklist()}
+                {renderTemplateVariables()}
+                {renderWritingArea()}
+                {renderAIButtons()}
+                {renderNavigationButtons()}
+              </div>
               
-              {/* Template Variables Helper */}
-              {renderTemplateHelper()}
-
-              {/* Enhanced Guidance with Rich Metadata */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start space-x-2">
-                  <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="w-full">
-                    <p className="text-sm font-medium text-blue-900 mb-1">Marcus's Guidance:</p>
-                    <p className="text-sm text-blue-800 mb-3">{currentSection.guidance}</p>
-                    
-                    {/* Rich Metadata Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-blue-200">
-                      {currentSection.wordCountTarget && (
-                        <div className="text-xs">
-                          <span className="font-medium text-blue-900">Target Length:</span>
-                          <span className="text-blue-700 ml-1">{currentSection.wordCountTarget} words</span>
-                        </div>
-                      )}
-                      
-                      {currentSection.psychologyNote && (
-                        <div className="text-xs">
-                          <span className="font-medium text-blue-900">Psychology:</span>
-                          <span className="text-blue-700 ml-1">{currentSection.psychologyNote}</span>
-                        </div>
-                      )}
-                      
-                      {currentSection.emotionalTarget && (
-                        <div className="text-xs">
-                          <span className="font-medium text-blue-900">Emotional Goal:</span>
-                          <span className="text-blue-700 ml-1">{currentSection.emotionalTarget}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Writing Area */}
-              <div className="mb-6">
-                <textarea
-                  value={currentSection.content}
-                  onChange={(e) => handleSectionChange(e.target.value)}
-                  placeholder={currentSection.placeholder}
-                  className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
-                />
-                <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <span>
-                    {currentSection.content.length} characters
-                    {currentSection.wordCountTarget && (
-                      <span className="ml-2">
-                        (~{Math.round(currentSection.content.split(' ').filter(word => word.length > 0).length)} / {currentSection.wordCountTarget} words)
-                      </span>
-                    )}
-                  </span>
-                  <span>
-                    {currentSection.isRequired === false ? (
-                      <span className="text-blue-600">Optional section</span>
-                    ) : (
-                      <span>Required section</span>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-             {/* AI Suggestions */}
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
-                  <Zap className="w-4 h-4 text-teal-600" />
-                  <span>Marcus's AI Suggestions</span>
-                </h4>
-                <AIAssistant
-                  content={currentSection.content}
-                  sectionType={currentSection.title}
-                  formulaId={formula.id}
-                  onApplySuggestion={(suggestion) => {
-                    // Apply suggestion to content
-                    const improvedContent = currentSection.content + '\n\n' + suggestion
-                    handleSectionChange(improvedContent)
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between">
-              <button
-                onClick={goToPreviousSection}
-                disabled={currentSectionIndex === 0}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${
-                  currentSectionIndex === 0
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Previous</span>
-              </button>
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={handlePreview}
-                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>Preview</span>
-                </button>
-
-                {currentSectionIndex === sections.length - 1 ? (
-                  <button
-                    onClick={handleComplete}
-                    disabled={completedSections < sections.length}
-                    className={`flex items-center space-x-2 px-6 py-2 rounded-lg transition ${
-                      completedSections < sections.length
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-teal-600 text-white hover:bg-teal-700'
-                    }`}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Complete</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={goToNextSection}
-                    className="flex items-center space-x-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
-                  >
-                    <span>Next</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
+              {/* Right Column */}
+              <div>
+                {renderLivePreview()}
+                {renderWritingGuidanceTabs()}
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Workflow Actions */}
+        {renderWorkflowActions()}
       </div>
     </div>
   )
