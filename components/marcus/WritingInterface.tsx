@@ -679,9 +679,9 @@ useEffect(() => {
       }
       
       // Include general guidance types found
-      if (backendExample?.guidance_types_found?.length > 0) {
-        structuredContent.push(`Guidance available: ${backendExample.guidance_types_found.join(', ')}`)
-      }
+if (backendExample?.guidance_types_found && backendExample.guidance_types_found.length > 0) {
+  structuredContent.push(`Guidance available: ${backendExample.guidance_types_found.join(', ')}`)
+}
       
       // Fallback to default content if no structured data
       return structuredContent.length > 0 ? structuredContent : [
