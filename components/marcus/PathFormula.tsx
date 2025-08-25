@@ -328,10 +328,22 @@ const renderIdeationContext = () => {
           bestFor: selectedFormula?.bestFor
         },
         ideation_context: ideationData ? {
-          topic: ideationData.topic,
-          angle: ideationData.angle,
-          takeaways: ideationData.takeaways
-        } : {},
+  title: ideationData.title || ideationData.topic,
+  topic: ideationData.topic,
+  angle: ideationData.angle,
+  takeaways: ideationData.takeaways,
+  content_type: ideationData.content_type || 'personal_story',
+  selected_hook: ideationData.selected_hook || ideationData.angle,
+  selected_hook_index: ideationData.selected_hook_index || 0,
+  hooks: ideationData.hooks || [ideationData.angle],
+  key_takeaways: ideationData.key_takeaways || ideationData.takeaways || [],
+  personal_story: ideationData.personal_story || '',
+  pain_points_and_struggles: ideationData.pain_points_and_struggles || '',
+  concrete_evidence: ideationData.concrete_evidence || '',
+  audience_and_relevance: ideationData.audience_and_relevance || '',
+  source_page: ideationData.source_page || 'content_formulas',
+  session_id: ideationData.session_id
+} : {},
         ai_recommendation_context: selectedFormula?._aiData ? {
           confidence: selectedFormula._aiData.confidence,
           whyPerfect: selectedFormula._aiData.whyPerfect,
@@ -347,12 +359,9 @@ const renderIdeationContext = () => {
         timestamp: new Date().toISOString(),
         
         // Real content fields
-        title: ideationData?.topic || selectedFormula?.name || 'Professional Content Example',
+        title: ideationData?.title || ideationData?.topic,
         
-        content_type: selectedFormula?.category === 'story' ? 'personal_story' : 
-                     selectedFormula?.category === 'framework' ? 'framework_post' :
-                     selectedFormula?.category === 'data' ? 'data_driven' : 
-                     selectedFormula?.category === 'lead-magnet' ? 'lead_generation' : 'professional_content',
+        content_type: ideationData?.content_type || 'personal_story', 'lead_generation' : 'professional_content',
         
         selected_hook: ideationData?.angle || selectedFormula?.example || `Professional insight about ${ideationData?.topic || 'industry challenges'}`,
         
@@ -392,12 +401,7 @@ const renderIdeationContext = () => {
           `Based on my experience with ${ideationData.topic}: Key metrics and outcomes include measurable improvements in decision-making speed, stakeholder satisfaction, and operational efficiency. Specific examples include cost savings, time reductions, and quality improvements. The evidence demonstrates clear ROI and sustainable business impact.` :
           `Professional results using ${selectedFormula?.name} approach: Improved efficiency metrics, enhanced team performance, better stakeholder outcomes. Quantifiable benefits include reduced decision time, increased accuracy, and stronger business relationships. Success measured through ${profile?.role?.includes('cfo') ? 'financial performance indicators' : profile?.role?.includes('cmo') ? 'marketing ROI and engagement metrics' : 'operational KPIs'}.`,
         
-        audience_and_relevance: `This content is specifically relevant to ${profile?.role || 'professionals'} and ${
-          profile?.role?.includes('cfo') ? 'financial leaders who need to balance numbers with people management, strategic thinking with operational execution' :
-          profile?.role?.includes('cmo') ? 'marketing leaders who must drive growth while building sustainable brand value' :
-          profile?.role?.includes('ceo') ? 'executive leaders responsible for overall business strategy and team performance' :
-          'professionals who want to advance their careers through strategic thinking and practical application'
-        }. The insights apply to daily challenges in ${ideationData?.topic || selectedFormula?.bestFor || 'professional development'} and provide actionable frameworks for immediate implementation.`,
+        audience_and_relevance: ideationData?.audience_and_relevance || '',
         
         callback_url: `${window.location.origin}/api/formulas/example/callback`
       }
