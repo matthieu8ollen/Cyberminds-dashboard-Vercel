@@ -339,7 +339,33 @@ const renderIdeationContext = () => {
           stakeholder_type: 'cfo', // or determine from user profile
         },
         request_type: 'generate_example_post',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        // Additional fields backend needs
+        title: ideationData?.topic || `${selectedFormula?.name} Example`,
+        content_type: selectedFormula?.category === 'story' ? 'personal_story' : 
+                     selectedFormula?.category === 'framework' ? 'framework_post' :
+                     selectedFormula?.category === 'data' ? 'data_driven' : 'general_content',
+        selected_hook: ideationData?.angle || `Hook for ${selectedFormula?.name}`,
+        selected_hook_index: 0,
+        hooks: ideationData?.angle ? [
+          ideationData.angle,
+          `Alternative hook for ${ideationData.topic}`,
+          `Third option: ${ideationData.topic} insights`
+        ] : [
+          `Hook for ${selectedFormula?.name}`,
+          `Alternative approach to ${selectedFormula?.name}`,
+          `Third perspective on ${selectedFormula?.name}`
+        ],
+        key_takeaways: ideationData?.takeaways || [
+          'Key insight from this experience',
+          'Important lesson learned',
+          'Practical takeaway for readers'
+        ],
+        personal_story: `Personal experience related to ${ideationData?.topic || selectedFormula?.name}`,
+        pain_points_and_struggles: `Challenges and difficulties faced during ${ideationData?.topic || selectedFormula?.name}`,
+        concrete_evidence: `Specific data, numbers, and measurable outcomes from ${ideationData?.topic || selectedFormula?.name}`,
+        audience_and_relevance: `Why this matters to ${profile?.role || 'professionals'} and how it applies to their situation`,
+        callback_url: `${window.location.origin}/api/formulas/example/callback`
       }
       
       // Call N8N webhook for formula example generation
