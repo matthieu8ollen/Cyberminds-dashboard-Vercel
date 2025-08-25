@@ -342,10 +342,10 @@ const renderIdeationContext = () => {
         timestamp: new Date().toISOString()
       }
       
-      // Call N8N webhook - same pattern as TalkWithMarcus
-      const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_MARCUS_WEBHOOK_URL
+      // Call N8N webhook for formula example generation
+      const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
       
-      const response = await fetch(N8N_WEBHOOK_URL!, {
+      const response = await fetch(FORMULA_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
