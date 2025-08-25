@@ -143,12 +143,12 @@ const parseGuidanceResponse = (rawResponse: any) => {
       section_order: section.section_order,
       guidance_types: section.guidance_types || [],
       // Flatten all the guidance details into the section
-      ...Object.keys(section).reduce((acc, key) => {
-        if (!['section_id', 'section_name', 'section_order', 'guidance_types'].includes(key)) {
-          acc[key] = section[key]
-        }
-        return acc
-      }, {})
+      ...Object.keys(section).reduce((acc: Record<string, any>, key: string) => {
+  if (!['section_id', 'section_name', 'section_order', 'guidance_types'].includes(key)) {
+    acc[key] = section[key]
+  }
+  return acc
+}, {} as Record<string, any>)
     }))
     
     return {
