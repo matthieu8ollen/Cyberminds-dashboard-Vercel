@@ -102,6 +102,20 @@ interface WritingInterfaceProps {
     section_examples?: Record<string, string>
     tips_and_guidance?: string[]
     template_variables?: Record<string, string>
+    // NEW: Support for structured guidance response
+    response_type?: string
+    writing_guidance_sections?: any[]
+    total_sections?: string
+    guidance_types_found?: string[]
+    extraction_metadata?: any
+    processing_status?: string
+    conversation_stage?: string
+  }
+  generatedExample?: {
+    generated_content?: string
+    full_post?: string
+    linkedin_ready?: string
+    timestamp?: number
   }
   inStrictWorkflow?: boolean
   onExitWorkflow?: () => void
@@ -122,6 +136,7 @@ export default function WritingInterface({
   ideationData,
   initialContent,
   backendExample,
+  generatedExample,
   inStrictWorkflow = false,
   onExitWorkflow,
   onContinueToImages
