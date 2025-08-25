@@ -60,11 +60,44 @@ export default function PathFormula({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  // Backend example state
+  const [backendExample, setBackendExample] = useState<any>(null)
+  const [isLoadingExample, setIsLoadingExample] = useState(false)
+  
   // AI enhancement system - enhance database formulas with AI recommendations
 const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 
 // Tab state management
 const [activeTab, setActiveTab] = useState<'ai-suggested' | 'framework' | 'data' | 'story' | 'lead-magnet'>('framework')
+
+// Poll for backend example response
+const pollForExampleResponse = async (sessionId: string) => {
+  const maxAttempts = 30 // 45 seconds max wait
+  let attempts = 0
+  
+  const poll = async (): Promise<any> => {
+    try {
+      const response = await fetch(`/api/marcus/callback?session_id=${sessionId}`)
+      const result = await response.json()
+      
+      if (result.success && result.data && result.type === 'final') {
+        return result.data
+      }
+      
+      attempts++
+      if (attempts >= maxAttempts) {
+        return 'TIMEOUT'
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      return poll()
+    } catch (error) {
+      return 'ERROR'
+    }
+  }
+  
+  return poll()
+}
 
 // Enhance database formulas with AI recommendations
 const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
@@ -274,13 +307,73 @@ const renderIdeationContext = () => {
     setCurrentStep('template')
   }
 
-  const handleStartWriting = () => {
-  // User has started working - enable navigation protection
-  if (onUserStartedWorking) {
-    onUserStartedWorking()
+  const handleStartWriting = async () => {
+    setIsLoadingExample(true)
+    
+    try {
+      // Generate unique session ID for this request
+      const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+      
+      // Prepare payload for backend
+      const payload = {
+        user_id: user?.id,
+        session_id: sessionId,
+        selected_formula: {
+          formula_id: selectedFormula?.id, // Use formula.id for backend matching
+          name: selectedFormula?.name,
+          category: selectedFormula?.category,
+          structure: selectedFormula?.structure
+        },
+        ideation_context: ideationData ? {
+          topic: ideationData.topic,
+          angle: ideationData.angle,
+          takeaways: ideationData.takeaways
+        } : {},
+        ai_recommendation_context: selectedFormula?._aiData ? {
+          confidence: selectedFormula._aiData.confidence,
+          whyPerfect: selectedFormula._aiData.whyPerfect,
+          source: selectedFormula._aiData.source
+        } : {},
+        user_context: {
+          role: profile?.role,
+          stakeholder_type: 'cfo', // or determine from user profile
+        },
+        request_type: 'generate_example_post',
+        timestamp: new Date().toISOString()
+      }
+      
+      // Call N8N webhook - same pattern as TalkWithMarcus
+      const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_MARCUS_WEBHOOK_URL
+      
+      const response = await fetch(N8N_WEBHOOK_URL!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      
+      const data = await response.json()
+      
+      if (data.message === "Workflow was started") {
+        // Poll for AI response - same pattern as TalkWithMarcus
+        const aiResponse = await pollForExampleResponse(sessionId)
+        
+        if (aiResponse && aiResponse !== 'TIMEOUT' && aiResponse !== 'ERROR') {
+          setBackendExample(aiResponse)
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error generating example:', error)
+      showToast('warning', 'Could not generate example, proceeding with template')
+    } finally {
+      setIsLoadingExample(false)
+      // User has started working - enable navigation protection
+      if (onUserStartedWorking) {
+        onUserStartedWorking()
+      }
+      setCurrentStep('writing')
+    }
   }
-  setCurrentStep('writing')
-}
 
   const renderFormulaSelection = () => {
   return (
@@ -564,10 +657,20 @@ const renderIdeationContext = () => {
           <div className="flex justify-center">
             <button
               onClick={handleStartWriting}
-              className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition font-medium flex items-center space-x-2"
+              disabled={isLoadingExample}
+              className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition font-medium flex items-center space-x-2 disabled:bg-gray-400"
             >
-              <span>Start Writing with This Template</span>
-              <ArrowRight className="w-4 h-4" />
+              {isLoadingExample ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Generating Example...</span>
+                </>
+              ) : (
+                <>
+                  <span>Start Writing with This Template</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -585,6 +688,10 @@ const renderIdeationContext = () => {
     onComplete={handleWritingComplete}
     ideationData={ideationData}
     initialContent={editingContent}
+    backendExample={backendExample}
+    inStrictWorkflow={!!onExitWorkflow}
+    onExitWorkflow={onExitWorkflow}
+    onContinueToImages={onContinueToImages}
   />
 )
 }
