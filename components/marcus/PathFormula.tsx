@@ -71,9 +71,9 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 // Tab state management
 const [activeTab, setActiveTab] = useState<'ai-suggested' | 'framework' | 'data' | 'story' | 'lead-magnet'>('framework')
 
-// Poll for guidance response (fast)
+// Poll for guidance response (now 2 minutes for structured processing)
 const pollForGuidanceResponse = async (sessionId: string) => {
-  const maxAttempts = 30 // 45 seconds max wait
+  const maxAttempts = 80 // 2 minutes max wait (80 * 1.5s = 120s)
   let attempts = 0
   
   const poll = async (): Promise<any> => {
