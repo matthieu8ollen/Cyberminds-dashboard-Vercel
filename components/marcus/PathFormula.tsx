@@ -100,9 +100,9 @@ const pollForGuidanceResponse = async (sessionId: string) => {
   return poll()
 }
 
-// Poll for generation response (slower)
+// Poll for generation response (2 minutes for comprehensive content generation)  
 const pollForGenerationResponse = async (sessionId: string) => {
-  const maxAttempts = 40 // 60 seconds max wait
+  const maxAttempts = 80 // 2 minutes max wait (80 * 1.5s = 120s)
   let attempts = 0
   
   const poll = async (): Promise<any> => {
