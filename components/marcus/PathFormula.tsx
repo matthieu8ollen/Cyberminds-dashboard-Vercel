@@ -77,7 +77,7 @@ const pollForExampleResponse = async (sessionId: string) => {
   
   const poll = async (): Promise<any> => {
     try {
-      const response = await fetch(`/api/marcus/callback?session_id=${sessionId}`)
+      const response = await fetch(`/api/formulas/example/callback?session_id=${sessionId}`)
       const result = await response.json()
       
       if (result.success && result.data && result.type === 'final') {
