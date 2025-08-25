@@ -361,45 +361,21 @@ const renderIdeationContext = () => {
         // Real content fields
         title: ideationData?.title || ideationData?.topic,
         
-        content_type: ideationData?.content_type || 'personal_story', 'lead_generation' : 'professional_content',
+        content_type: ideationData?.content_type || 'personal_story',
         
-        selected_hook: ideationData?.angle || selectedFormula?.example || `Professional insight about ${ideationData?.topic || 'industry challenges'}`,
+        selected_hook: ideationData?.selected_hook || ideationData?.angle,
+
+selected_hook_index: ideationData?.selected_hook_index || 0,
+
+hooks: ideationData?.hooks || [ideationData?.angle],
         
-        selected_hook_index: 0,
+        key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
         
-        hooks: ideationData?.angle ? [
-          ideationData.angle,
-          `Here's what most people don't realize about ${ideationData.topic}`,
-          `The uncomfortable truth about ${ideationData.topic}`
-        ] : selectedFormula?.example ? [
-          selectedFormula.example,
-          `What they don't teach you about ${selectedFormula.name.toLowerCase()}`,
-          `The reality of ${selectedFormula.bestFor}`
-        ] : [
-          'Professional insight hook',
-          'Industry truth hook', 
-          'Experience-based hook'
-        ],
-        
-        key_takeaways: ideationData?.takeaways || selectedFormula?.whyItWorks || [
-          'Strategic insight for professionals',
-          'Practical application in business context',
-          'Actionable lesson for career development'
-        ],
-        
-        personal_story: ideationData?.topic ? 
-          `This relates to my experience with ${ideationData.topic}. ${ideationData.angle || ''} The key insights I've gained include: ${ideationData.takeaways?.join('. ') || 'Valuable lessons learned through direct experience.'} This experience shaped my understanding of ${ideationData.topic} in ways that traditional approaches couldn't teach.` :
-          `As a ${profile?.role || 'professional'}, I've encountered situations that perfectly illustrate the principles in ${selectedFormula?.name}. ${selectedFormula?.example || ''} The approach outlined in this framework helped navigate complex challenges and deliver meaningful results.`,
-        
-        pain_points_and_struggles: ideationData?.takeaways ? 
-          `The main challenges I faced were: ${ideationData.takeaways.map(takeaway => 
-            `Understanding ${takeaway.toLowerCase()} required overcoming initial resistance and traditional thinking patterns.`
-          ).join(' ')} The most difficult aspect was balancing ${ideationData.topic || 'competing priorities'} while maintaining ${profile?.role?.includes('cfo') ? 'financial discipline' : profile?.role?.includes('cmo') ? 'marketing effectiveness' : 'operational efficiency'}.` :
-          `Common struggles in ${selectedFormula?.category || 'professional'} situations include: resistance to change, competing priorities, stakeholder alignment challenges, and the pressure to deliver results while maintaining quality standards. These challenges are particularly acute for ${profile?.role || 'professionals'} who must balance multiple objectives.`,
-        
-        concrete_evidence: ideationData?.topic ? 
-          `Based on my experience with ${ideationData.topic}: Key metrics and outcomes include measurable improvements in decision-making speed, stakeholder satisfaction, and operational efficiency. Specific examples include cost savings, time reductions, and quality improvements. The evidence demonstrates clear ROI and sustainable business impact.` :
-          `Professional results using ${selectedFormula?.name} approach: Improved efficiency metrics, enhanced team performance, better stakeholder outcomes. Quantifiable benefits include reduced decision time, increased accuracy, and stronger business relationships. Success measured through ${profile?.role?.includes('cfo') ? 'financial performance indicators' : profile?.role?.includes('cmo') ? 'marketing ROI and engagement metrics' : 'operational KPIs'}.`,
+        personal_story: ideationData?.personal_story || '',
+
+pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
+
+concrete_evidence: ideationData?.concrete_evidence || '',
         
         audience_and_relevance: ideationData?.audience_and_relevance || '',
         
