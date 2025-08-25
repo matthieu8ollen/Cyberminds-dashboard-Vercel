@@ -374,108 +374,125 @@ const renderIdeationContext = () => {
   }
 
   const handleStartWriting = async () => {
-    setIsLoadingExample(true)
+  // Check if we have ideation data - determines if we use backend AI or go direct to writing
+  const hasIdeationData = ideationData && (ideationData.topic || ideationData.title)
+  
+  if (!hasIdeationData) {
+    // Direct route: No ideation data, skip backend calls, go straight to writing
+    console.log('📝 Direct formula route: Skipping backend, using database template only')
     
-    try {
-      // Generate unique session ID for this request
-      const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-      
-      // Prepare payload for backend with REAL data
-      const payload = {
-  // Core system fields
-  user_id: user?.id,
-  session_id: sessionId,
-  request_type: 'generate_example_post',
-  timestamp: new Date().toISOString(),
-  guidance_callback_url: `${window.location.origin}/api/formulas/example/callback`,
-generation_callback_url: `${window.location.origin}/api/formulas/generation/callback`,
-  
-  // Selected formula info
-  selected_formula: {
-    formula_id: selectedFormula?.id,
-    name: selectedFormula?.name,
-    category: selectedFormula?.category,
-    structure: selectedFormula?.structure,
-    example: selectedFormula?.example,
-    whyItWorks: selectedFormula?.whyItWorks,
-    bestFor: selectedFormula?.bestFor
-  },
-  
-  // AI recommendation context
-  ai_recommendation_context: selectedFormula?._aiData ? {
-    confidence: selectedFormula._aiData.confidence,
-    whyPerfect: selectedFormula._aiData.whyPerfect,
-    source: selectedFormula._aiData.source
-  } : {},
-  
-  // User context
-  user_context: {
-    role: profile?.role,
-    stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
-                     profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
-                     profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
-  },
-  
-  // Real ideation data (at root level - what backend expects)
-  title: ideationData?.title || ideationData?.topic,
-  content_type: ideationData?.content_type || 'personal_story',
-  selected_hook: ideationData?.selected_hook || ideationData?.angle,
-  selected_hook_index: ideationData?.selected_hook_index || 0,
-  hooks: ideationData?.hooks || [ideationData?.angle],
-  key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
-  personal_story: ideationData?.personal_story || '',
-  pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
-  concrete_evidence: ideationData?.concrete_evidence || '',
-  audience_and_relevance: ideationData?.audience_and_relevance || ''
-}
-      
-      // Call N8N webhook for formula example generation
-      const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
-      
-      const response = await fetch(FORMULA_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      
-      const data = await response.json()
-      
-      if (data.message === "Workflow was started") {
-  // Poll for guidance response (fast)
-  const guidanceResponse = await pollForGuidanceResponse(sessionId)
-  if (guidanceResponse && guidanceResponse !== 'TIMEOUT' && guidanceResponse !== 'ERROR') {
-    // Parse the new structured guidance format
-    const parsedGuidance = parseGuidanceResponse(guidanceResponse)
-    if (parsedGuidance) {
-      console.log('✅ Parsed guidance response:', parsedGuidance)
-      setBackendExample(parsedGuidance)
-    } else {
-      console.log('⚠️ Failed to parse guidance response, using raw data')
-      setBackendExample(guidanceResponse)
+    // User has started working - enable navigation protection
+    if (onUserStartedWorking) {
+      onUserStartedWorking()
     }
+    setCurrentStep('writing')
+    return
   }
+
+  // Ideation-driven route: Full AI experience with backend integration
+  console.log('🚀 Ideation-driven route: Starting backend AI processing')
+  setIsLoadingExample(true)
   
-  // Poll for generation response in background (slower)
-  pollForGenerationResponse(sessionId).then(generationResponse => {
-    if (generationResponse && generationResponse !== 'TIMEOUT' && generationResponse !== 'ERROR') {
-      console.log('✅ Received generation response:', generationResponse)
-      setGeneratedExample(generationResponse)
-    }
-  })
-}
+  try {
+    // Generate unique session ID for this request
+    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    
+    // Prepare payload for backend with REAL data
+    const payload = {
+      // Core system fields
+      user_id: user?.id,
+      session_id: sessionId,
+      request_type: 'generate_example_post',
+      timestamp: new Date().toISOString(),
+      guidance_callback_url: `${window.location.origin}/api/formulas/example/callback`,
+      generation_callback_url: `${window.location.origin}/api/formulas/generation/callback`,
       
-    } catch (error) {
-      console.error('Error generating example:', error)
-      showToast('warning', 'Could not generate example, proceeding with template')
-    } finally {
-      setIsLoadingExample(false)
-      // User has started working - enable navigation protection
-      if (onUserStartedWorking) {
-        onUserStartedWorking()
+      // Selected formula info
+      selected_formula: {
+        formula_id: selectedFormula?.id,
+        name: selectedFormula?.name,
+        category: selectedFormula?.category,
+        structure: selectedFormula?.structure,
+        example: selectedFormula?.example,
+        whyItWorks: selectedFormula?.whyItWorks,
+        bestFor: selectedFormula?.bestFor
+      },
+      
+      // AI recommendation context
+      ai_recommendation_context: selectedFormula?._aiData ? {
+        confidence: selectedFormula._aiData.confidence,
+        whyPerfect: selectedFormula._aiData.whyPerfect,
+        source: selectedFormula._aiData.source
+      } : {},
+      
+      // User context
+      user_context: {
+        role: profile?.role,
+        stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
+                         profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
+                         profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
+      },
+      
+      // Real ideation data (at root level - what backend expects)
+      title: ideationData?.title || ideationData?.topic,
+      content_type: ideationData?.content_type || 'personal_story',
+      selected_hook: ideationData?.selected_hook || ideationData?.angle,
+      selected_hook_index: ideationData?.selected_hook_index || 0,
+      hooks: ideationData?.hooks || [ideationData?.angle],
+      key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
+      personal_story: ideationData?.personal_story || '',
+      pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
+      concrete_evidence: ideationData?.concrete_evidence || '',
+      audience_and_relevance: ideationData?.audience_and_relevance || ''
+    }
+          
+    // Call N8N webhook for formula example generation
+    const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
+    
+    const response = await fetch(FORMULA_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    
+    const data = await response.json()
+    
+    if (data.message === "Workflow was started") {
+      // Poll for guidance response (fast)
+      const guidanceResponse = await pollForGuidanceResponse(sessionId)
+      if (guidanceResponse && guidanceResponse !== 'TIMEOUT' && guidanceResponse !== 'ERROR') {
+        // Parse the new structured guidance format
+        const parsedGuidance = parseGuidanceResponse(guidanceResponse)
+        if (parsedGuidance) {
+          console.log('✅ Parsed guidance response:', parsedGuidance)
+          setBackendExample(parsedGuidance)
+        } else {
+          console.log('⚠️ Failed to parse guidance response, using raw data')
+          setBackendExample(guidanceResponse)
+        }
       }
-      setCurrentStep('writing')
+      
+      // Poll for generation response in background (slower)
+      pollForGenerationResponse(sessionId).then(generationResponse => {
+        if (generationResponse && generationResponse !== 'TIMEOUT' && generationResponse !== 'ERROR') {
+          console.log('✅ Received generation response:', generationResponse)
+          setGeneratedExample(generationResponse)
+        }
+      })
     }
+        
+  } catch (error) {
+    console.error('Error generating example:', error)
+    showToast('warning', 'Could not generate example, proceeding with template')
+  } finally {
+    setIsLoadingExample(false)
+    // User has started working - enable navigation protection
+    if (onUserStartedWorking) {
+      onUserStartedWorking()
+    }
+    setCurrentStep('writing')
   }
+}
 
   const renderFormulaSelection = () => {
   return (
