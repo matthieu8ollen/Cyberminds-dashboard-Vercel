@@ -316,71 +316,51 @@ const renderIdeationContext = () => {
       
       // Prepare payload for backend with REAL data
       const payload = {
-        user_id: user?.id,
-        session_id: sessionId,
-        selected_formula: {
-          formula_id: selectedFormula?.id,
-          name: selectedFormula?.name,
-          category: selectedFormula?.category,
-          structure: selectedFormula?.structure,
-          example: selectedFormula?.example,
-          whyItWorks: selectedFormula?.whyItWorks,
-          bestFor: selectedFormula?.bestFor
-        },
-        ideation_context: ideationData ? {
-  title: ideationData.title || ideationData.topic,
-  topic: ideationData.topic,
-  angle: ideationData.angle,
-  takeaways: ideationData.takeaways,
-  content_type: ideationData.content_type || 'personal_story',
-  selected_hook: ideationData.selected_hook || ideationData.angle,
-  selected_hook_index: ideationData.selected_hook_index || 0,
-  hooks: ideationData.hooks || [ideationData.angle],
-  key_takeaways: ideationData.key_takeaways || ideationData.takeaways || [],
-  personal_story: ideationData.personal_story || '',
-  pain_points_and_struggles: ideationData.pain_points_and_struggles || '',
-  concrete_evidence: ideationData.concrete_evidence || '',
-  audience_and_relevance: ideationData.audience_and_relevance || '',
-  source_page: ideationData.source_page || 'content_formulas',
-  session_id: ideationData.session_id
-} : {},
-        ai_recommendation_context: selectedFormula?._aiData ? {
-          confidence: selectedFormula._aiData.confidence,
-          whyPerfect: selectedFormula._aiData.whyPerfect,
-          source: selectedFormula._aiData.source
-        } : {},
-        user_context: {
-          role: profile?.role,
-          stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
-                           profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
-                           profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
-        },
-        request_type: 'generate_example_post',
-        timestamp: new Date().toISOString(),
-        
-        // Real content fields
-        title: ideationData?.title || ideationData?.topic,
-        
-        content_type: ideationData?.content_type || 'personal_story',
-        
-        selected_hook: ideationData?.selected_hook || ideationData?.angle,
-
-selected_hook_index: ideationData?.selected_hook_index || 0,
-
-hooks: ideationData?.hooks || [ideationData?.angle],
-        
-        key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
-        
-        personal_story: ideationData?.personal_story || '',
-
-pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
-
-concrete_evidence: ideationData?.concrete_evidence || '',
-        
-        audience_and_relevance: ideationData?.audience_and_relevance || '',
-        
-        callback_url: `${window.location.origin}/api/formulas/example/callback`
-      }
+  // Core system fields
+  user_id: user?.id,
+  session_id: sessionId,
+  request_type: 'generate_example_post',
+  timestamp: new Date().toISOString(),
+  callback_url: `${window.location.origin}/api/formulas/example/callback`,
+  
+  // Selected formula info
+  selected_formula: {
+    formula_id: selectedFormula?.id,
+    name: selectedFormula?.name,
+    category: selectedFormula?.category,
+    structure: selectedFormula?.structure,
+    example: selectedFormula?.example,
+    whyItWorks: selectedFormula?.whyItWorks,
+    bestFor: selectedFormula?.bestFor
+  },
+  
+  // AI recommendation context
+  ai_recommendation_context: selectedFormula?._aiData ? {
+    confidence: selectedFormula._aiData.confidence,
+    whyPerfect: selectedFormula._aiData.whyPerfect,
+    source: selectedFormula._aiData.source
+  } : {},
+  
+  // User context
+  user_context: {
+    role: profile?.role,
+    stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
+                     profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
+                     profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
+  },
+  
+  // Real ideation data (at root level - what backend expects)
+  title: ideationData?.title || ideationData?.topic,
+  content_type: ideationData?.content_type || 'personal_story',
+  selected_hook: ideationData?.selected_hook || ideationData?.angle,
+  selected_hook_index: ideationData?.selected_hook_index || 0,
+  hooks: ideationData?.hooks || [ideationData?.angle],
+  key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
+  personal_story: ideationData?.personal_story || '',
+  pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
+  concrete_evidence: ideationData?.concrete_evidence || '',
+  audience_and_relevance: ideationData?.audience_and_relevance || ''
+}
       
       // Call N8N webhook for formula example generation
       const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
