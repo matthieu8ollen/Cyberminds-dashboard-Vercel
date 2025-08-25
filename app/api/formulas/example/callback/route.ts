@@ -8,20 +8,28 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🎯 Received formula example from backend:', body)
     
-    const { session_id, example_post, section_examples, template_variables, tips_and_guidance } = body
-    
-    if (!session_id) {
-      return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
-    }
-    
-    // Store the complete example response
-    exampleResponses.set(session_id, {
-      example_post,
-      section_examples: section_examples || {},
-      template_variables: template_variables || {},
-      tips_and_guidance: tips_and_guidance || [],
-      timestamp: body.timestamp || Date.now()
-    })
+    const { session_id, response_type, writing_guidance_sections, total_sections, guidance_types_found, extraction_metadata } = body
+
+if (!session_id) {
+  return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+}
+
+// Store the complete guidance response (new format)
+exampleResponses.set(session_id, {
+  response_type,
+  writing_guidance_sections: writing_guidance_sections || [],
+  total_sections,
+  guidance_types_found: guidance_types_found || [],
+  extraction_metadata: extraction_metadata || {},
+  processing_status: body.processing_status,
+  conversation_stage: body.conversation_stage,
+  // Legacy fields for backward compatibility
+  example_post: body.example_post || '',
+  section_examples: body.section_examples || {},
+  template_variables: body.template_variables || {},
+  tips_and_guidance: body.tips_and_guidance || [],
+  timestamp: body.timestamp || Date.now()
+})
     
     console.log('✅ Stored example response for session:', session_id)
     return NextResponse.json({ success: true, received: true })
