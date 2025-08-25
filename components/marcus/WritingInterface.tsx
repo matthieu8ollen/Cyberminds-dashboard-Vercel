@@ -163,34 +163,116 @@ export default function WritingInterface({
   const [autoFlickerIndex, setAutoFlickerIndex] = useState(0)
 
   // ============================================================================
-  // INITIALIZATION
+// DEBUG LOGGING
+// ============================================================================
+
+// Debug structured guidance data
+useEffect(() => {
+  if (backendExample?.writing_guidance_sections) {
+    console.log('📝 Structured Guidance Received:', {
+      response_type: backendExample.response_type,
+      total_sections: backendExample.total_sections,
+      guidance_types_found: backendExample.guidance_types_found,
+      sections_count: backendExample.writing_guidance_sections.length,
+      sections_preview: backendExample.writing_guidance_sections.map((s: any) => ({
+        section_name: s.section_name,
+        guidance_types: s.guidance_types,
+        keys: Object.keys(s)
+      }))
+    })
+  }
+}, [backendExample])
+
   // ============================================================================
+// STRUCTURED GUIDANCE HELPERS
+// ============================================================================
+
+// Extract guidance from structured backend response
+const extractGuidanceFromStructured = (structuredSection: any): string => {
+  if (!structuredSection) return ''
+  
+  const guidanceElements: string[] = []
+  
+  // Extract different types of guidance based on backend response format
+  Object.keys(structuredSection).forEach(key => {
+    if (key.includes('guidance') && structuredSection[key]) {
+      const guidanceData = structuredSection[key]
+      if (typeof guidanceData === 'string') {
+        guidanceElements.push(guidanceData)
+      } else if (typeof guidanceData === 'object') {
+        // Extract nested guidance fields
+        Object.keys(guidanceData).forEach(subKey => {
+          if (guidanceData[subKey] && typeof guidanceData[subKey] === 'string') {
+            guidanceElements.push(`${subKey}: ${guidanceData[subKey]}`)
+          }
+        })
+      }
+    }
+  })
+  
+  return guidanceElements.join('\n\n') || ''
+}
+
+// Extract content examples from structured response
+const extractContentFromStructured = (structuredSection: any, sectionTitle: string): string => {
+  if (!structuredSection) return ''
+  
+  // Look for content examples in various formats
+  if (structuredSection.content_example) return structuredSection.content_example
+  if (structuredSection.example_content) return structuredSection.example_content
+  if (structuredSection.sample_content) return structuredSection.sample_content
+  
+  // Check for section-specific content
+  const titleKey = sectionTitle.toLowerCase().replace(/\s+/g, '_')
+  if (structuredSection[titleKey]) return structuredSection[titleKey]
+  
+  return ''
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
   // Initialize sections from formula structure
-  useEffect(() => {
-    const initializedSections: SectionData[] = formula.structure.map((step, index) => {
-      const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
-      
-      return {
-        id: `section-${index}`,
-        title: title.trim(),
-        content: backendExample?.section_examples?.[title.trim()] || '',
-        guidance: guidance || getGuidanceForSection(formula.id, title.trim(), index),
-        placeholder: getPlaceholderForSection(formula.id, title.trim(), index),
-        completed: false,
-        wordCountTarget: getWordCountTarget(title.trim()),
-        wordCountMin: Math.floor(getWordCountTarget(title.trim()) * 0.7),
-        psychologyNote: getPsychologyNote(title.trim()),
-        emotionalTarget: getEmotionalTarget(title.trim()),
-        isRequired: isRequiredSection(title.trim()),
-        contentChecks: getContentChecks(title.trim()),
-        completedChecks: []
-      }
-    })
+useEffect(() => {
+  const initializedSections: SectionData[] = formula.structure.map((step, index) => {
+    const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
+    const cleanTitle = title.trim()
     
-    setSections(initializedSections)
-  }, [formula, backendExample])
-
+    // Find matching structured guidance section by name or order
+    const structuredGuidance = backendExample?.writing_guidance_sections?.find(
+      (section: any) => 
+        section.section_name === cleanTitle || 
+        section.section_order === index ||
+        section.section_id === `section-${index}`
+    )
+    
+    // Extract structured content and guidance
+    const structuredGuidanceText = extractGuidanceFromStructured(structuredGuidance)
+    const structuredContent = extractContentFromStructured(structuredGuidance, cleanTitle)
+    
+    return {
+      id: `section-${index}`,
+      title: cleanTitle,
+      // Prioritize structured content, then legacy format, then empty
+      content: structuredContent || backendExample?.section_examples?.[cleanTitle] || '',
+      // Prioritize structured guidance, then legacy, then default
+      guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+      placeholder: getPlaceholderForSection(formula.id, cleanTitle, index),
+      completed: false,
+      wordCountTarget: getWordCountTarget(cleanTitle),
+      wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
+      psychologyNote: getPsychologyNote(cleanTitle),
+      emotionalTarget: getEmotionalTarget(cleanTitle),
+      isRequired: isRequiredSection(cleanTitle),
+      contentChecks: getContentChecks(cleanTitle),
+      completedChecks: []
+    }
+  })
+  
+  setSections(initializedSections)
+}, [formula, backendExample])
+  
   // Initialize template variables
   useEffect(() => {
     const variables = extractTemplateVariables(formula, ideationData, backendExample)
@@ -571,31 +653,79 @@ export default function WritingInterface({
   // ============================================================================
 
   const guidanceTabs: WritingGuidanceTab[] = [
-    {
-      id: 'matters',
-      label: 'Why This Matters',
-      icon: Brain,
-      active: activeGuidanceTab === 'matters',
-      content: [
+  {
+    id: 'matters',
+    label: 'Why This Matters',
+    icon: Brain,
+    active: activeGuidanceTab === 'matters',
+    content: (() => {
+      const structuredContent: string[] = []
+      
+      // Extract psychological insights from structured guidance
+      if (backendExample?.writing_guidance_sections) {
+        backendExample.writing_guidance_sections.forEach((section: any) => {
+          // Look for psychology-related guidance
+          Object.keys(section).forEach(key => {
+            if (key.includes('psychology') || key.includes('why_it_works') || key.includes('impact')) {
+              const value = section[key]
+              if (typeof value === 'string' && value.trim()) {
+                structuredContent.push(value)
+              } else if (typeof value === 'object' && value.explanation) {
+                structuredContent.push(value.explanation)
+              }
+            }
+          })
+        })
+      }
+      
+      // Include general guidance types found
+      if (backendExample?.guidance_types_found?.length > 0) {
+        structuredContent.push(`Guidance available: ${backendExample.guidance_types_found.join(', ')}`)
+      }
+      
+      // Fallback to default content if no structured data
+      return structuredContent.length > 0 ? structuredContent : [
         'This creates an "insider secret" promise. Your audience desperately wants validation that they\'re not missing critical knowledge.',
         'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.',
         'This psychological trigger of "insider knowledge" makes readers feel they\'re getting exclusive information.',
         backendExample?.tips_and_guidance?.[0] || 'Focus on the psychological impact of your message.'
       ]
-    },
+    })()
+  },
     {
-      id: 'essentials',
-      label: 'Story Essentials',
-      icon: Target,
-      active: activeGuidanceTab === 'essentials',
-      content: [
-        '✓ Personal stakes - What did you have to lose?',
-        '✓ Specific moment - When exactly did this happen?',
-        '✓ Emotional state - How did you feel?',
-        '✓ Clear outcome - What was the result?',
-        '✓ Universal lesson - What can others learn?'
-      ]
-    },
+      {
+  id: 'essentials',
+  label: 'Story Essentials',
+  icon: Target,
+  active: activeGuidanceTab === 'essentials',
+  content: (() => {
+    const structuredEssentials: string[] = []
+    
+    // Extract essential guidance from structured response
+    if (backendExample?.writing_guidance_sections) {
+      backendExample.writing_guidance_sections.forEach((section: any) => {
+        Object.keys(section).forEach(key => {
+          if (key.includes('essential') || key.includes('requirement') || key.includes('must_include')) {
+            const value = section[key]
+            if (typeof value === 'string') {
+              structuredEssentials.push(`✓ ${value}`)
+            } else if (Array.isArray(value)) {
+              value.forEach(item => structuredEssentials.push(`✓ ${item}`))
+            }
+          }
+        })
+      })
+    }
+    
+    return structuredEssentials.length > 0 ? structuredEssentials : [
+      '✓ Personal stakes - What did you have to lose?',
+      '✓ Specific moment - When exactly did this happened?',
+      '✓ Emotional state - How did you feel?',
+      '✓ Clear outcome - What was the result?',
+      '✓ Universal lesson - What can others learn?'
+    ]
+  })()
+},
     {
       id: 'techniques',
       label: 'Writing Techniques',
