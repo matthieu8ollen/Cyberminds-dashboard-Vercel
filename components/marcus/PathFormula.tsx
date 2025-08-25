@@ -62,6 +62,7 @@ export default function PathFormula({
   
   // Backend example state
   const [backendExample, setBackendExample] = useState<any>(null)
+const [generatedExample, setGeneratedExample] = useState<any>(null)
   const [isLoadingExample, setIsLoadingExample] = useState(false)
   
   // AI enhancement system - enhance database formulas with AI recommendations
@@ -70,14 +71,43 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 // Tab state management
 const [activeTab, setActiveTab] = useState<'ai-suggested' | 'framework' | 'data' | 'story' | 'lead-magnet'>('framework')
 
-// Poll for backend example response
-const pollForExampleResponse = async (sessionId: string) => {
+// Poll for guidance response (fast)
+const pollForGuidanceResponse = async (sessionId: string) => {
   const maxAttempts = 30 // 45 seconds max wait
   let attempts = 0
   
   const poll = async (): Promise<any> => {
     try {
       const response = await fetch(`/api/formulas/example/callback?session_id=${sessionId}`)
+      const result = await response.json()
+      
+      if (result.success && result.data && result.type === 'final') {
+        return result.data
+      }
+      
+      attempts++
+      if (attempts >= maxAttempts) {
+        return 'TIMEOUT'
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      return poll()
+    } catch (error) {
+      return 'ERROR'
+    }
+  }
+  
+  return poll()
+}
+
+// Poll for generation response (slower)
+const pollForGenerationResponse = async (sessionId: string) => {
+  const maxAttempts = 40 // 60 seconds max wait
+  let attempts = 0
+  
+  const poll = async (): Promise<any> => {
+    try {
+      const response = await fetch(`/api/formulas/generation/callback?session_id=${sessionId}`)
       const result = await response.json()
       
       if (result.success && result.data && result.type === 'final') {
@@ -321,7 +351,8 @@ const renderIdeationContext = () => {
   session_id: sessionId,
   request_type: 'generate_example_post',
   timestamp: new Date().toISOString(),
-  callback_url: `${window.location.origin}/api/formulas/example/callback`,
+  guidance_callback_url: `${window.location.origin}/api/formulas/example/callback`,
+generation_callback_url: `${window.location.origin}/api/formulas/generation/callback`,
   
   // Selected formula info
   selected_formula: {
@@ -374,13 +405,19 @@ const renderIdeationContext = () => {
       const data = await response.json()
       
       if (data.message === "Workflow was started") {
-        // Poll for AI response - same pattern as TalkWithMarcus
-        const aiResponse = await pollForExampleResponse(sessionId)
-        
-        if (aiResponse && aiResponse !== 'TIMEOUT' && aiResponse !== 'ERROR') {
-          setBackendExample(aiResponse)
-        }
-      }
+  // Poll for guidance response (fast)
+  const guidanceResponse = await pollForGuidanceResponse(sessionId)
+  if (guidanceResponse && guidanceResponse !== 'TIMEOUT' && guidanceResponse !== 'ERROR') {
+    setBackendExample(guidanceResponse)
+  }
+  
+  // Poll for generation response in background (slower)
+  pollForGenerationResponse(sessionId).then(generationResponse => {
+    if (generationResponse && generationResponse !== 'TIMEOUT' && generationResponse !== 'ERROR') {
+      setGeneratedExample(generationResponse)
+    }
+  })
+}
       
     } catch (error) {
       console.error('Error generating example:', error)
