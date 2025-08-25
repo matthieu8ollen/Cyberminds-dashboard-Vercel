@@ -112,17 +112,47 @@ interface WritingInterfaceProps {
     conversation_stage?: string
   }
   generatedExample?: {
-    generated_content?: string
-    full_post?: string
-    linkedin_ready?: string
-    timestamp?: number
+  response_type?: string
+  processing_status?: string
+  total_sections?: string
+  total_variables_filled?: string
+  validation_score?: string
+  extraction_timestamp?: string
+  generated_content?: {
+    complete_post?: string
+    post_analytics?: {
+      word_count?: string
+      character_count?: string
+      paragraph_count?: string
+      numbered_lists?: string
+      has_hook?: string
+      ends_with_cta?: string
+      contains_metrics?: string
+    }
   }
+  sections_data?: any[]
+  all_filled_variables?: Record<string, any>
+  template_validation?: {
+    all_sections_found?: string
+    sections_with_variables?: string
+    total_variables_found?: string
+    validation_score?: string
+    all_variables_filled?: string
+    section_validation?: any[]
+  }
+  extraction_metadata?: any
+  conversation_stage?: string
+  timestamp?: number
+  // Legacy fields for backward compatibility
+  full_post?: string
+  linkedin_ready?: string
+}
   inStrictWorkflow?: boolean
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
 }
 
-type PreviewMode = 'auto' | 'template' | 'example'
+type PreviewMode = 'auto' | 'template' | 'example' | 'generated'
 type GuidanceTabId = 'matters' | 'essentials' | 'techniques' | 'reader' | 'arc' | 'voice'
 
 // ============================================================================
@@ -182,6 +212,23 @@ useEffect(() => {
     })
   }
 }, [backendExample])
+
+  // Debug generated content data
+useEffect(() => {
+  if (generatedExample?.generated_content?.complete_post) {
+    console.log('🎯 Generated Content Received:', {
+      response_type: generatedExample.response_type,
+      processing_status: generatedExample.processing_status,
+      validation_score: generatedExample.validation_score,
+      total_sections: generatedExample.total_sections,
+      total_variables_filled: generatedExample.total_variables_filled,
+      post_analytics: generatedExample.generated_content.post_analytics,
+      sections_count: generatedExample.sections_data?.length,
+      complete_post_length: generatedExample.generated_content.complete_post?.length,
+      template_validation: generatedExample.template_validation
+    })
+  }
+}, [generatedExample])
 
   // ============================================================================
 // STRUCTURED GUIDANCE HELPERS
@@ -951,21 +998,23 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
 
   const renderLivePreview = () => {
     const getPreviewContent = () => {
-      if (previewMode === 'template') {
-        return sections.map(s => s.placeholder).join('\n\n')
-      } else if (previewMode === 'example') {
-        return backendExample?.example_post || sections.map(s => s.placeholder).join('\n\n')
-      } else {
-        // Auto mode - flicker between template and current content
-        if (assembledContent.trim()) {
-          return assembledContent
-        } else {
-          return autoFlickerIndex === 0 
-            ? sections.map(s => s.placeholder).join('\n\n')
-            : backendExample?.example_post || "Here's what they don't tell you about VC funding vs Bootstrap until you experienced both paths..."
-        }
-      }
+  if (previewMode === 'template') {
+    return sections.map(s => s.placeholder).join('\n\n')
+  } else if (previewMode === 'example') {
+    return backendExample?.example_post || sections.map(s => s.placeholder).join('\n\n')
+  } else if (previewMode === 'generated') {
+    return generatedExample?.generated_content?.complete_post || 'AI-generated content will appear here...'
+  } else {
+    // Auto mode - flicker between template and current content
+    if (assembledContent.trim()) {
+      return assembledContent
+    } else {
+      return autoFlickerIndex === 0 
+        ? sections.map(s => s.placeholder).join('\n\n')
+        : backendExample?.example_post || "Here's what they don't tell you about VC funding vs Bootstrap until you experienced both paths..."
     }
+  }
+}
 
     const wordCount = getPreviewContent().trim().split(/\s+/).length
     const variableCount = templateVariables.filter(v => v.value.trim()).length
@@ -991,14 +1040,24 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
             >
               Template
             </button>
-            <button
-              onClick={() => setPreviewMode('example')}
-              className={`px-3 py-1 text-xs rounded-lg transition ${
-                previewMode === 'example' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Example
-            </button>
+           <button
+  onClick={() => setPreviewMode('example')}
+  className={`px-3 py-1 text-xs rounded-lg transition ${
+    previewMode === 'example' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+  }`}
+>
+  Example
+</button>
+{generatedExample?.generated_content?.complete_post && (
+  <button
+    onClick={() => setPreviewMode('generated')}
+    className={`px-3 py-1 text-xs rounded-lg transition ${
+      previewMode === 'generated' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+    }`}
+  >
+    🤖 AI Generated
+  </button>
+)}
           </div>
         </div>
         
@@ -1048,23 +1107,41 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
   )
 
   const renderAIButtons = () => (
-    <div className="flex space-x-3 mb-6">
+  <div className="flex space-x-3 mb-6">
+    {generatedExample?.generated_content?.complete_post && (
       <button
-        onClick={handleAIAnalysis}
-        className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+        onClick={() => {
+          // Use AI-generated content to populate current section or all sections
+          if (currentSection && generatedExample.generated_content?.complete_post) {
+            const confirmUse = window.confirm('Replace your current content with AI-generated content?')
+            if (confirmUse) {
+              handleSectionChange(generatedExample.generated_content.complete_post)
+              showToast('success', 'AI-generated content applied!')
+            }
+          }
+        }}
+        className="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
       >
-        <Brain className="w-4 h-4" />
-        <span>🤖 Analyze Tone & Style</span>
+        <Sparkles className="w-4 h-4" />
+        <span>✨ Use AI Content</span>
       </button>
-      <button
-        onClick={handleEnhanceSection}
-        className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition"
-      >
-        <Wand2 className="w-4 h-4" />
-        <span>✨ Enhance This Section</span>
-      </button>
-    </div>
-  )
+    )}
+    <button
+      onClick={handleAIAnalysis}
+      className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+    >
+      <Brain className="w-4 h-4" />
+      <span>🤖 Analyze Tone & Style</span>
+    </button>
+    <button
+      onClick={handleEnhanceSection}
+      className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition"
+    >
+      <Wand2 className="w-4 h-4" />
+      <span>✨ Enhance This Section</span>
+    </button>
+  </div>
+)
 
   const renderWritingArea = () => (
     <div className="mb-6">
