@@ -129,6 +129,42 @@ const pollForGenerationResponse = async (sessionId: string) => {
   return poll()
 }
 
+// Parse the new backend guidance response format
+const parseGuidanceResponse = (rawResponse: any) => {
+  if (!rawResponse || !rawResponse.writing_guidance_sections) {
+    return null
+  }
+  
+  try {
+    // Transform the structured guidance into the format WritingInterface expects
+    const parsedSections = rawResponse.writing_guidance_sections.map((section: any) => ({
+      section_id: section.section_id,
+      section_name: section.section_name,
+      section_order: section.section_order,
+      guidance_types: section.guidance_types || [],
+      // Flatten all the guidance details into the section
+      ...Object.keys(section).reduce((acc, key) => {
+        if (!['section_id', 'section_name', 'section_order', 'guidance_types'].includes(key)) {
+          acc[key] = section[key]
+        }
+        return acc
+      }, {})
+    }))
+    
+    return {
+      response_type: rawResponse.response_type,
+      total_sections: rawResponse.total_sections,
+      writing_guidance_sections: parsedSections,
+      guidance_types_found: rawResponse.guidance_types_found,
+      extraction_metadata: rawResponse.extraction_metadata,
+      processing_status: rawResponse.processing_status
+    }
+  } catch (error) {
+    console.error('Error parsing guidance response:', error)
+    return null
+  }
+}
+
 // Enhance database formulas with AI recommendations
 const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations: any[]) => {
   if (!aiRecommendations || aiRecommendations.length === 0) {
@@ -408,12 +444,21 @@ generation_callback_url: `${window.location.origin}/api/formulas/generation/call
   // Poll for guidance response (fast)
   const guidanceResponse = await pollForGuidanceResponse(sessionId)
   if (guidanceResponse && guidanceResponse !== 'TIMEOUT' && guidanceResponse !== 'ERROR') {
-    setBackendExample(guidanceResponse)
+    // Parse the new structured guidance format
+    const parsedGuidance = parseGuidanceResponse(guidanceResponse)
+    if (parsedGuidance) {
+      console.log('✅ Parsed guidance response:', parsedGuidance)
+      setBackendExample(parsedGuidance)
+    } else {
+      console.log('⚠️ Failed to parse guidance response, using raw data')
+      setBackendExample(guidanceResponse)
+    }
   }
   
   // Poll for generation response in background (slower)
   pollForGenerationResponse(sessionId).then(generationResponse => {
     if (generationResponse && generationResponse !== 'TIMEOUT' && generationResponse !== 'ERROR') {
+      console.log('✅ Received generation response:', generationResponse)
       setGeneratedExample(generationResponse)
     }
   })
@@ -746,6 +791,7 @@ generation_callback_url: `${window.location.origin}/api/formulas/generation/call
     ideationData={ideationData}
     initialContent={editingContent}
     backendExample={backendExample}
+    generatedExample={generatedExample}
     inStrictWorkflow={!!onExitWorkflow}
     onExitWorkflow={onExitWorkflow}
     onContinueToImages={onContinueToImages}
