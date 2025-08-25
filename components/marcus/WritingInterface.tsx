@@ -692,40 +692,39 @@ useEffect(() => {
       ]
     })()
   },
-    {
-      {
-  id: 'essentials',
-  label: 'Story Essentials',
-  icon: Target,
-  active: activeGuidanceTab === 'essentials',
-  content: (() => {
-    const structuredEssentials: string[] = []
-    
-    // Extract essential guidance from structured response
-    if (backendExample?.writing_guidance_sections) {
-      backendExample.writing_guidance_sections.forEach((section: any) => {
-        Object.keys(section).forEach(key => {
-          if (key.includes('essential') || key.includes('requirement') || key.includes('must_include')) {
-            const value = section[key]
-            if (typeof value === 'string') {
-              structuredEssentials.push(`✓ ${value}`)
-            } else if (Array.isArray(value)) {
-              value.forEach(item => structuredEssentials.push(`✓ ${item}`))
+  {
+    id: 'essentials',
+    label: 'Story Essentials',
+    icon: Target,
+    active: activeGuidanceTab === 'essentials',
+    content: (() => {
+      const structuredEssentials: string[] = []
+      
+      // Extract essential guidance from structured response
+      if (backendExample?.writing_guidance_sections) {
+        backendExample.writing_guidance_sections.forEach((section: any) => {
+          Object.keys(section).forEach(key => {
+            if (key.includes('essential') || key.includes('requirement') || key.includes('must_include')) {
+              const value = section[key]
+              if (typeof value === 'string') {
+                structuredEssentials.push(`✓ ${value}`)
+              } else if (Array.isArray(value)) {
+                value.forEach(item => structuredEssentials.push(`✓ ${item}`))
+              }
             }
-          }
+          })
         })
-      })
-    }
-    
-    return structuredEssentials.length > 0 ? structuredEssentials : [
-      '✓ Personal stakes - What did you have to lose?',
-      '✓ Specific moment - When exactly did this happened?',
-      '✓ Emotional state - How did you feel?',
-      '✓ Clear outcome - What was the result?',
-      '✓ Universal lesson - What can others learn?'
-    ]
-  })()
-},
+      }
+      
+      return structuredEssentials.length > 0 ? structuredEssentials : [
+        '✓ Personal stakes - What did you have to lose?',
+        '✓ Specific moment - When exactly did this happen?',
+        '✓ Emotional state - How did you feel?',
+        '✓ Clear outcome - What was the result?',
+        '✓ Universal lesson - What can others learn?'
+      ]
+    })()
+  },
     {
       id: 'techniques',
       label: 'Writing Techniques',
