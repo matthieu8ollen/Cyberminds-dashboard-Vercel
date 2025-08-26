@@ -1613,5 +1613,6 @@ return (
     
     {/* Modals */}
     {renderFullDraftModal()}
+  </div>
   )
 }
