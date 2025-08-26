@@ -355,7 +355,7 @@ useEffect(() => {
   } else {
     setTemplateVariables([]) // Clear variables when no section
   }
-}, [formula, currentSection?.title, ideationData, backendExample, sections])
+}, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
 
   // Initialize content checks
   useEffect(() => {
@@ -468,7 +468,7 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
     const sectionGuidance = backendExample.writing_guidance_sections.find(
       (section: any) => {
         const matchesName = section.section_name === currentSectionTitle
-        const matchesOrder = section.section_order === sections.findIndex(s => s.title === currentSectionTitle)
+        const matchesOrder = typeof section.section_order === 'number' && section.section_order >= 0
         const matchesId = section.section_id === currentSectionTitle.toLowerCase().replace(/\s+/g, '_')
         
         console.log('🔍 Checking section match:', {
