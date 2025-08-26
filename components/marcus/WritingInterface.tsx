@@ -1139,11 +1139,23 @@ const renderTemplateVariables = () => (
             </div>
             {variable.aiSuggestion && (
               <button
-                onClick={() => handleTemplateVariableChange(variable.name, variable.aiSuggestion!)}
-                className="mt-1 text-xs text-purple-600 hover:text-purple-800"
-              >
-                Use suggestion: "{variable.aiSuggestion}"
-              </button>
+  onClick={() => {
+    handleTemplateVariableChange(variable.name, variable.aiSuggestion!)
+    // Also update the writing area with the variable
+    const currentContent = currentSection?.content || ''
+    const placeholder = `[${variable.name}]`
+    const newContent = currentContent.includes(placeholder) 
+      ? currentContent.replace(placeholder, variable.aiSuggestion!)
+      : currentContent
+    if (newContent !== currentContent) {
+      handleSectionChange(newContent)
+    }
+  }}
+  className="mt-1 text-xs text-purple-600 hover:text-purple-800 flex items-center space-x-1"
+>
+  <span>🤖</span>
+  <span>Use AI suggestion</span>
+</button>
             )}
           </div>
         ))}
