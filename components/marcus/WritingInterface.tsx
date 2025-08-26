@@ -339,10 +339,6 @@ useEffect(() => {
     console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
   }
 }, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
-  
-  // Computed values
-  const currentSection = sections[currentSectionIndex]
-  const totalSections = sections.length
 
   // Initialize content checks
   useEffect(() => {
