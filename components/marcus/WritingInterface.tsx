@@ -18,7 +18,8 @@ import {
   Brain,
   Lightbulb,
   Edit3,
-  Wand2
+  Wand2,
+  X
 } from 'lucide-react'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
@@ -1169,43 +1170,24 @@ const renderTemplateVariables = () => (
 )
 
   const renderLivePreview = () => {
-    const getPreviewContent = () => {
-  if (previewMode === 'template') {
-  // Show current section template with variables filled
-  let template = getTemplatePlaceholder(currentSection?.title || '', formula, currentSectionIndex)
-  templateVariables.forEach(variable => {
-    const placeholder = `[${variable.name}]`
-    const value = variable.value || variable.aiSuggestion || placeholder
-    template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
-  })
-  return template
-} else if (previewMode === 'example') {
-    return backendExample?.example_post || currentSection?.placeholder || ''
-  } else if (previewMode === 'generated') {
-    return generatedExample?.generated_content?.complete_post || 'AI-generated content will appear here...'
-  } else {
-  // Auto mode - flicker between current section template and generated (slower)
-  if (currentSection?.content.trim() && currentSection.content !== currentSection.placeholder) {
-    return currentSection.content
-  } else {
-    if (autoFlickerIndex === 0) {
-      // Show template with variables filled
-      let template = currentSection?.placeholder || ''
+  const getPreviewContent = () => {
+    if (previewMode === 'template') {
+      // Show current section template with variables filled
+      let template = getTemplatePlaceholder(currentSection?.title || '', formula, currentSectionIndex)
       templateVariables.forEach(variable => {
         const placeholder = `[${variable.name}]`
-        const value = variable.aiSuggestion || placeholder
+        const value = variable.value || variable.aiSuggestion || placeholder
         template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
       })
       return template
-    } else {
-      // Show backend example for this section if available
-      return backendExample?.section_examples?.[currentSection?.title] || 
-             generatedExample?.generated_content?.complete_post?.split('\n\n')[currentSectionIndex] ||
-             currentSection?.placeholder || ''
+    } else if (previewMode === 'example') {
+      // Show backend example for current section only
+      return backendExample?.section_examples?.[currentSection?.title] || currentSection?.placeholder || ''
     }
+    
+    // Default to template mode
+    return getTemplatePlaceholder(currentSection?.title || '', formula, currentSectionIndex)
   }
-}
-}
 
     const wordCount = getPreviewContent().trim().split(/\s+/).length
     const variableCount = templateVariables.filter(v => v.value.trim()).length
@@ -1215,41 +1197,37 @@ const renderTemplateVariables = () => (
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Live Preview</h3>
           <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setPreviewMode('auto')}
-              className={`px-3 py-1 text-xs rounded-lg transition ${
-                previewMode === 'auto' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Auto
-            </button>
-            <button
-              onClick={() => setPreviewMode('template')}
-              className={`px-3 py-1 text-xs rounded-lg transition ${
-                previewMode === 'template' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Template
-            </button>
-           <button
-  onClick={() => setPreviewMode('example')}
-  className={`px-3 py-1 text-xs rounded-lg transition ${
-    previewMode === 'example' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-  }`}
->
-  Example
-</button>
-{generatedExample?.generated_content?.complete_post && (
   <button
-    onClick={() => setPreviewMode('generated')}
+    onClick={() => setPreviewMode('template')}
     className={`px-3 py-1 text-xs rounded-lg transition ${
-      previewMode === 'generated' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+      previewMode === 'template' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
     }`}
   >
-    🤖 AI Generated
+    Template
   </button>
-)}
-          </div>
+  <button
+    onClick={() => setPreviewMode('example')}
+    className={`px-3 py-1 text-xs rounded-lg transition ${
+      previewMode === 'example' ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+    }`}
+  >
+    Example
+  </button>
+  <button
+    onClick={() => setShowFullDraftModal(true)}
+    className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+  >
+    View Full Draft
+  </button>
+  {generatedExample?.generated_content?.complete_post && (
+    <button
+      onClick={() => setShowAISidebar(true)}
+      className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+    >
+      AI Content
+    </button>
+  )}
+</div>
         </div>
         
         <div className="bg-white border border-gray-200 rounded-lg p-4 min-h-32 mb-3">
@@ -1434,24 +1412,102 @@ const renderTemplateVariables = () => (
   }
 
   // ============================================================================
-  // MAIN RENDER
-  // ============================================================================
+// MODAL COMPONENTS
+// ============================================================================
 
-  if (!currentSection) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    )
-  }
+const renderFullDraftModal = () => {
+  if (!showFullDraftModal) return null
 
   return (
-    <div className="h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      {renderSidebar()}
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-900">Full Draft Preview</h3>
+            <button 
+              onClick={() => setShowFullDraftModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 overflow-y-auto max-h-96">
+          <div className="prose max-w-none">
+            <div className="text-gray-800 leading-relaxed whitespace-pre-line">
+              {assembledContent || 'No content written yet. Start writing in the sections to see your full draft here.'}
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 border-t border-gray-200 text-sm text-gray-500">
+          {assembledContent.trim().split(/\s+/).filter(w => w).length} words • {sections.filter(s => s.completed).length}/{sections.length} sections completed
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// MAIN RENDER
+// ============================================================================
+
+if (!currentSection) {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-gray-500">Loading...</div>
+    </div>
+  )
+}
+
+  return (
+  <div className="h-screen bg-gray-50 flex">
+    {/* Sidebar */}
+    {renderSidebar()}
+    
+    {/* AI Content Sidebar */}
+    {showAISidebar && (
+      <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold text-gray-900">AI Generated Content</h3>
+            <button 
+              onClick={() => setShowAISidebar(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          {generatedExample?.generated_content?.complete_post ? (
+            <div className="space-y-4">
+              <div className="prose prose-sm max-w-none">
+                <div className="text-gray-800 leading-relaxed whitespace-pre-line text-sm">
+                  {generatedExample.generated_content.complete_post}
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-200">
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div>Word Count: {generatedExample.generated_content.post_analytics?.word_count || 'Unknown'}</div>
+                  <div>Validation Score: {generatedExample.validation_score || 'Unknown'}</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <div className="text-sm">No AI content available yet</div>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+    
+    {/* Main Content */}
+    <div className="flex-1 flex flex-col">
         {/* Header */}
         {renderCurrentSectionHeader()}
         
@@ -1481,5 +1537,8 @@ const renderTemplateVariables = () => (
         {renderWorkflowActions()}
       </div>
     </div>
+    
+    {/* Modals */}
+    {renderFullDraftModal()}
   )
 }
