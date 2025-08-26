@@ -152,7 +152,7 @@ interface WritingInterfaceProps {
   onContinueToImages?: (contentId: string) => void
 }
 
-type PreviewMode = 'auto' | 'template' | 'example' | 'generated'
+type PreviewMode = 'template' | 'example'
 type GuidanceTabId = 'matters' | 'essentials' | 'techniques' | 'reader' | 'arc' | 'voice'
 
 // ============================================================================
@@ -179,10 +179,13 @@ export default function WritingInterface({
   // ============================================================================
 
   // UI State
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('auto')
-  const [activeGuidanceTab, setActiveGuidanceTab] = useState<GuidanceTabId>('matters')
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
+const [currentView, setCurrentView] = useState<'writing' | 'preview'>('writing')
+const [previewMode, setPreviewMode] = useState<PreviewMode>('template')
+const [activeGuidanceTab, setActiveGuidanceTab] = useState<GuidanceTabId>('matters')
+const [showAISidebar, setShowAISidebar] = useState(false)
+const [showFullDraftModal, setShowFullDraftModal] = useState(false)
   
   // Content State
 const [sections, setSections] = useState<SectionData[]>([])
@@ -342,17 +345,6 @@ console.log(`📝 Loaded ${variables.length} variables for section: ${sectionTit
     const checks = initializeContentChecks(formula.category)
     setContentChecks(checks)
   }, [formula.category])
-
-  // Auto-flicker effect for preview mode
-  useEffect(() => {
-    if (previewMode === 'auto') {
-      const interval = setInterval(() => {
-  setAutoFlickerIndex(prev => (prev + 1) % 2) // 0 = template, 1 = example
-}, 4000) // Increased to 4 seconds for readability
-      
-      return () => clearInterval(interval)
-    }
-  }, [previewMode])
 
   // ============================================================================
   // COMPUTED VALUES
@@ -753,18 +745,28 @@ function getSectionSpecificVariables(
   }, [currentSectionIndex])
 
   const handleNextSection = useCallback(() => {
-    if (currentSectionIndex < sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1)
-    }
-  }, [currentSectionIndex, sections.length])
+  // Mark current section as complete when moving to next
+  setSections(prev => prev.map((section, index) => 
+    index === currentSectionIndex ? { ...section, completed: true } : section
+  ))
+  
+  if (currentSectionIndex < sections.length - 1) {
+    setCurrentSectionIndex(currentSectionIndex + 1)
+  }
+}, [currentSectionIndex, sections.length])
 
-  const handlePreview = useCallback(() => {
-    if (assembledContent.trim()) {
-      onComplete(assembledContent)
-    } else {
-      showToast('warning', 'Please add some content before previewing')
-    }
-  }, [assembledContent, onComplete, showToast])
+  const handleCompleteWriting = useCallback(() => {
+  // Mark final section as complete
+  setSections(prev => prev.map((section, index) => 
+    index === currentSectionIndex ? { ...section, completed: true } : section
+  ))
+  
+  if (assembledContent.trim()) {
+    onComplete(assembledContent)
+  } else {
+    showToast('warning', 'Please add some content before completing')
+  }
+}, [assembledContent, onComplete, showToast, currentSectionIndex])
 
   const handleAIAnalysis = useCallback(async () => {
     // TODO: Implement AI analysis call
@@ -1375,25 +1377,25 @@ const renderTemplateVariables = () => (
       </button>
       
       <div className="flex space-x-3">
-        <button
-          onClick={handlePreview}
-          className="px-4 py-2 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition"
-        >
-          Preview
-        </button>
+        {/* Preview button removed - only show on final section as "Complete Writing" */}
         
-        <button
-          onClick={handleNextSection}
-          disabled={currentSectionIndex === sections.length - 1}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${
-            currentSectionIndex === sections.length - 1
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-teal-600 text-white hover:bg-teal-700'
-          }`}
-        >
-          <span>Next</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        {currentSectionIndex === sections.length - 1 ? (
+  <button
+    onClick={handleCompleteWriting}
+    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+  >
+    <span>Complete Writing</span>
+    <CheckCircle className="w-4 h-4" />
+  </button>
+) : (
+  <button
+    onClick={handleNextSection}
+    className="flex items-center space-x-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+  >
+    <span>Next</span>
+    <ArrowRight className="w-4 h-4" />
+  </button>
+)}
       </div>
     </div>
   )
