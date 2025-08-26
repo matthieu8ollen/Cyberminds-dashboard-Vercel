@@ -362,7 +362,8 @@ useEffect(() => {
       formula, 
       currentSection.title, 
       ideationData, 
-      backendExample
+      backendExample,
+      generatedExample
     )
     setTemplateVariables(variables)
     
@@ -468,97 +469,52 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
     
     return checksMap[title] || ['Clear message', 'Value provided', 'Engaging content']
   }
-
- function extractTemplateVariables(
+  
+function extractTemplateVariables(
   formula: FormulaTemplate,
   currentSectionTitle: string,
   ideationData?: any, 
-  backendExample?: any
+  backendExample?: any,
+  generatedExample?: any
 ): TemplateVariable[] {
-  console.log('🚀 VARIABLE EXTRACTION DEBUG START')
+  console.log('🚀 CORRECTED VARIABLE EXTRACTION START')
   console.log('🎯 Target section title:', currentSectionTitle)
-  console.log('📋 Available backend sections:', backendExample?.writing_guidance_sections?.map((s: any) => s.section_name) || 'NONE')
-  console.log('🔍 Backend has guidance sections:', !!backendExample?.writing_guidance_sections)
-  console.log('📦 Backend sections length:', backendExample?.writing_guidance_sections?.length || 0)
   
   const variables: TemplateVariable[] = []
   
-  // PRIORITY 1: Backend structured guidance sections
-  if (backendExample?.writing_guidance_sections?.length > 0) {
-    const sectionGuidance = backendExample.writing_guidance_sections.find(
-      (section: any) => {
-        const matchesName = section.section_name === currentSectionTitle
-        const matchesOrder = typeof section.section_order === 'number' && section.section_order >= 0
-        const matchesId = section.section_id === currentSectionTitle.toLowerCase().replace(/\s+/g, '_')
-        
-        console.log('🔍 Checking section match:', {
-          section_name: section.section_name,
-          section_order: section.section_order,
-          section_id: section.section_id,
-          target_title: currentSectionTitle,
-          matches: { matchesName, matchesOrder, matchesId }
-        })
-        
-        return matchesName || matchesOrder || matchesId
-      }
-    )
+  // PRIORITY 1: Extract from generatedExample.all_filled_variables
+  if (generatedExample?.all_filled_variables) {
+    console.log('✅ Found all_filled_variables:', generatedExample.all_filled_variables)
     
-    if (sectionGuidance) {
-      console.log('✅ Found matching section guidance:', sectionGuidance)
+    Object.keys(generatedExample.all_filled_variables).forEach(varKey => {
+      const varData = generatedExample.all_filled_variables[varKey]
       
-      // Extract variables from all possible fields in the backend response
-      const potentialVariableFields = [
-        'template_variables',
-        'variables',
-        'placeholder_variables', 
-        'fill_in_variables',
-        'dynamic_content',
-        'content_variables'
-      ]
-      
-      potentialVariableFields.forEach(fieldName => {
-        if (sectionGuidance[fieldName]) {
-          const variableData = sectionGuidance[fieldName]
-          
-          if (Array.isArray(variableData)) {
-            // Handle array of variables
-            variableData.forEach((variable: any) => {
-              if (variable && typeof variable === 'object') {
-                variables.push({
-                  name: (variable.name || variable.variable_name || 'VARIABLE').toString().toUpperCase(),
-                  label: variable.label || variable.display_name || variable.name || 'Variable',
-                  value: '',
-                  aiSuggestion: variable.ai_suggestion || variable.suggested_value || variable.default_value || '',
-                  required: Boolean(variable.required),
-                  type: variable.type || variable.input_type || 'text',
-                  placeholder: variable.placeholder || variable.placeholder_text || `Enter ${variable.name || 'value'}`
-                })
-              }
-            })
-          } else if (typeof variableData === 'object') {
-            // Handle single variable object
-            Object.keys(variableData).forEach(varKey => {
-              const varValue = variableData[varKey]
-              if (varValue && typeof varValue === 'string') {
-                variables.push({
-                  name: varKey.toUpperCase(),
-                  label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                  value: '',
-                  aiSuggestion: varValue,
-                  required: false,
-                  type: 'text',
-                  placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
-                })
-              }
-            })
-          }
-        }
-      })
-      
-      console.log('🎯 Extracted variables from backend:', variables)
-    } else {
-      console.log('⚠️ No matching section guidance found in backend data')
-    }
+      if (varData && typeof varData === 'object') {
+        // Handle complex variable object
+        variables.push({
+          name: varKey,
+          label: varData.label || varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          value: '',
+          aiSuggestion: varData.ai_generated_content || varData.suggested_value || varData.content || '',
+          required: Boolean(varData.required),
+          type: varData.type || 'text',
+          placeholder: varData.placeholder || `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
+        })
+      } else if (typeof varData === 'string') {
+        // Handle simple string variable
+        variables.push({
+          name: varKey,
+          label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          value: '',
+          aiSuggestion: varData,
+          required: false,
+          type: 'text',
+          placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
+        })
+      }
+    })
+    
+    console.log('🎯 Variables extracted from all_filled_variables:', variables)
   }
   
   // PRIORITY 2: Legacy template_variables format (backup)
