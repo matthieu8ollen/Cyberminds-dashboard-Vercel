@@ -320,12 +320,19 @@ useEffect(() => {
   setSections(initializedSections)
 }, [formula, backendExample])
   
-  // Initialize template variables
-  useEffect(() => {
-    const variables = extractTemplateVariables(formula, ideationData, backendExample)
+  // Initialize template variables - section-specific
+useEffect(() => {
+  if (currentSection) {
+    const variables = extractTemplateVariables(
+      formula, 
+      currentSection.title, 
+      ideationData, 
+      backendExample
+    )
     setTemplateVariables(variables)
-  }, [formula, ideationData, backendExample])
-
+  }
+}, [formula, currentSection?.title, ideationData, backendExample])
+  
   // Initialize content checks
   useEffect(() => {
     const checks = initializeContentChecks(formula.category)
@@ -336,8 +343,8 @@ useEffect(() => {
   useEffect(() => {
     if (previewMode === 'auto') {
       const interval = setInterval(() => {
-        setAutoFlickerIndex(prev => (prev + 1) % 2) // 0 = template, 1 = example
-      }, 2000)
+  setAutoFlickerIndex(prev => (prev + 1) % 2) // 0 = template, 1 = example
+}, 4000) // Increased to 4 seconds for readability
       
       return () => clearInterval(interval)
     }
@@ -441,60 +448,213 @@ useEffect(() => {
     return checksMap[title] || ['Clear message', 'Value provided', 'Engaging content']
   }
 
-  function extractTemplateVariables(
-    formula: FormulaTemplate, 
-    ideationData?: any, 
-    backendExample?: any
-  ): TemplateVariable[] {
-    // Extract variables from formula structure and backend suggestions
-    const variables: TemplateVariable[] = []
+ function extractTemplateVariables(
+  formula: FormulaTemplate,
+  currentSectionTitle: string,
+  ideationData?: any, 
+  backendExample?: any
+): TemplateVariable[] {
+  const variables: TemplateVariable[] = []
+  
+  // First priority: Extract section-specific variables from backend structured guidance
+  if (backendExample?.writing_guidance_sections) {
+    const sectionGuidance = backendExample.writing_guidance_sections.find(
+      (section: any) => 
+        section.section_name === currentSectionTitle || 
+        section.section_id === `section-${currentSectionTitle.toLowerCase()}`
+    )
     
-    if (formula.category === 'story') {
-      variables.push(
-        {
-          name: 'THEME',
-          label: 'Main Theme',
-          value: ideationData?.topic || '',
-          aiSuggestion: backendExample?.template_variables?.THEME || 'Your main topic or theme',
-          required: true,
-          type: 'text',
-          placeholder: 'e.g., VC funding vs Bootstrap'
-        },
-        {
-          name: 'PERSONAL_EXPERIENCE',
-          label: 'Personal Experience',
-          value: '',
-          aiSuggestion: backendExample?.template_variables?.PERSONAL_EXPERIENCE || 'Your relevant experience',
-          required: true,
-          type: 'text',
-          placeholder: 'e.g., experienced both paths'
+    if (sectionGuidance) {
+      // Look for template variables in the section guidance
+      Object.keys(sectionGuidance).forEach(key => {
+        if (key.includes('template_variable') || 
+            key.includes('variable') || 
+            key.includes('placeholder') ||
+            key.includes('fill_in')) {
+          const varData = sectionGuidance[key]
+          
+          if (typeof varData === 'object' && varData.variable_name) {
+            variables.push({
+              name: varData.variable_name.toUpperCase(),
+              label: varData.display_label || varData.variable_name,
+              value: '',
+              aiSuggestion: varData.ai_suggestion || varData.suggested_value || '',
+              required: varData.required || false,
+              type: varData.input_type || 'text',
+              placeholder: varData.placeholder_text || `Enter ${varData.variable_name.toLowerCase()}`
+            })
+          }
         }
-      )
-    } else if (formula.category === 'framework') {
+      })
+      
+      // Also check if there's a dedicated variables array
+      if (sectionGuidance.template_variables && Array.isArray(sectionGuidance.template_variables)) {
+        sectionGuidance.template_variables.forEach((variable: any) => {
+          variables.push({
+            name: variable.name?.toUpperCase() || 'VARIABLE',
+            label: variable.label || variable.name || 'Variable',
+            value: '',
+            aiSuggestion: variable.ai_suggestion || variable.value || '',
+            required: variable.required || false,
+            type: variable.type || 'text',
+            placeholder: variable.placeholder || `Enter ${variable.name?.toLowerCase() || 'value'}`
+          })
+        })
+      }
+    }
+  }
+  
+  // Second priority: If no backend variables, use section-specific fallback
+  if (variables.length === 0) {
+    const sectionVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+    variables.push(...sectionVariables)
+  }
+  
+  return variables
+}
+
+function getSectionSpecificVariables(
+  sectionTitle: string, 
+  category: string, 
+  ideationData?: any
+): TemplateVariable[] {
+  const variables: TemplateVariable[] = []
+  const cleanTitle = sectionTitle.toLowerCase().trim()
+  
+  // Define section-specific variables based on section title and category
+  switch (cleanTitle) {
+    case 'hook':
+    case 'opening':
+    case 'intro':
+      variables.push({
+        name: 'OPENING_LINE',
+        label: 'Opening Hook',
+        value: '',
+        aiSuggestion: ideationData?.topic ? 
+          `Here's what they don't tell you about ${ideationData.topic}` : 
+          'Here\'s what they don\'t tell you about...',
+        required: true,
+        type: 'text',
+        placeholder: 'Your attention-grabbing opening line'
+      })
+      break
+      
+    case 'problem':
+    case 'challenge':
+    case 'pain point':
+      variables.push({
+        name: 'PROBLEM_STATEMENT',
+        label: 'Main Problem',
+        value: '',
+        aiSuggestion: ideationData?.topic ? 
+          `Most people struggle with ${ideationData.topic} because...` : 
+          'The core problem is...',
+        required: true,
+        type: 'text',
+        placeholder: 'The specific problem your audience faces'
+      })
+      break
+      
+    case 'framework':
+    case 'solution':
+    case 'approach':
       variables.push(
-        {
-          name: 'PROBLEM_AREA',
-          label: 'Problem Area',
-          value: ideationData?.topic || '',
-          aiSuggestion: backendExample?.template_variables?.PROBLEM_AREA || 'The problem you solve',
-          required: true,
-          type: 'text',
-          placeholder: 'e.g., SaaS pricing strategy'
-        },
         {
           name: 'FRAMEWORK_NAME',
           label: 'Framework Name',
           value: '',
-          aiSuggestion: backendExample?.template_variables?.FRAMEWORK_NAME || 'Your framework name',
+          aiSuggestion: ideationData?.topic ? 
+            `The ${ideationData.topic} Framework` : 
+            'The [Solution] Framework',
           required: true,
           type: 'text',
-          placeholder: 'e.g., The 5-Step Revenue Framework'
+          placeholder: 'Your framework or solution name'
+        },
+        {
+          name: 'KEY_STEPS',
+          label: 'Number of Steps',
+          value: '',
+          aiSuggestion: '5',
+          required: false,
+          type: 'text',
+          placeholder: 'e.g., 3, 5, 7'
         }
       )
-    }
-    
-    return variables
+      break
+      
+    case 'story':
+    case 'experience':
+    case 'example':
+      if (category === 'story') {
+        variables.push(
+          {
+            name: 'SITUATION',
+            label: 'The Situation',
+            value: '',
+            aiSuggestion: 'When I was facing...',
+            required: true,
+            type: 'text',
+            placeholder: 'Describe the context or situation'
+          },
+          {
+            name: 'CHALLENGE',
+            label: 'What Went Wrong',
+            value: '',
+            aiSuggestion: 'The problem was...',
+            required: true,
+            type: 'text',
+            placeholder: 'What challenge or mistake occurred'
+          }
+        )
+      }
+      break
+      
+    case 'evidence':
+    case 'proof':
+    case 'data':
+      variables.push({
+        name: 'SUPPORTING_DATA',
+        label: 'Evidence/Data',
+        value: '',
+        aiSuggestion: 'Studies show that...',
+        required: false,
+        type: 'text',
+        placeholder: 'Statistics, studies, or concrete evidence'
+      })
+      break
+      
+    case 'cta':
+    case 'call to action':
+    case 'question':
+      variables.push({
+        name: 'ENGAGEMENT_QUESTION',
+        label: 'Engagement Question',
+        value: '',
+        aiSuggestion: ideationData?.topic ? 
+          `What's your experience with ${ideationData.topic}?` : 
+          'What\'s your take on this?',
+        required: false,
+        type: 'text',
+        placeholder: 'Question to engage your audience'
+      })
+      break
+      
+    default:
+      // Generic fallback for unknown sections
+      variables.push({
+        name: 'SECTION_CONTENT',
+        label: `${sectionTitle} Content`,
+        value: '',
+        aiSuggestion: `Your ${sectionTitle.toLowerCase()} goes here...`,
+        required: false,
+        type: 'text',
+        placeholder: `Enter content for ${sectionTitle}`
+      })
+      break
   }
+  
+  return variables
+}
 
   function initializeContentChecks(category: string): ContentCheck[] {
     const baseChecks: ContentCheck[] = [
@@ -936,30 +1096,25 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
     </div>
   )
 
-  const renderContentChecklist = () => (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">Content Checklist</h3>
-        <span className="text-sm font-medium text-gray-600">
-          {completedContentChecks}/{totalContentChecks} 
-        </span>
-      </div>
-      <div className="space-y-2">
-        {contentChecks.map((check) => (
-          <div key={check.id} className="flex items-center space-x-2">
-            <CheckCircle className={`w-4 h-4 ${check.completed ? 'text-green-500' : 'text-gray-300'}`} />
-            <span className={`text-sm ${check.completed ? 'text-green-700' : 'text-gray-600'}`}>
-              {check.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  const renderContentChecklist = () => {
+  // Backend will implement this later with live detection
+  return null
+}
 
-  const renderTemplateVariables = () => (
-    <div className="mb-6">
-      <h3 className="font-semibold text-gray-900 mb-4">Template Variables</h3>
+ const [showTemplateVariables, setShowTemplateVariables] = useState(true) // Add to state section
+
+const renderTemplateVariables = () => (
+  <div className="mb-6">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="font-semibold text-gray-900">Template Variables</h3>
+      <button
+        onClick={() => setShowTemplateVariables(!showTemplateVariables)}
+        className="text-sm text-gray-500 hover:text-gray-700"
+      >
+        {showTemplateVariables ? 'Hide' : 'Show'}
+      </button>
+    </div>
+    {showTemplateVariables && (
       <div className="space-y-4">
         {templateVariables.map((variable) => (
           <div key={variable.name}>
@@ -994,24 +1149,45 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
         ))}
       </div>
     </div>
-  )
+   )}
+  </div>
+)
 
   const renderLivePreview = () => {
     const getPreviewContent = () => {
   if (previewMode === 'template') {
-    return sections.map(s => s.placeholder).join('\n\n')
+    // Show current section template with variables
+    let template = currentSection?.placeholder || 'Section template here...'
+    templateVariables.forEach(variable => {
+      const placeholder = `[${variable.name}]`
+      const value = variable.value || variable.aiSuggestion || placeholder
+      template = template.replace(new RegExp(placeholder, 'g'), value)
+    })
+    return template
   } else if (previewMode === 'example') {
-    return backendExample?.example_post || sections.map(s => s.placeholder).join('\n\n')
+    return backendExample?.example_post || currentSection?.placeholder || ''
   } else if (previewMode === 'generated') {
     return generatedExample?.generated_content?.complete_post || 'AI-generated content will appear here...'
   } else {
-    // Auto mode - flicker between template and current content
-    if (assembledContent.trim()) {
-      return assembledContent
+    // Auto mode - flicker between current section template and generated (slower)
+    if (currentSection?.content.trim()) {
+      return currentSection.content
     } else {
-      return autoFlickerIndex === 0 
-        ? sections.map(s => s.placeholder).join('\n\n')
-        : backendExample?.example_post || "Here's what they don't tell you about VC funding vs Bootstrap until you experienced both paths..."
+      if (autoFlickerIndex === 0) {
+        // Show template with variables filled
+        let template = currentSection?.placeholder || ''
+        templateVariables.forEach(variable => {
+          const placeholder = `[${variable.name}]`
+          const value = variable.aiSuggestion || placeholder
+          template = template.replace(new RegExp(placeholder, 'g'), value)
+        })
+        return template
+      } else {
+        // Show backend example for this section if available
+        return backendExample?.section_examples?.[currentSection?.title] || 
+               generatedExample?.generated_content?.complete_post?.split('\n\n')[currentSectionIndex] ||
+               currentSection?.placeholder || ''
+      }
     }
   }
 }
@@ -1111,15 +1287,20 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
     {generatedExample?.generated_content?.complete_post && (
       <button
         onClick={() => {
-          // Use AI-generated content to populate current section or all sections
-          if (currentSection && generatedExample.generated_content?.complete_post) {
-            const confirmUse = window.confirm('Replace your current content with AI-generated content?')
-            if (confirmUse) {
-              handleSectionChange(generatedExample.generated_content.complete_post)
-              showToast('success', 'AI-generated content applied!')
-            }
-          }
-        }}
+  // Use AI-generated content for CURRENT SECTION ONLY
+  if (currentSection && generatedExample?.generated_content?.complete_post) {
+    const confirmUse = window.confirm('Replace this section with AI-generated content?')
+    if (confirmUse) {
+      // Extract the section content from the full AI post (split by paragraphs)
+      const fullPost = generatedExample.generated_content.complete_post
+      const sections = fullPost.split('\n\n')
+      const sectionContent = sections[currentSectionIndex] || fullPost
+      
+      handleSectionChange(sectionContent)
+      showToast('success', `AI content applied to ${currentSection.title} section!`)
+    }
+  }
+}}
         className="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
       >
         <Sparkles className="w-4 h-4" />
