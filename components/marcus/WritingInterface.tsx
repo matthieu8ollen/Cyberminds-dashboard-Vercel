@@ -300,13 +300,13 @@ useEffect(() => {
     const structuredContent = extractContentFromStructured(structuredGuidance, cleanTitle)
     
     return {
-      id: `section-${index}`,
-      title: cleanTitle,
-      // Prioritize structured content, then legacy format, then empty
-      content: structuredContent || backendExample?.section_examples?.[cleanTitle] || '',
-      // Prioritize structured guidance, then legacy, then default
-      guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-      placeholder: getPlaceholderForSection(formula.id, cleanTitle, index),
+  id: `section-${index}`,
+  title: cleanTitle,
+  // Prioritize structured content, then legacy format, then template with variables
+  content: structuredContent || backendExample?.section_examples?.[cleanTitle] || getTemplatePlaceholder(cleanTitle, formula, index),
+  // Prioritize structured guidance, then legacy, then default
+  guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+  placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
       wordCountTarget: getWordCountTarget(cleanTitle),
       wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
@@ -392,20 +392,25 @@ useEffect(() => {
   }
 
  function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
-  // Create template with variable placeholders
-  let template = `Write your ${title.toLowerCase()} here...`
-  
-  // Add variable placeholders if we have template variables
-  if (templateVariables.length > 0) {
-    const variablePlaceholders = templateVariables
-      .map(v => `[${v.name}]`)
-      .join(' ')
-    template = `${variablePlaceholders}\n\nFocus on providing value to your audience.`
-  }
-  
-  return template
+  return `Write your ${title.toLowerCase()} here with [VARIABLES] as placeholders...`
 }
 
+function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
+  // Template with variable placeholders based on section type
+  const templates: Record<string, string> = {
+    'Hook': '[OPENING_LINE]\n\nCreate an attention-grabbing opening that stops the scroll...',
+    'Problem': '[PROBLEM_STATEMENT]\n\nDescribe the specific challenge your audience faces...',
+    'Framework': '[FRAMEWORK_NAME]\n\nA [KEY_STEPS]-step approach to solve this problem...',
+    'Solution': 'Here\'s how to solve [PROBLEM_STATEMENT]:\n\n[SOLUTION_APPROACH]',
+    'Story': '[SITUATION]\n\nThe challenge was [CHALLENGE]...',
+    'Evidence': '[SUPPORTING_DATA] proves that...',
+    'CTA': '[ENGAGEMENT_QUESTION]'
+  }
+  
+  const cleanTitle = sectionTitle.replace(/\s+/g, '')
+  return templates[cleanTitle] || `[SECTION_CONTENT]\n\nWrite your ${sectionTitle.toLowerCase()} here...`
+}
+  
   function getWordCountTarget(title: string): number {
     const targetMap: Record<string, number> = {
       'Hook': 30,
@@ -1148,20 +1153,26 @@ const renderTemplateVariables = () => (
               <button
   onClick={() => {
     handleTemplateVariableChange(variable.name, variable.aiSuggestion!)
-    // Also update the writing area with the variable
+    
+    // Update the writing area with the variable
     const currentContent = currentSection?.content || ''
     const placeholder = `[${variable.name}]`
-    const newContent = currentContent.includes(placeholder) 
-      ? currentContent.replace(placeholder, variable.aiSuggestion!)
-      : currentContent
-    if (newContent !== currentContent) {
+    
+    if (currentContent.includes(placeholder)) {
+      // Replace existing placeholder
+      const newContent = currentContent.replace(new RegExp(`\\[${variable.name}\\]`, 'g'), variable.aiSuggestion!)
       handleSectionChange(newContent)
+    } else if (!currentContent.trim() || currentContent === currentSection?.placeholder) {
+      // Pre-populate with template if area is empty or has default placeholder
+      const template = getTemplatePlaceholder(currentSection.title, formula, currentSectionIndex)
+      const filledTemplate = template.replace(`[${variable.name}]`, variable.aiSuggestion!)
+      handleSectionChange(filledTemplate)
     }
   }}
   className="mt-1 text-xs text-purple-600 hover:text-purple-800 flex items-center space-x-1"
 >
   <span>🤖</span>
-  <span>Use AI suggestion</span>
+  <span>Use AI suggestion & fill template</span>
 </button>
             )}
           </div>
@@ -1175,15 +1186,15 @@ const renderTemplateVariables = () => (
   const renderLivePreview = () => {
     const getPreviewContent = () => {
   if (previewMode === 'template') {
-    // Show current section template with variables
-    let template = currentSection?.placeholder || 'Section template here...'
-    templateVariables.forEach(variable => {
-      const placeholder = `[${variable.name}]`
-      const value = variable.value || variable.aiSuggestion || placeholder
-      template = template.replace(new RegExp(placeholder, 'g'), value)
-    })
-    return template
-  } else if (previewMode === 'example') {
+  // Show current section template with variables filled
+  let template = getTemplatePlaceholder(currentSection?.title || '', formula, currentSectionIndex)
+  templateVariables.forEach(variable => {
+    const placeholder = `[${variable.name}]`
+    const value = variable.value || variable.aiSuggestion || placeholder
+    template = template.replace(new RegExp(`\\[${variable.name}\\]`, 'g'), value)
+  })
+  return template
+} else if (previewMode === 'example') {
     return backendExample?.example_post || currentSection?.placeholder || ''
   } else if (previewMode === 'generated') {
     return generatedExample?.generated_content?.complete_post || 'AI-generated content will appear here...'
