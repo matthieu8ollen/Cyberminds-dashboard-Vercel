@@ -332,7 +332,8 @@ useEffect(() => {
     )
     setTemplateVariables(variables)
     
-    console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
+    const sectionTitle = sections[currentSectionIndex]?.title || 'Unknown Section'
+console.log(`📝 Loaded ${variables.length} variables for section: ${sectionTitle}`, variables)
   }
 }, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
   
