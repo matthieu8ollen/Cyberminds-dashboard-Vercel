@@ -1000,21 +1000,11 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
         'Write like you\'re talking to a colleague over coffee'
       ]
     }
-  ]
+]
 
   // ============================================================================
   // RENDER FUNCTIONS
   // ============================================================================
-
-  <WritingSidebar
-  formula={formula}
-  sections={sections}
-  currentSectionIndex={currentSectionIndex}
-  totalSections={totalSections}
-  sidebarCollapsed={sidebarCollapsed}
-  onSectionNavigation={handleSectionNavigation}
-  onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-/>
 
   const renderCurrentSectionHeader = () => (
     <div className="border-b border-gray-200 p-4">
