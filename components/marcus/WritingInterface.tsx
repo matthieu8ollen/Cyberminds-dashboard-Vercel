@@ -197,6 +197,21 @@ const [templateVariables, setTemplateVariables] = useState<TemplateVariable[]>([
 const [contentChecks, setContentChecks] = useState<ContentCheck[]>([])
 const [showTemplateVariables, setShowTemplateVariables] = useState(true)
 
+  // Computed values - DECLARED IMMEDIATELY AFTER STATE
+  const currentSection = sections[currentSectionIndex]
+  const totalSections = sections.length
+  const overallProgress = sections.filter(s => s.completed).length
+  const progressPercentage = (overallProgress / totalSections) * 100
+  const completedContentChecks = contentChecks.filter(check => check.completed).length
+  const totalContentChecks = contentChecks.length
+
+  const assembledContent = useMemo(() => {
+    return sections
+      .filter(section => section.content.trim())
+      .map(section => section.content.trim())
+      .join('\n\n')
+  }, [sections])
+
   // ============================================================================
 // DEBUG LOGGING
 // ============================================================================
@@ -345,25 +360,6 @@ useEffect(() => {
     const checks = initializeContentChecks(formula.category)
     setContentChecks(checks)
   }, [formula.category])
-
-  // ============================================================================
-  // COMPUTED VALUES
-  // ============================================================================
-
-  const currentSection = sections[currentSectionIndex]
-  const overallProgress = sections.filter(s => s.completed).length
-  const totalSections = sections.length
-  const progressPercentage = (overallProgress / totalSections) * 100
-
-  const completedContentChecks = contentChecks.filter(check => check.completed).length
-  const totalContentChecks = contentChecks.length
-
-  const assembledContent = useMemo(() => {
-    return sections
-      .filter(section => section.content.trim())
-      .map(section => section.content.trim())
-      .join('\n\n')
-  }, [sections])
 
   // ============================================================================
   // HELPER FUNCTIONS
