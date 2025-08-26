@@ -26,6 +26,7 @@ import { useToast } from '../ToastNotifications'
 import { GeneratedContent } from '../../lib/supabase'
 import AISidebar from './AISidebar'
 import ContentPreview from './ContentPreview'
+import WritingSidebar from './WritingSidebar'
 
 // ============================================================================
 // INTERFACES & TYPES
@@ -1005,91 +1006,15 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
   // RENDER FUNCTIONS
   // ============================================================================
 
-  const renderSidebar = () => (
-    <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${
-      sidebarCollapsed ? 'w-16' : 'w-80'
-    }`}>
-      {/* Sidebar Header */}
-      <div className="border-b border-gray-200 p-4 flex items-center justify-between">
-        {!sidebarCollapsed && (
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-gray-900">{formula.name}</h2>
-            <p className="text-sm text-gray-600">Section {currentSectionIndex + 1} of {totalSections}</p>
-          </div>
-        )}
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Progress Bar */}
-      {!sidebarCollapsed && (
-        <div className="px-4 py-3 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Progress</span>
-            <span className="text-sm text-gray-600">{overallProgress}/{totalSections}</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-teal-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
-          <div className="flex mt-2 space-x-1">
-            {sections.map((section, index) => (
-              <div
-                key={section.id}
-                className={`w-3 h-3 rounded-full ${
-                  section.completed 
-                    ? 'bg-green-500' 
-                    : index === currentSectionIndex 
-                      ? 'bg-blue-500' 
-                      : 'bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Section Navigation */}
-      <div className="flex-1 overflow-y-auto">
-        {sections.map((section, index) => (
-          <button
-            key={section.id}
-            onClick={() => handleSectionNavigation(index)}
-            className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-              index === currentSectionIndex ? 'bg-teal-50 border-l-4 border-l-teal-600' : ''
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                section.completed 
-                  ? 'bg-green-500 text-white' 
-                  : index === currentSectionIndex 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-200 text-gray-600'
-              }`}>
-                {section.completed ? '✓' : index + 1}
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{section.title}</div>
-                  <div className="text-xs text-gray-500">
-                    {section.content.trim().split(/\s+/).length} words
-                    {section.wordCountTarget && ` / ${section.wordCountTarget} target`}
-                  </div>
-                </div>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
+  <WritingSidebar
+  formula={formula}
+  sections={sections}
+  currentSectionIndex={currentSectionIndex}
+  totalSections={totalSections}
+  sidebarCollapsed={sidebarCollapsed}
+  onSectionNavigation={handleSectionNavigation}
+  onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+/>
 
   const renderCurrentSectionHeader = () => (
     <div className="border-b border-gray-200 p-4">
@@ -1446,7 +1371,15 @@ return (
   <>
     <div className="h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      {renderSidebar()}
+<WritingSidebar
+  formula={formula}
+  sections={sections}
+  currentSectionIndex={currentSectionIndex}
+  totalSections={totalSections}
+  sidebarCollapsed={sidebarCollapsed}
+  onSectionNavigation={handleSectionNavigation}
+  onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+/>
       
       <AISidebar 
       isVisible={showAISidebar}
