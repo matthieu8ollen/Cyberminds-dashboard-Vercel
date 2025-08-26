@@ -477,51 +477,57 @@ function extractTemplateVariables(
   backendExample?: any,
   generatedExample?: any
 ): TemplateVariable[] {
-  console.log('🚀 CORRECTED VARIABLE EXTRACTION START')
+  console.log('🚀 FIXED VARIABLE EXTRACTION START')
   console.log('🎯 Target section title:', currentSectionTitle)
   console.log('🔍 generatedExample exists:', !!generatedExample)
   console.log('🔍 all_filled_variables exists:', !!generatedExample?.all_filled_variables)
-  console.log('🔍 all_filled_variables content:', JSON.stringify(generatedExample?.all_filled_variables, null, 2))
+  console.log('🔍 all_filled_variables keys:', Object.keys(generatedExample?.all_filled_variables || {}))
   
   const variables: TemplateVariable[] = []
   
   // PRIORITY 1: Extract from generatedExample.all_filled_variables
   if (generatedExample?.all_filled_variables) {
-    console.log('✅ Found all_filled_variables:', generatedExample.all_filled_variables)
+    console.log('✅ Processing all_filled_variables...')
     
     Object.keys(generatedExample.all_filled_variables).forEach(varKey => {
       const varData = generatedExample.all_filled_variables[varKey]
+      console.log(`🔍 Processing variable ${varKey}:`, varData)
       
-      if (varData && typeof varData === 'object') {
-        // Handle complex variable object
-        variables.push({
-          name: varKey,
-          label: varData.label || varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          value: '',
-          aiSuggestion: varData.ai_generated_content || varData.suggested_value || varData.content || '',
-          required: Boolean(varData.required),
-          type: varData.type || 'text',
-          placeholder: varData.placeholder || `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
-        })
-      } else if (typeof varData === 'string') {
-        // Handle simple string variable
-        variables.push({
-          name: varKey,
-          label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          value: '',
-          aiSuggestion: varData,
-          required: false,
-          type: 'text',
-          placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
-        })
+      // Handle any data type - extract useful content regardless of structure
+      let aiSuggestion = ''
+      
+      if (typeof varData === 'string') {
+        aiSuggestion = varData
+      } else if (typeof varData === 'object' && varData !== null) {
+        // Try various possible content fields
+        aiSuggestion = varData.ai_generated_content || 
+                     varData.suggested_value || 
+                     varData.content || 
+                     varData.value ||
+                     varData.text ||
+                     JSON.stringify(varData)
       }
+      
+      variables.push({
+        name: varKey,
+        label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        value: '',
+        aiSuggestion: aiSuggestion,
+        required: false,
+        type: 'text',
+        placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
+      })
+      
+      console.log(`✅ Created variable: ${varKey} with suggestion: "${aiSuggestion.substring(0, 50)}..."`)
     })
     
-    console.log('🎯 Variables extracted from all_filled_variables:', variables)
+    console.log(`🎯 Total variables extracted: ${variables.length}`)
+    return variables
   }
   
   // PRIORITY 2: Legacy template_variables format (backup)
-  if (variables.length === 0 && backendExample?.template_variables) {
+  if (backendExample?.template_variables) {
+    console.log('📋 Using legacy template_variables')
     Object.keys(backendExample.template_variables).forEach(key => {
       variables.push({
         name: key.toUpperCase(),
@@ -533,17 +539,12 @@ function extractTemplateVariables(
         placeholder: `Enter ${key.replace(/_/g, ' ').toLowerCase()}`
       })
     })
-    console.log('📋 Using legacy template variables:', variables)
+    return variables
   }
   
   // PRIORITY 3: Fallback hardcoded variables (last resort)
-  if (variables.length === 0) {
-    const fallbackVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
-    variables.push(...fallbackVariables)
-    console.log('🔄 Using fallback hardcoded variables:', variables)
-  }
-  
-  return variables
+  console.log('🔄 Using fallback hardcoded variables')
+  return getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
 }
   
 function getSectionSpecificVariables(
