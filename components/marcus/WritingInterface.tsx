@@ -185,12 +185,13 @@ export default function WritingInterface({
   const [activeGuidanceTab, setActiveGuidanceTab] = useState<GuidanceTabId>('matters')
   
   // Content State
-  const [sections, setSections] = useState<SectionData[]>([])
-  const [templateVariables, setTemplateVariables] = useState<TemplateVariable[]>([])
-  const [contentChecks, setContentChecks] = useState<ContentCheck[]>([])
-  
-  // Auto-flicker for preview
-  const [autoFlickerIndex, setAutoFlickerIndex] = useState(0)
+const [sections, setSections] = useState<SectionData[]>([])
+const [templateVariables, setTemplateVariables] = useState<TemplateVariable[]>([])
+const [contentChecks, setContentChecks] = useState<ContentCheck[]>([])
+const [showTemplateVariables, setShowTemplateVariables] = useState(true)
+
+// Auto-flicker for preview
+const [autoFlickerIndex, setAutoFlickerIndex] = useState(0)
 
   // ============================================================================
 // DEBUG LOGGING
@@ -320,7 +321,7 @@ useEffect(() => {
   setSections(initializedSections)
 }, [formula, backendExample])
   
-  // Initialize template variables - section-specific
+ // Initialize template variables - section-specific
 useEffect(() => {
   if (currentSection) {
     const variables = extractTemplateVariables(
@@ -330,6 +331,8 @@ useEffect(() => {
       backendExample
     )
     setTemplateVariables(variables)
+    
+    console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
   }
 }, [formula, currentSection?.title, ideationData, backendExample])
   
@@ -388,14 +391,20 @@ useEffect(() => {
     return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
   }
 
-  function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
-    const currentVar = templateVariables.find(v => v.name.toLowerCase().includes(title.toLowerCase()))
-    if (currentVar?.aiSuggestion) {
-      return currentVar.aiSuggestion
-    }
-    
-    return `Write your ${title.toLowerCase()} here... Focus on providing value to your audience.`
+ function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
+  // Create template with variable placeholders
+  let template = `Write your ${title.toLowerCase()} here...`
+  
+  // Add variable placeholders if we have template variables
+  if (templateVariables.length > 0) {
+    const variablePlaceholders = templateVariables
+      .map(v => `[${v.name}]`)
+      .join(' ')
+    template = `${variablePlaceholders}\n\nFocus on providing value to your audience.`
   }
+  
+  return template
+}
 
   function getWordCountTarget(title: string): number {
     const targetMap: Record<string, number> = {
@@ -1100,8 +1109,6 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
   // Backend will implement this later with live detection
   return null
 }
-
- const [showTemplateVariables, setShowTemplateVariables] = useState(true) // Add to state section
 
 const renderTemplateVariables = () => (
   <div className="mb-6">
