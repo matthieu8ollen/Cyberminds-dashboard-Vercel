@@ -1161,8 +1161,7 @@ const renderTemplateVariables = () => (
           </div>
         ))}
       </div>
-    </div>
-   )}
+    )}
   </div>
 )
 
