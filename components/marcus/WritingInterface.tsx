@@ -342,7 +342,7 @@ placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
   
  // Initialize template variables - section-specific
 useEffect(() => {
-  if (currentSection) {
+  if (currentSection?.title) {
     const variables = extractTemplateVariables(
       formula, 
       currentSection.title, 
@@ -352,8 +352,10 @@ useEffect(() => {
     setTemplateVariables(variables)
     
     console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
+  } else {
+    setTemplateVariables([]) // Clear variables when no section
   }
-}, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
+}, [formula, currentSection?.title, ideationData, backendExample, sections])
 
   // Initialize content checks
   useEffect(() => {
@@ -457,65 +459,114 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
   ideationData?: any, 
   backendExample?: any
 ): TemplateVariable[] {
+  console.log('🔧 Extracting variables for section:', currentSectionTitle, 'Backend data:', backendExample)
+  
   const variables: TemplateVariable[] = []
   
-  // First priority: Extract section-specific variables from backend structured guidance
-  if (backendExample?.writing_guidance_sections) {
+  // PRIORITY 1: Backend structured guidance sections
+  if (backendExample?.writing_guidance_sections?.length > 0) {
     const sectionGuidance = backendExample.writing_guidance_sections.find(
-      (section: any) => 
-        section.section_name === currentSectionTitle || 
-        section.section_id === `section-${currentSectionTitle.toLowerCase()}`
+      (section: any) => {
+        const matchesName = section.section_name === currentSectionTitle
+        const matchesOrder = section.section_order === sections.findIndex(s => s.title === currentSectionTitle)
+        const matchesId = section.section_id === currentSectionTitle.toLowerCase().replace(/\s+/g, '_')
+        
+        console.log('🔍 Checking section match:', {
+          section_name: section.section_name,
+          section_order: section.section_order,
+          section_id: section.section_id,
+          target_title: currentSectionTitle,
+          matches: { matchesName, matchesOrder, matchesId }
+        })
+        
+        return matchesName || matchesOrder || matchesId
+      }
     )
     
     if (sectionGuidance) {
-      // Look for template variables in the section guidance
-      Object.keys(sectionGuidance).forEach(key => {
-        if (key.includes('template_variable') || 
-            key.includes('variable') || 
-            key.includes('placeholder') ||
-            key.includes('fill_in')) {
-          const varData = sectionGuidance[key]
+      console.log('✅ Found matching section guidance:', sectionGuidance)
+      
+      // Extract variables from all possible fields in the backend response
+      const potentialVariableFields = [
+        'template_variables',
+        'variables',
+        'placeholder_variables', 
+        'fill_in_variables',
+        'dynamic_content',
+        'content_variables'
+      ]
+      
+      potentialVariableFields.forEach(fieldName => {
+        if (sectionGuidance[fieldName]) {
+          const variableData = sectionGuidance[fieldName]
           
-          if (typeof varData === 'object' && varData.variable_name) {
-            variables.push({
-              name: varData.variable_name.toUpperCase(),
-              label: varData.display_label || varData.variable_name,
-              value: '',
-              aiSuggestion: varData.ai_suggestion || varData.suggested_value || '',
-              required: varData.required || false,
-              type: varData.input_type || 'text',
-              placeholder: varData.placeholder_text || `Enter ${varData.variable_name.toLowerCase()}`
+          if (Array.isArray(variableData)) {
+            // Handle array of variables
+            variableData.forEach((variable: any) => {
+              if (variable && typeof variable === 'object') {
+                variables.push({
+                  name: (variable.name || variable.variable_name || 'VARIABLE').toString().toUpperCase(),
+                  label: variable.label || variable.display_name || variable.name || 'Variable',
+                  value: '',
+                  aiSuggestion: variable.ai_suggestion || variable.suggested_value || variable.default_value || '',
+                  required: Boolean(variable.required),
+                  type: variable.type || variable.input_type || 'text',
+                  placeholder: variable.placeholder || variable.placeholder_text || `Enter ${variable.name || 'value'}`
+                })
+              }
+            })
+          } else if (typeof variableData === 'object') {
+            // Handle single variable object
+            Object.keys(variableData).forEach(varKey => {
+              const varValue = variableData[varKey]
+              if (varValue && typeof varValue === 'string') {
+                variables.push({
+                  name: varKey.toUpperCase(),
+                  label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                  value: '',
+                  aiSuggestion: varValue,
+                  required: false,
+                  type: 'text',
+                  placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
+                })
+              }
             })
           }
         }
       })
       
-      // Also check if there's a dedicated variables array
-      if (sectionGuidance.template_variables && Array.isArray(sectionGuidance.template_variables)) {
-        sectionGuidance.template_variables.forEach((variable: any) => {
-          variables.push({
-            name: variable.name?.toUpperCase() || 'VARIABLE',
-            label: variable.label || variable.name || 'Variable',
-            value: '',
-            aiSuggestion: variable.ai_suggestion || variable.value || '',
-            required: variable.required || false,
-            type: variable.type || 'text',
-            placeholder: variable.placeholder || `Enter ${variable.name?.toLowerCase() || 'value'}`
-          })
-        })
-      }
+      console.log('🎯 Extracted variables from backend:', variables)
+    } else {
+      console.log('⚠️ No matching section guidance found in backend data')
     }
   }
   
-  // Second priority: If no backend variables, use section-specific fallback
+  // PRIORITY 2: Legacy template_variables format (backup)
+  if (variables.length === 0 && backendExample?.template_variables) {
+    Object.keys(backendExample.template_variables).forEach(key => {
+      variables.push({
+        name: key.toUpperCase(),
+        label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        value: '',
+        aiSuggestion: backendExample.template_variables[key] || '',
+        required: false,
+        type: 'text',
+        placeholder: `Enter ${key.replace(/_/g, ' ').toLowerCase()}`
+      })
+    })
+    console.log('📋 Using legacy template variables:', variables)
+  }
+  
+  // PRIORITY 3: Fallback hardcoded variables (last resort)
   if (variables.length === 0) {
-    const sectionVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
-    variables.push(...sectionVariables)
+    const fallbackVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+    variables.push(...fallbackVariables)
+    console.log('🔄 Using fallback hardcoded variables:', variables)
   }
   
   return variables
 }
-
+  
 function getSectionSpecificVariables(
   sectionTitle: string, 
   category: string, 
