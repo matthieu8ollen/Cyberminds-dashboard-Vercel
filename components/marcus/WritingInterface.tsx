@@ -216,21 +216,29 @@ const [showTemplateVariables, setShowTemplateVariables] = useState(true)
 // DEBUG LOGGING
 // ============================================================================
 
-// Debug structured guidance data
+// DEBUG: Complete backend data analysis
 useEffect(() => {
+  console.log('🔍 COMPLETE BACKEND ANALYSIS START')
+  console.log('📦 Full backendExample object:', JSON.stringify(backendExample, null, 2))
+  
   if (backendExample?.writing_guidance_sections) {
-    console.log('📝 Structured Guidance Received:', {
-      response_type: backendExample.response_type,
-      total_sections: backendExample.total_sections,
-      guidance_types_found: backendExample.guidance_types_found,
-      sections_count: backendExample.writing_guidance_sections.length,
-      sections_preview: backendExample.writing_guidance_sections.map((s: any) => ({
-        section_name: s.section_name,
-        guidance_types: s.guidance_types,
-        keys: Object.keys(s)
-      }))
+    console.log('📝 Backend sections array length:', backendExample.writing_guidance_sections.length)
+    
+    backendExample.writing_guidance_sections.forEach((section: any, index: number) => {
+      console.log(`📋 Section ${index} COMPLETE STRUCTURE:`, {
+        section_name: section.section_name,
+        section_order: section.section_order,
+        section_id: section.section_id,
+        guidance_types: section.guidance_types,
+        ALL_KEYS: Object.keys(section),
+        COMPLETE_OBJECT: JSON.stringify(section, null, 2)
+      })
     })
+  } else {
+    console.log('❌ No writing_guidance_sections found in backend data')
   }
+  
+  console.log('🔍 COMPLETE BACKEND ANALYSIS END')
 }, [backendExample])
 
   // Debug generated content data
@@ -342,6 +350,13 @@ placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
   
  // Initialize template variables - section-specific
 useEffect(() => {
+  console.log('🎯 SECTION TITLE DEBUG:', {
+    currentSection_title: currentSection?.title,
+    currentSectionIndex: currentSectionIndex,
+    formula_structure: formula.structure,
+    all_section_titles: sections.map(s => s.title)
+  })
+  
   if (currentSection?.title) {
     const variables = extractTemplateVariables(
       formula, 
@@ -351,9 +366,10 @@ useEffect(() => {
     )
     setTemplateVariables(variables)
     
-    console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
+    console.log(`📝 FINAL RESULT: Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
   } else {
-    setTemplateVariables([]) // Clear variables when no section
+    setTemplateVariables([])
+    console.log('⚠️ No current section title available')
   }
 }, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
 
@@ -459,7 +475,11 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
   ideationData?: any, 
   backendExample?: any
 ): TemplateVariable[] {
-  console.log('🔧 Extracting variables for section:', currentSectionTitle, 'Backend data:', backendExample)
+  console.log('🚀 VARIABLE EXTRACTION DEBUG START')
+  console.log('🎯 Target section title:', currentSectionTitle)
+  console.log('📋 Available backend sections:', backendExample?.writing_guidance_sections?.map((s: any) => s.section_name) || 'NONE')
+  console.log('🔍 Backend has guidance sections:', !!backendExample?.writing_guidance_sections)
+  console.log('📦 Backend sections length:', backendExample?.writing_guidance_sections?.length || 0)
   
   const variables: TemplateVariable[] = []
   
