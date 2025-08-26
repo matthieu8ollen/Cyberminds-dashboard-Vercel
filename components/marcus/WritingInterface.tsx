@@ -372,7 +372,7 @@ useEffect(() => {
     setTemplateVariables([])
     console.log('⚠️ No current section title available')
   }
-}, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
+}, [formula, currentSection?.title, ideationData, backendExample, generatedExample, currentSectionIndex])
 
   // Initialize content checks
   useEffect(() => {
