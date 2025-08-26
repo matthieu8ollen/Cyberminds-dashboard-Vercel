@@ -302,11 +302,11 @@ useEffect(() => {
     return {
   id: `section-${index}`,
   title: cleanTitle,
-  // Prioritize structured content, then legacy format, then template with variables
-  content: structuredContent || backendExample?.section_examples?.[cleanTitle] || getTemplatePlaceholder(cleanTitle, formula, index),
-  // Prioritize structured guidance, then legacy, then default
-  guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-  placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
+  // Prioritize structured content, then legacy format, then empty (let user write)
+content: structuredContent || backendExample?.section_examples?.[cleanTitle] || '',
+// Prioritize structured guidance, then legacy, then default
+guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
       wordCountTarget: getWordCountTarget(cleanTitle),
       wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
@@ -334,7 +334,7 @@ useEffect(() => {
     
     console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
   }
-}, [formula, currentSection?.title, ideationData, backendExample])
+}, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
   
   // Initialize content checks
   useEffect(() => {
@@ -392,7 +392,7 @@ useEffect(() => {
   }
 
  function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
-  return `Write your ${title.toLowerCase()} here with [VARIABLES] as placeholders...`
+  return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
 }
 
 function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
@@ -1151,28 +1151,11 @@ const renderTemplateVariables = () => (
             </div>
             {variable.aiSuggestion && (
               <button
-  onClick={() => {
-    handleTemplateVariableChange(variable.name, variable.aiSuggestion!)
-    
-    // Update the writing area with the variable
-    const currentContent = currentSection?.content || ''
-    const placeholder = `[${variable.name}]`
-    
-    if (currentContent.includes(placeholder)) {
-      // Replace existing placeholder
-      const newContent = currentContent.replace(new RegExp(`\\[${variable.name}\\]`, 'g'), variable.aiSuggestion!)
-      handleSectionChange(newContent)
-    } else if (!currentContent.trim() || currentContent === currentSection?.placeholder) {
-      // Pre-populate with template if area is empty or has default placeholder
-      const template = getTemplatePlaceholder(currentSection.title, formula, currentSectionIndex)
-      const filledTemplate = template.replace(`[${variable.name}]`, variable.aiSuggestion!)
-      handleSectionChange(filledTemplate)
-    }
-  }}
+  onClick={() => handleTemplateVariableChange(variable.name, variable.aiSuggestion!)}
   className="mt-1 text-xs text-purple-600 hover:text-purple-800 flex items-center space-x-1"
 >
   <span>🤖</span>
-  <span>Use AI suggestion & fill template</span>
+<span>Use AI suggestion</span>
 </button>
             )}
           </div>
@@ -1191,7 +1174,7 @@ const renderTemplateVariables = () => (
   templateVariables.forEach(variable => {
     const placeholder = `[${variable.name}]`
     const value = variable.value || variable.aiSuggestion || placeholder
-    template = template.replace(new RegExp(`\\[${variable.name}\\]`, 'g'), value)
+    template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
   })
   return template
 } else if (previewMode === 'example') {
@@ -1199,27 +1182,27 @@ const renderTemplateVariables = () => (
   } else if (previewMode === 'generated') {
     return generatedExample?.generated_content?.complete_post || 'AI-generated content will appear here...'
   } else {
-    // Auto mode - flicker between current section template and generated (slower)
-    if (currentSection?.content.trim()) {
-      return currentSection.content
+  // Auto mode - flicker between current section template and generated (slower)
+  if (currentSection?.content.trim() && currentSection.content !== currentSection.placeholder) {
+    return currentSection.content
+  } else {
+    if (autoFlickerIndex === 0) {
+      // Show template with variables filled
+      let template = currentSection?.placeholder || ''
+      templateVariables.forEach(variable => {
+        const placeholder = `[${variable.name}]`
+        const value = variable.aiSuggestion || placeholder
+        template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
+      })
+      return template
     } else {
-      if (autoFlickerIndex === 0) {
-        // Show template with variables filled
-        let template = currentSection?.placeholder || ''
-        templateVariables.forEach(variable => {
-          const placeholder = `[${variable.name}]`
-          const value = variable.aiSuggestion || placeholder
-          template = template.replace(new RegExp(placeholder, 'g'), value)
-        })
-        return template
-      } else {
-        // Show backend example for this section if available
-        return backendExample?.section_examples?.[currentSection?.title] || 
-               generatedExample?.generated_content?.complete_post?.split('\n\n')[currentSectionIndex] ||
-               currentSection?.placeholder || ''
-      }
+      // Show backend example for this section if available
+      return backendExample?.section_examples?.[currentSection?.title] || 
+             generatedExample?.generated_content?.complete_post?.split('\n\n')[currentSectionIndex] ||
+             currentSection?.placeholder || ''
     }
   }
+}
 }
 
     const wordCount = getPreviewContent().trim().split(/\s+/).length
