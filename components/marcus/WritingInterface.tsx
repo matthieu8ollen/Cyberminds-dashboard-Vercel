@@ -479,6 +479,9 @@ function extractTemplateVariables(
 ): TemplateVariable[] {
   console.log('🚀 CORRECTED VARIABLE EXTRACTION START')
   console.log('🎯 Target section title:', currentSectionTitle)
+  console.log('🔍 generatedExample exists:', !!generatedExample)
+  console.log('🔍 all_filled_variables exists:', !!generatedExample?.all_filled_variables)
+  console.log('🔍 all_filled_variables content:', JSON.stringify(generatedExample?.all_filled_variables, null, 2))
   
   const variables: TemplateVariable[] = []
   
