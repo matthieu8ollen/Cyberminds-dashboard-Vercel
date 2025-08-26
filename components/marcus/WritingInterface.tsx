@@ -340,6 +340,10 @@ useEffect(() => {
   }
 }, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
   
+  // Computed values
+  const currentSection = sections[currentSectionIndex]
+  const totalSections = sections.length
+
   // Initialize content checks
   useEffect(() => {
     const checks = initializeContentChecks(formula.category)
