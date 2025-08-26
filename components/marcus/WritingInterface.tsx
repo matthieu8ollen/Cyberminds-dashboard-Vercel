@@ -767,6 +767,66 @@ function getSectionSpecificVariables(
   }
 }, [assembledContent, showToast, currentSectionIndex])
 
+  const handleSaveAndExit = useCallback(async () => {
+  if (!assembledContent.trim()) {
+    showToast('warning', 'Please add some content before saving')
+    return
+  }
+
+  try {
+    const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+      user_id: '',
+      content_text: assembledContent,
+      content_type: 'framework',
+      tone_used: 'professional',
+      prompt_input: formula?.name || 'Content Formula',
+      is_saved: true,
+      title: formula?.name,
+      status: 'draft'
+    }
+    
+    const saved = await saveDraft(contentData, 'marcus')
+    
+    if (saved) {
+      showToast('success', 'Content saved to Production Pipeline!')
+      if (onExitWorkflow) {
+        onExitWorkflow()
+      }
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}, [assembledContent, formula, saveDraft, showToast, onExitWorkflow])
+
+const handleContinueToImages = useCallback(async () => {
+  if (!assembledContent.trim()) {
+    showToast('warning', 'Please add some content before continuing')
+    return
+  }
+
+  try {
+    const contentData: Omit<GeneratedContent, 'id' | 'created_at'> = {
+      user_id: '',
+      content_text: assembledContent,
+      content_type: 'framework',
+      tone_used: 'professional',
+      prompt_input: formula?.name || 'Content Formula',
+      is_saved: true,
+      title: formula?.name,
+      status: 'draft'
+    }
+    
+    const saved = await saveDraft(contentData, 'marcus')
+    
+    if (saved && onContinueToImages) {
+      showToast('success', 'Content saved! Adding image...')
+      onContinueToImages(saved.id)
+    }
+  } catch (error) {
+    showToast('error', 'Failed to save content')
+  }
+}, [assembledContent, formula, saveDraft, showToast, onContinueToImages])
+
   const handleAIAnalysis = useCallback(async () => {
     // TODO: Implement AI analysis call
     showToast('info', 'AI analysis feature coming soon')
