@@ -335,7 +335,7 @@ useEffect(() => {
     const sectionTitle = sections[currentSectionIndex]?.title || 'Unknown Section'
 console.log(`📝 Loaded ${variables.length} variables for section: ${sectionTitle}`, variables)
   }
-}, [formula, currentSection?.title, ideationData, backendExample, currentSectionIndex])
+}, [formula, sections[currentSectionIndex]?.title, ideationData, backendExample, currentSectionIndex])
   
   // Initialize content checks
   useEffect(() => {
