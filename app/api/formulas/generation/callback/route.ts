@@ -7,6 +7,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('🎯 Received formula generation from backend:', body)
+    console.log('🔍 RAW BACKEND VARIABLE VERIFICATION:')
+    console.log('📦 Backend sent all_filled_variables:', JSON.stringify(body.all_filled_variables, null, 2))
+    console.log('📊 Variable count received:', Object.keys(body.all_filled_variables || {}).length)
+    console.log('📋 Backend claims total_variables_filled:', body.total_variables_filled)
+    console.log('⚠️ MISMATCH CHECK: Claims', body.total_variables_filled, 'variables but sent', Object.keys(body.all_filled_variables || {}).length, 'variables')
     
     const { 
   session_id, 
