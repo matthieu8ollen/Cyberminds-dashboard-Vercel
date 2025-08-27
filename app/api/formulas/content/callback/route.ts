@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 const contentResponses = new Map<string, any>()
 
 export async function POST(request: NextRequest) {
+  console.log('🚨 CALLBACK ROUTE ACCESSED - REQUEST RECEIVED')
+  console.log('📍 Timestamp:', new Date().toISOString())
   try {
     const body = await request.json()
     console.log('🎯 Received backend response:', body)
