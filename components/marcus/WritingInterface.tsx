@@ -1030,7 +1030,7 @@ const renderTemplateVariables = () => (
       return template
     } else if (previewMode === 'example') {
       // Show backend example for current section only
-      return backendExample?.section_examples?.[currentSection?.title] || currentSection?.placeholder || ''
+      return contentData?.guidance?.section_examples?.[currentSection?.title] || currentSection?.placeholder || ''
     }
     
     // Default to template mode
