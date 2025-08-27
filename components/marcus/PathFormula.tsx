@@ -391,6 +391,14 @@ const renderIdeationContext = () => {
         concrete_evidence: ideationData?.concrete_evidence || '',
         audience_and_relevance: ideationData?.audience_and_relevance || ''
       }
+
+      // 🔍 DEBUG: Log outgoing formula payload
+      console.log('📤 OUTGOING PAYLOAD DEBUG:')
+      console.log('🎯 Selected Formula ID:', selectedFormula?.id)
+      console.log('📝 Selected Formula Name:', selectedFormula?.name)
+      console.log('🏷️ Selected Formula Category:', selectedFormula?.category)
+      console.log('📋 Selected Formula Structure:', selectedFormula?.structure)
+      console.log('🔍 FULL PAYLOAD:', JSON.stringify(payload, null, 2))
             
       const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
       
@@ -408,6 +416,20 @@ const renderIdeationContext = () => {
         
         if (contentResponse && contentResponse !== 'TIMEOUT' && contentResponse !== 'ERROR') {
           console.log('✅ Complete AI dataset received - both content and guidance ready')
+          
+          // 🔍 DEBUG: Log incoming response correlation
+          console.log('📥 INCOMING RESPONSE DEBUG:')
+          console.log('🎯 Original Formula Selected:', selectedFormula?.name, '(ID:', selectedFormula?.id + ')')
+          console.log('📝 Response Guidance Sections:', contentResponse.guidance?.writing_guidance_sections?.length || 0)
+          console.log('🏗️ Response Structure Match Check:')
+          
+          if (contentResponse.guidance?.writing_guidance_sections) {
+            contentResponse.guidance.writing_guidance_sections.forEach((section: any, index: number) => {
+              console.log(`  Section ${index + 1}:`, section.section_title || 'No title')
+              console.log(`  Expected:`, selectedFormula?.structure[index] || 'No matching structure')
+              console.log(`  Match:`, section.section_title === selectedFormula?.structure[index]?.split(' - ')[0])
+            })
+          }
           
           // Verify both responses are present
           const hasValidContent = contentResponse.generatedContent?.generated_content?.complete_post
