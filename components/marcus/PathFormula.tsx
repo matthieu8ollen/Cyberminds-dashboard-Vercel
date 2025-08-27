@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, ArrowRight, BookOpen, Target, BarChart3, Sparkles, CheckCircle, Loader2, Star } from 'lucide-react'
 import WritingInterface from './WritingInterface'
+import AIContentOverlay from './AIContentOverlay'
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
 import { GeneratedContent, getContentFormulas, type ContentFormula, type FormulaSection } from '../../lib/supabase'
@@ -309,6 +310,17 @@ const renderIdeationContext = () => {
   const handleFormulaSelect = (formula: FormulaTemplate) => {
     setSelectedFormula(formula)
     setCurrentStep('template')
+  }
+
+  const handleApproveContent = () => {
+    setShowContentPreview(false)
+    // Content approved, proceed to writing interface
+  }
+
+  const handleTryDifferentFormula = () => {
+    setShowContentPreview(false)
+    setContentData(null)
+    setCurrentStep('selection') // Go back to formula selection
   }
 
   const handleStartWriting = async () => {
@@ -722,15 +734,14 @@ const renderIdeationContext = () => {
     onComplete={handleWritingComplete}
     ideationData={ideationData}
     initialContent={editingContent}
-    backendExample={backendExample}
-    generatedExample={generatedExample}
+    contentData={contentData}
     inStrictWorkflow={!!onExitWorkflow}
     onExitWorkflow={onExitWorkflow}
     onContinueToImages={onContinueToImages}
   />
 )
 }
-
+  
 const renderFinalPreview = () => (
   <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div className="flex items-center justify-between mb-8">
@@ -863,7 +874,19 @@ const renderFinalPreview = () => (
   case 'template':
     return renderTemplatePreview()
   case 'writing':
-    return renderWritingInterface()
+    return (
+      <>
+        {renderWritingInterface()}
+        <AIContentOverlay
+          isVisible={showContentPreview}
+          onClose={() => setShowContentPreview(false)}
+          onApprove={handleApproveContent}
+          onTryDifferent={handleTryDifferentFormula}
+          contentData={contentData}
+          mode="preview"
+        />
+      </>
+    )
   case 'preview':
     return renderFinalPreview()
   default:
