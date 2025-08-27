@@ -25,14 +25,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Get existing response for this session (if any)
-    const existingResponse = contentResponses.get(session_id) || {
-      response_type: 'content_with_guidance',
-      processing_status: 'partial',
-      timestamp: Date.now(),
-      conversation_stage: 'processing',
-      guidance: null,
-      generatedContent: null
-    }
+const existingResponse = contentResponses.get(session_id) || {
+  response_type: 'content_with_guidance',
+  processing_status: 'partial',
+  timestamp: Date.now(),
+  conversation_stage: 'processing',
+  guidance: null,
+  generatedContent: null
+}
+
+console.log('🔄 EXISTING RESPONSE CHECK:', {
+  session_id,
+  hasExistingResponse: !!contentResponses.get(session_id),
+  currentData: contentResponses.get(session_id) ? 'exists' : 'new'
+})
 
     // Handle writing guidance response
     if (response_type === 'writing_guidance_extracted') {
