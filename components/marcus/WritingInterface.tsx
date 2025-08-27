@@ -24,7 +24,7 @@ import {
 import { useContent } from '../../contexts/ContentContext'
 import { useToast } from '../ToastNotifications'
 import { GeneratedContent } from '../../lib/supabase'
-import AISidebar from './AISidebar'
+import AIContentOverlay from './AIContentOverlay'
 import ContentPreview from './ContentPreview'
 import WritingSidebar from './WritingSidebar'
 
@@ -101,56 +101,10 @@ interface WritingInterfaceProps {
     takeaways?: string[]
   }
   initialContent?: string
-  backendExample?: {
-    example_post?: string
-    section_examples?: Record<string, string>
-    tips_and_guidance?: string[]
-    template_variables?: Record<string, string>
-    // NEW: Support for structured guidance response
-    response_type?: string
-    writing_guidance_sections?: any[]
-    total_sections?: string
-    guidance_types_found?: string[]
-    extraction_metadata?: any
-    processing_status?: string
-    conversation_stage?: string
-  }
-  generatedExample?: {
-  response_type?: string
-  processing_status?: string
-  total_sections?: string
-  total_variables_filled?: string
-  validation_score?: string
-  extraction_timestamp?: string
-  generated_content?: {
-    complete_post?: string
-    post_analytics?: {
-      word_count?: string
-      character_count?: string
-      paragraph_count?: string
-      numbered_lists?: string
-      has_hook?: string
-      ends_with_cta?: string
-      contains_metrics?: string
-    }
-  }
-  sections_data?: any[]
-  all_filled_variables?: Record<string, any>
-  template_validation?: {
-    all_sections_found?: string
-    sections_with_variables?: string
-    total_variables_found?: string
-    validation_score?: string
-    all_variables_filled?: string
-    section_validation?: any[]
-  }
-  extraction_metadata?: any
-  conversation_stage?: string
-  timestamp?: number
-  // Legacy fields for backward compatibility
-  full_post?: string
-  linkedin_ready?: string
-}
+  contentData?: {
+    guidance?: any
+    generatedContent?: any
+  } | null
   inStrictWorkflow?: boolean
   onExitWorkflow?: () => void
   onContinueToImages?: (contentId: string) => void
@@ -169,8 +123,7 @@ export default function WritingInterface({
   onComplete,
   ideationData,
   initialContent,
-  backendExample,
-  generatedExample,
+  contentData,
   inStrictWorkflow = false,
   onExitWorkflow,
   onContinueToImages
@@ -188,7 +141,7 @@ const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
 const [currentView, setCurrentView] = useState<'writing' | 'preview'>('writing')
 const [previewMode, setPreviewMode] = useState<PreviewMode>('template')
 const [activeGuidanceTab, setActiveGuidanceTab] = useState<GuidanceTabId>('matters')
-const [showAISidebar, setShowAISidebar] = useState(false)
+const [showAIOverlay, setShowAIOverlay] = useState(false)
 const [showFullDraftModal, setShowFullDraftModal] = useState(false)
   
   // Content State
@@ -216,47 +169,17 @@ const [showTemplateVariables, setShowTemplateVariables] = useState(true)
 // DEBUG LOGGING
 // ============================================================================
 
-// DEBUG: Complete backend data analysis
+// Single content data analysis
 useEffect(() => {
-  console.log('🔍 COMPLETE BACKEND ANALYSIS START')
-  console.log('📦 Full backendExample object:', JSON.stringify(backendExample, null, 2))
-  
-  if (backendExample?.writing_guidance_sections) {
-    console.log('📝 Backend sections array length:', backendExample.writing_guidance_sections.length)
-    
-    backendExample.writing_guidance_sections.forEach((section: any, index: number) => {
-      console.log(`📋 Section ${index} COMPLETE STRUCTURE:`, {
-        section_name: section.section_name,
-        section_order: section.section_order,
-        section_id: section.section_id,
-        guidance_types: section.guidance_types,
-        ALL_KEYS: Object.keys(section),
-        COMPLETE_OBJECT: JSON.stringify(section, null, 2)
-      })
-    })
-  } else {
-    console.log('❌ No writing_guidance_sections found in backend data')
-  }
-  
-  console.log('🔍 COMPLETE BACKEND ANALYSIS END')
-}, [backendExample])
-
-  // Debug generated content data
-useEffect(() => {
-  if (generatedExample?.generated_content?.complete_post) {
-    console.log('🎯 Generated Content Received:', {
-      response_type: generatedExample.response_type,
-      processing_status: generatedExample.processing_status,
-      validation_score: generatedExample.validation_score,
-      total_sections: generatedExample.total_sections,
-      total_variables_filled: generatedExample.total_variables_filled,
-      post_analytics: generatedExample.generated_content.post_analytics,
-      sections_count: generatedExample.sections_data?.length,
-      complete_post_length: generatedExample.generated_content.complete_post?.length,
-      template_validation: generatedExample.template_validation
+  if (contentData) {
+    console.log('✅ Consolidated content data received:', {
+      hasGuidance: !!contentData.guidance,
+      hasGeneratedContent: !!contentData.generatedContent,
+      guidanceSections: contentData.guidance?.writing_guidance_sections?.length || 0,
+      generatedPostLength: contentData.generatedContent?.generated_content?.complete_post?.length || 0
     })
   }
-}, [generatedExample])
+}, [contentData])
 
   // ============================================================================
 // STRUCTURED GUIDANCE HELPERS
@@ -350,29 +273,19 @@ placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
   
  // Initialize template variables - section-specific
 useEffect(() => {
-  console.log('🎯 SECTION TITLE DEBUG:', {
-    currentSection_title: currentSection?.title,
-    currentSectionIndex: currentSectionIndex,
-    formula_structure: formula.structure,
-    all_section_titles: sections.map(s => s.title)
-  })
-  
   if (currentSection?.title) {
     const variables = extractTemplateVariables(
       formula, 
       currentSection.title, 
       ideationData, 
-      backendExample,
-      generatedExample
+      contentData
     )
     setTemplateVariables(variables)
-    
-    console.log(`📝 FINAL RESULT: Loaded ${variables.length} variables for section: ${currentSection.title}`, variables)
+    console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`)
   } else {
     setTemplateVariables([])
-    console.log('⚠️ No current section title available')
   }
-}, [formula, currentSection?.title, ideationData, backendExample, generatedExample, currentSectionIndex])
+}, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex])
 
   // Initialize content checks
   useEffect(() => {
