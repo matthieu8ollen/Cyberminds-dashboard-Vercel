@@ -17,39 +17,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
     }
 
-    // Store the complete consolidated response
+    // Store the complete consolidated response matching backend format
     contentResponses.set(session_id, {
       response_type: body.response_type || 'content_with_guidance',
       processing_status: body.processing_status,
       timestamp: body.timestamp || Date.now(),
       conversation_stage: body.conversation_stage,
       
-      // Consolidated guidance data
+      // Writing guidance (first response structure)
       guidance: {
-        writing_guidance_sections: body.guidance?.writing_guidance_sections || [],
-        total_sections: body.guidance?.total_sections || '',
-        guidance_types_found: body.guidance?.guidance_types_found || [],
-        extraction_metadata: body.guidance?.extraction_metadata || {},
-        // Legacy compatibility fields
-        example_post: body.guidance?.example_post || '',
-        section_examples: body.guidance?.section_examples || {},
-        template_variables: body.guidance?.template_variables || {},
-        tips_and_guidance: body.guidance?.tips_and_guidance || []
+        writing_guidance_sections: body.writing_guidance_sections || [],
+        total_sections: body.total_sections || '',
+        guidance_types_found: body.guidance_types_found || [],
+        extraction_metadata: body.extraction_metadata || {},
+        field_analysis: body.field_analysis || {}
       },
       
-      // Consolidated content data  
-      content: {
+      // Generated content (second response structure)
+      generatedContent: {
         generated_content: {
-          complete_post: body.content?.generated_content?.complete_post || '',
-          post_analytics: body.content?.generated_content?.post_analytics || {}
+          complete_post: body.generated_content?.complete_post || '',
+          post_analytics: body.generated_content?.post_analytics || {}
         },
-        sections_data: body.content?.sections_data || [],
-        all_filled_variables: body.content?.all_filled_variables || {},
-        template_validation: body.content?.template_validation || {},
-        total_variables_filled: body.content?.total_variables_filled || '',
-        validation_score: body.content?.validation_score || '',
-        extraction_timestamp: body.content?.extraction_timestamp || '',
-        extraction_metadata: body.content?.extraction_metadata || {}
+        sections_data: body.sections_data || [],
+        all_filled_variables: body.all_filled_variables || {},
+        template_validation: body.template_validation || {},
+        total_variables_filled: body.total_variables_filled || '',
+        validation_score: body.validation_score || '',
+        extraction_timestamp: body.extraction_timestamp || ''
       }
     })
     
