@@ -666,8 +666,10 @@ function getSectionSpecificVariables(
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
       setCurrentSectionIndex(sectionIndex)
+      console.log(`📍 Navigated to section ${sectionIndex + 1}: ${sections[sectionIndex]?.title}`)
+      console.log('🎯 Backend data for this section:', sections[sectionIndex]?.backendData ? 'Available' : 'None')
     }
-  }, [sections.length])
+  }, [sections.length, sections])
 
   const handlePreviousSection = useCallback(() => {
     if (currentSectionIndex > 0) {
@@ -813,36 +815,21 @@ const handleContinueToImages = useCallback(async () => {
     icon: Brain,
     active: activeGuidanceTab === 'matters',
     content: (() => {
-      const structuredContent: string[] = []
+      const currentBackendSection = currentSection?.backendData
       
-      // Extract psychological insights from structured guidance
-      if (contentData?.guidance?.writing_guidance_sections) {
-        contentData.guidance.writing_guidance_sections.forEach((section: any) => {
-          // Look for psychology-related guidance
-          Object.keys(section).forEach(key => {
-            if (key.includes('psychology') || key.includes('why_it_works') || key.includes('impact')) {
-              const value = section[key]
-              if (typeof value === 'string' && value.trim()) {
-                structuredContent.push(value)
-              } else if (typeof value === 'object' && value.explanation) {
-                structuredContent.push(value.explanation)
-              }
-            }
-          })
-        })
+      if (currentBackendSection?.why_this_matters) {
+        const whyMatters = currentBackendSection.why_this_matters
+        if (typeof whyMatters === 'string') {
+          return [whyMatters]
+        } else if (typeof whyMatters === 'object' && whyMatters.main_point) {
+          return [whyMatters.main_point, whyMatters.how_it_works || '']
+        }
       }
       
-      // Include general guidance types found
-if (contentData?.guidance?.guidance_types_found && contentData.guidance.guidance_types_found.length > 0) {
-  structuredContent.push(`Guidance available: ${contentData.guidance.guidance_types_found.join(', ')}`)
-}
-      
-      // Fallback to default content if no structured data
-      return structuredContent.length > 0 ? structuredContent : [
+      // Fallback to generic content
+      return [
         'This creates an "insider secret" promise. Your audience desperately wants validation that they\'re not missing critical knowledge.',
-        'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.',
-        'This psychological trigger of "insider knowledge" makes readers feel they\'re getting exclusive information.',
-        contentData?.guidance?.tips_and_guidance?.[0] || 'Focus on the psychological impact of your message.'
+        'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.'
       ]
     })()
   },
@@ -852,25 +839,23 @@ if (contentData?.guidance?.guidance_types_found && contentData.guidance.guidance
     icon: Target,
     active: activeGuidanceTab === 'essentials',
     content: (() => {
-      const structuredEssentials: string[] = []
+      const currentBackendSection = currentSection?.backendData
+      const essentials: string[] = []
       
-      // Extract essential guidance from structured response
-      if (contentData?.guidance?.writing_guidance_sections) {
-        contentData.guidance.writing_guidance_sections.forEach((section: any) => {
-          Object.keys(section).forEach(key => {
-            if (key.includes('essential') || key.includes('requirement') || key.includes('must_include')) {
-              const value = section[key]
-              if (typeof value === 'string') {
-                structuredEssentials.push(`✓ ${value}`)
-              } else if (Array.isArray(value)) {
-                value.forEach(item => structuredEssentials.push(`✓ ${item}`))
-              }
+      if (currentBackendSection?.story_essentials) {
+        const storyEssentials = currentBackendSection.story_essentials
+        if (typeof storyEssentials === 'object') {
+          Object.entries(storyEssentials).forEach(([key, value]) => {
+            if (typeof value === 'string' && key !== '_analytics') {
+              essentials.push(`✓ ${key.replace(/_/g, ' ')}: ${value}`)
             }
           })
-        })
+        } else if (typeof storyEssentials === 'string') {
+          essentials.push(`✓ ${storyEssentials}`)
+        }
       }
       
-      return structuredEssentials.length > 0 ? structuredEssentials : [
+      return essentials.length > 0 ? essentials : [
         '✓ Personal stakes - What did you have to lose?',
         '✓ Specific moment - When exactly did this happen?',
         '✓ Emotional state - How did you feel?',
@@ -879,61 +864,67 @@ if (contentData?.guidance?.guidance_types_found && contentData.guidance.guidance
       ]
     })()
   },
-    {
-      id: 'techniques',
-      label: 'Writing Techniques',
-      icon: Edit3,
-      active: activeGuidanceTab === 'techniques',
-      content: [
+  {
+    id: 'techniques',
+    label: 'Writing Techniques',
+    icon: Edit3,
+    active: activeGuidanceTab === 'techniques',
+    content: (() => {
+      const currentBackendSection = currentSection?.backendData
+      const techniques: string[] = []
+      
+      if (currentBackendSection?.writing_techniques) {
+        const writingTechniques = currentBackendSection.writing_techniques
+        if (typeof writingTechniques === 'object') {
+          Object.entries(writingTechniques).forEach(([key, value]) => {
+            if (typeof value === 'string' && key !== '_analytics') {
+              techniques.push(`• ${key.replace(/_/g, ' ')}: ${value}`)
+            }
+          })
+        } else if (typeof writingTechniques === 'string') {
+          techniques.push(`• ${writingTechniques}`)
+        }
+      }
+      
+      return techniques.length > 0 ? techniques : [
         'Use present tense for immediate scenes: "I walk into the meeting room..."',
         'Include sensory details: sounds, sights, physical sensations',
         'Show don\'t tell: "My hands were shaking" vs "I was nervous"',
-        'Use specific numbers and details for credibility',
-        'End sections with transition hooks to maintain flow'
+        'Use specific numbers and details for credibility'
       ]
-    },
-    {
-      id: 'reader',
-      label: 'Know Your Reader',
-      icon: Users,
-      active: activeGuidanceTab === 'reader',
-      content: [
+    })()
+  },
+  {
+    id: 'reader',
+    label: 'Know Your Reader',
+    icon: Users,
+    active: activeGuidanceTab === 'reader',
+    content: (() => {
+      const currentBackendSection = currentSection?.backendData
+      const readerInfo: string[] = []
+      
+      if (currentBackendSection?.know_your_reader) {
+        const knowReader = currentBackendSection.know_your_reader
+        if (typeof knowReader === 'object') {
+          Object.entries(knowReader).forEach(([key, value]) => {
+            if (typeof value === 'string' && key !== '_analytics') {
+              readerInfo.push(`${key.replace(/_/g, ' ')}: ${value}`)
+            }
+          })
+        } else if (typeof knowReader === 'string') {
+          readerInfo.push(knowReader)
+        }
+      }
+      
+      return readerInfo.length > 0 ? readerInfo : [
         `Your audience: ${formula.category === 'story' ? 'Professionals who have faced similar challenges' : 'People looking for structured solutions'}`,
         'They want: Practical insights they can immediately apply',
         'They fear: Making costly mistakes or missing opportunities',
-        'They value: Authentic experiences and proven frameworks',
-        ideationData?.angle ? `Your angle: ${ideationData.angle}` : 'Connect with their current situation'
+        'They value: Authentic experiences and proven frameworks'
       ]
-    },
-    {
-      id: 'arc',
-      label: 'Emotional Arc',
-      icon: Heart,
-      active: activeGuidanceTab === 'arc',
-      content: [
-        '1. Hook: Curiosity and intrigue',
-        '2. Problem: Recognition and concern',
-        '3. Stakes: Tension and investment',
-        '4. Solution: Relief and hope',
-        '5. Outcome: Satisfaction and learning',
-        'Each section should build emotional momentum toward the resolution'
-      ]
-    },
-    {
-      id: 'voice',
-      label: 'Voice & Tone',
-      icon: Mic,
-      active: activeGuidanceTab === 'voice',
-      content: [
-        'Conversational but professional',
-        'Confident without being arrogant',
-        'Vulnerable about mistakes, strong about lessons learned',
-        'Use contractions: "don\'t" not "do not"',
-        'Avoid jargon unless your audience expects it',
-        'Write like you\'re talking to a colleague over coffee'
-      ]
-    }
-]
+    })()
+  }
+  ]
 
   // ============================================================================
   // RENDER FUNCTIONS
