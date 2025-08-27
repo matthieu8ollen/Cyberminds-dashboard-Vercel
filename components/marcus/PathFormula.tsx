@@ -86,6 +86,13 @@ const pollForContentResponse = async (sessionId: string) => {
       const result = await response.json()
       
       if (result.success && result.data && result.type === 'final') {
+        console.log('✅ Complete dataset received - both content and guidance ready')
+        console.log('🔍 Verification:', {
+          hasGuidance: !!result.data.guidance,
+          hasContent: !!result.data.generatedContent,
+          contentLength: result.data.generatedContent?.generated_content?.complete_post?.length || 0,
+          guidanceSections: result.data.guidance?.writing_guidance_sections?.length || 0
+        })
         return result.data
       }
       
@@ -400,14 +407,25 @@ const renderIdeationContext = () => {
         const contentResponse = await pollForContentResponse(sessionId)
         
         if (contentResponse && contentResponse !== 'TIMEOUT' && contentResponse !== 'ERROR') {
-          console.log('✅ Received consolidated content response:', contentResponse)
-          setContentData({
-            guidance: contentResponse.guidance,
-            generatedContent: contentResponse.content
-          })
-          setShowContentPreview(true) // Show overlay preview
+          console.log('✅ Complete AI dataset received - both content and guidance ready')
+          
+          // Verify both responses are present
+          const hasValidContent = contentResponse.generatedContent?.generated_content?.complete_post
+          const hasValidGuidance = contentResponse.guidance?.writing_guidance_sections?.length > 0
+          
+          if (hasValidContent && hasValidGuidance) {
+            setContentData({
+              guidance: contentResponse.guidance,
+              generatedContent: contentResponse.generatedContent
+            })
+            setShowContentPreview(true) // Show overlay with complete AI assistance
+            console.log('🎉 Overlay displayed with complete AI dataset')
+          } else {
+            console.log('⚠️ Incomplete dataset received:', { hasValidContent, hasValidGuidance })
+            console.log('📝 Proceeding with template-only approach')
+          }
         } else {
-          console.log('⚠️ Content response timeout - proceeding with template only')
+          console.log('⚠️ Response timeout - proceeding with template-only approach')
         }
       }
           
