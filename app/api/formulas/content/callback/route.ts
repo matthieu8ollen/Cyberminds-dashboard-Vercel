@@ -6,35 +6,45 @@ const contentResponses = new Map<string, any>()
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('🎯 Received consolidated content from backend:', body)
-    console.log('🔍 CONSOLIDATED CALLBACK VERIFICATION:')
-    console.log('📦 Backend sent guidance data:', !!body.guidance)
-    console.log('📊 Backend sent content data:', !!body.content)
+    console.log('🎯 Received backend response:', body)
     
-    const { session_id } = body
+    const { session_id, response_type } = body
 
     if (!session_id) {
       return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
     }
 
-    // Store the complete consolidated response matching backend format
-    contentResponses.set(session_id, {
-      response_type: body.response_type || 'content_with_guidance',
-      processing_status: body.processing_status,
-      timestamp: body.timestamp || Date.now(),
-      conversation_stage: body.conversation_stage,
+    // Get existing response for this session (if any)
+    const existingResponse = contentResponses.get(session_id) || {
+      response_type: 'content_with_guidance',
+      processing_status: 'partial',
+      timestamp: Date.now(),
+      conversation_stage: 'processing',
+      guidance: null,
+      generatedContent: null
+    }
+
+    // Handle writing guidance response
+    if (response_type === 'writing_guidance_extracted') {
+      console.log('📝 Processing writing guidance response...')
       
-      // Writing guidance (first response structure)
-      guidance: {
+      existingResponse.guidance = {
         writing_guidance_sections: body.writing_guidance_sections || [],
         total_sections: body.total_sections || '',
         guidance_types_found: body.guidance_types_found || [],
         extraction_metadata: body.extraction_metadata || {},
         field_analysis: body.field_analysis || {}
-      },
+      }
       
-      // Generated content (second response structure)
-      generatedContent: {
+      existingResponse.conversation_stage = body.conversation_stage
+      console.log('✅ Stored guidance data for session:', session_id)
+    }
+    
+    // Handle content generation response
+    else if (response_type === 'content_generation_complete') {
+      console.log('📊 Processing generated content response...')
+      
+      existingResponse.generatedContent = {
         generated_content: {
           complete_post: body.generated_content?.complete_post || '',
           post_analytics: body.generated_content?.post_analytics || {}
@@ -46,9 +56,26 @@ export async function POST(request: NextRequest) {
         validation_score: body.validation_score || '',
         extraction_timestamp: body.extraction_timestamp || ''
       }
-    })
+      
+      existingResponse.conversation_stage = body.conversation_stage
+      console.log('✅ Stored content data for session:', session_id)
+    }
+
+    // Check if both responses received
+    const hasGuidance = !!existingResponse.guidance
+    const hasContent = !!existingResponse.generatedContent
     
-    console.log('✅ Stored consolidated content response for session:', session_id)
+    if (hasGuidance && hasContent) {
+      existingResponse.processing_status = 'complete'
+      console.log('🎉 Both responses received - marking as complete for session:', session_id)
+    } else {
+      existingResponse.processing_status = 'partial'
+      console.log('⏳ Waiting for additional response - current status:', { hasGuidance, hasContent })
+    }
+
+    // Update stored response
+    contentResponses.set(session_id, existingResponse)
+    
     return NextResponse.json({ success: true, received: true })
   } catch (error) {
     console.error('❌ Error processing content callback:', error)
@@ -65,9 +92,13 @@ export async function GET(request: NextRequest) {
   }
   
   const response = contentResponses.get(session_id)
-  if (response) {
+  if (response && response.processing_status === 'complete') {
+    // Only return when both guidance and content received
     contentResponses.delete(session_id) // One-time use
     return NextResponse.json({ success: true, data: response, type: 'final' })
+  } else if (response && response.processing_status === 'partial') {
+    // Still waiting for second response
+    return NextResponse.json({ success: false, data: null, status: 'waiting_for_complete_data' })
   }
   
   return NextResponse.json({ success: false, data: null })
