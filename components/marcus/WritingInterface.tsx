@@ -231,14 +231,14 @@ const extractContentFromStructured = (structuredSection: any, sectionTitle: stri
 // INITIALIZATION
 // ============================================================================
 
-  // Initialize sections from formula structure
+  // Initialize sections from formula structure with consolidated data
 useEffect(() => {
   const initializedSections: SectionData[] = formula.structure.map((step, index) => {
     const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
     const cleanTitle = title.trim()
     
     // Find matching structured guidance section by name or order
-    const structuredGuidance = backendExample?.writing_guidance_sections?.find(
+    const structuredGuidance = contentData?.guidance?.writing_guidance_sections?.find(
       (section: any) => 
         section.section_name === cleanTitle || 
         section.section_order === index ||
@@ -252,11 +252,9 @@ useEffect(() => {
     return {
   id: `section-${index}`,
   title: cleanTitle,
-  // Prioritize structured content, then legacy format, then empty (let user write)
-content: structuredContent || backendExample?.section_examples?.[cleanTitle] || '',
-// Prioritize structured guidance, then legacy, then default
-guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
+  content: structuredContent || contentData?.guidance?.section_examples?.[cleanTitle] || '',
+  guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+  placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
       wordCountTarget: getWordCountTarget(cleanTitle),
       wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
@@ -269,7 +267,7 @@ placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
   })
   
   setSections(initializedSections)
-}, [formula, backendExample])
+}, [formula, contentData])
   
  // Initialize template variables - section-specific
 useEffect(() => {
@@ -387,24 +385,16 @@ function extractTemplateVariables(
   formula: FormulaTemplate,
   currentSectionTitle: string,
   ideationData?: any, 
-  backendExample?: any,
-  generatedExample?: any
+  contentData?: any
 ): TemplateVariable[] {
-  console.log('🚀 FIXED VARIABLE EXTRACTION START')
-  console.log('🎯 Target section title:', currentSectionTitle)
-  console.log('🔍 generatedExample exists:', !!generatedExample)
-  console.log('🔍 all_filled_variables exists:', !!generatedExample?.all_filled_variables)
-  console.log('🔍 all_filled_variables keys:', Object.keys(generatedExample?.all_filled_variables || {}))
-  
   const variables: TemplateVariable[] = []
   
-  // PRIORITY 1: Extract from generatedExample.all_filled_variables
-  if (generatedExample?.all_filled_variables) {
-    console.log('✅ Processing all_filled_variables...')
+  // PRIORITY 1: Extract from contentData.generatedContent.all_filled_variables
+  if (contentData?.generatedContent?.all_filled_variables) {
+    console.log('✅ Processing consolidated all_filled_variables...')
     
-    Object.keys(generatedExample.all_filled_variables).forEach(varKey => {
-      const varData = generatedExample.all_filled_variables[varKey]
-      console.log(`🔍 Processing variable ${varKey}:`, varData)
+    Object.keys(contentData.generatedContent.all_filled_variables).forEach(varKey => {
+      const varData = contentData.generatedContent.all_filled_variables[varKey]
       
       // Check if variable belongs to current section using section_order
       let variableSectionOrder = null
@@ -415,20 +405,15 @@ function extractTemplateVariables(
       const currentSectionOrder = currentSectionIndex + 1 // Convert 0-based to 1-based
       const belongsToCurrentSection = variableSectionOrder === currentSectionOrder
       
-      console.log(`📍 Variable ${varKey} section_order: ${variableSectionOrder} | Current section_order: ${currentSectionOrder} | Match: ${belongsToCurrentSection}`)
-      
       if (!belongsToCurrentSection) {
-        console.log(`⏭️ Skipping ${varKey} - belongs to section ${variableSectionOrder}, current is ${currentSectionOrder}`)
-        return
+        return // Skip variables not for this section
       }
       
-      // Handle any data type - extract useful content regardless of structure
+      // Extract content from variable data
       let aiSuggestion = ''
-      
       if (typeof varData === 'string') {
         aiSuggestion = varData
       } else if (typeof varData === 'object' && varData !== null) {
-        // Try various possible content fields
         aiSuggestion = varData.ai_generated_content || 
                      varData.suggested_value || 
                      varData.content || 
@@ -446,23 +431,20 @@ function extractTemplateVariables(
         type: 'text',
         placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
       })
-      
-      console.log(`✅ Added section-specific variable: ${varKey}`)
     })
     
-    console.log(`🎯 Total variables extracted: ${variables.length}`)
     return variables
   }
   
-  // PRIORITY 2: Legacy template_variables format (backup)
-  if (backendExample?.template_variables) {
-    console.log('📋 Using legacy template_variables')
-    Object.keys(backendExample.template_variables).forEach(key => {
+  // PRIORITY 2: Extract from contentData.guidance.template_variables
+  if (contentData?.guidance?.template_variables) {
+    console.log('📋 Using consolidated template_variables')
+    Object.keys(contentData.guidance.template_variables).forEach(key => {
       variables.push({
         name: key.toUpperCase(),
         label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         value: '',
-        aiSuggestion: backendExample.template_variables[key] || '',
+        aiSuggestion: contentData.guidance.template_variables[key] || '',
         required: false,
         type: 'text',
         placeholder: `Enter ${key.replace(/_/g, ' ').toLowerCase()}`
@@ -471,7 +453,7 @@ function extractTemplateVariables(
     return variables
   }
   
-  // PRIORITY 3: Fallback hardcoded variables (last resort)
+  // PRIORITY 3: Fallback hardcoded variables
   console.log('🔄 Using fallback hardcoded variables')
   return getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
 }
@@ -1085,9 +1067,9 @@ const renderTemplateVariables = () => (
   >
     View Full Draft
   </button>
-  {generatedExample?.generated_content?.complete_post && (
+  {contentData?.generatedContent?.generated_content?.complete_post && (
     <button
-      onClick={() => setShowAISidebar(true)}
+      onClick={() => setShowAIOverlay(true)}
       className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
     >
       AI Content
@@ -1143,15 +1125,15 @@ const renderTemplateVariables = () => (
 
   const renderAIButtons = () => (
   <div className="flex space-x-3 mb-6">
-    {generatedExample?.generated_content?.complete_post && (
+    {contentData?.generatedContent?.generated_content?.complete_post && (
       <button
         onClick={() => {
   // Use AI-generated content for CURRENT SECTION ONLY
-  if (currentSection && generatedExample?.generated_content?.complete_post) {
+  if (currentSection && contentData?.generatedContent?.generated_content?.complete_post) {
     const confirmUse = window.confirm('Replace this section with AI-generated content?')
     if (confirmUse) {
       // Extract the section content from the full AI post (split by paragraphs)
-      const fullPost = generatedExample.generated_content.complete_post
+      const fullPost = contentData.generatedContent.generated_content.complete_post
       const sections = fullPost.split('\n\n')
       const sectionContent = sections[currentSectionIndex] || fullPost
       
@@ -1327,11 +1309,12 @@ return (
   onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
 />
       
-      <AISidebar 
-      isVisible={showAISidebar}
-      onClose={() => setShowAISidebar(false)}
-      generatedExample={generatedExample}
-    />
+      <AIContentOverlay
+        isVisible={showAIOverlay}
+        onClose={() => setShowAIOverlay(false)}
+        contentData={contentData}
+        mode="reference"
+      />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
