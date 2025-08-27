@@ -7,6 +7,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('🎯 Received formula example from backend:', body)
+    console.log('🔍 EXAMPLE CALLBACK TEMPLATE VARIABLE CHECK:')
+    console.log('📦 Backend sent template_variables:', JSON.stringify(body.template_variables, null, 2))
+    console.log('📊 Template variable count received:', Object.keys(body.template_variables || {}).length)
+    console.log('📋 Raw template_variables object:', body.template_variables)
     
     const { session_id, response_type, writing_guidance_sections, total_sections, guidance_types_found, extraction_metadata } = body
 
@@ -32,6 +36,11 @@ exampleResponses.set(session_id, {
 })
     
     console.log('✅ Stored example response for session:', session_id)
+    // VERIFY TEMPLATE VARIABLES STORED CORRECTLY
+    const storedData = exampleResponses.get(session_id)
+    console.log('🔍 EXAMPLE STORAGE VERIFICATION:')
+    console.log('📦 Stored template_variables:', JSON.stringify(storedData?.template_variables, null, 2))
+    console.log('📊 Stored template variable count:', Object.keys(storedData?.template_variables || {}).length)
     return NextResponse.json({ success: true, received: true })
   } catch (error) {
     console.error('❌ Error processing example callback:', error)
