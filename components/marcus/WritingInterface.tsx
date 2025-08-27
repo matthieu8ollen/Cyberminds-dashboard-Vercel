@@ -64,6 +64,7 @@ interface SectionData {
   isRequired?: boolean
   contentChecks: string[]
   completedChecks: string[]
+  backendData?: any // Store complete backend section for section-specific guidance
 }
 
 interface TemplateVariable {
@@ -237,24 +238,24 @@ useEffect(() => {
     const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
     const cleanTitle = title.trim()
     
-    // Find matching structured guidance section by name or order
-    const structuredGuidance = contentData?.guidance?.writing_guidance_sections?.find(
-      (section: any) => 
-        section.section_name === cleanTitle || 
-        section.section_order === index ||
-        section.section_id === `section-${index}`
+    // Find matching backend section by section_order (1-based matching to 0-based index)
+    const backendSection = contentData?.guidance?.writing_guidance_sections?.find(
+      (section: any) => section.section_order === (index + 1)
     )
     
+    // Store complete backend section data for guidance tabs
+    const sectionBackendData = backendSection || null
+    
     // Extract structured content and guidance
-    const structuredGuidanceText = extractGuidanceFromStructured(structuredGuidance)
-    const structuredContent = extractContentFromStructured(structuredGuidance, cleanTitle)
+    const structuredGuidanceText = extractGuidanceFromStructured(backendSection)
+    const structuredContent = extractContentFromStructured(backendSection, cleanTitle)
     
     return {
-  id: `section-${index}`,
-  title: cleanTitle,
-  content: structuredContent || contentData?.guidance?.section_examples?.[cleanTitle] || '',
-  guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-  placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
+      id: backendSection?.section_id || `section-${index}`,
+      title: cleanTitle,
+      content: structuredContent || '',
+      guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+      placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
       wordCountTarget: getWordCountTarget(cleanTitle),
       wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
@@ -262,7 +263,8 @@ useEffect(() => {
       emotionalTarget: getEmotionalTarget(cleanTitle),
       isRequired: isRequiredSection(cleanTitle),
       contentChecks: getContentChecks(cleanTitle),
-      completedChecks: []
+      completedChecks: [],
+      backendData: sectionBackendData // Store complete backend section for guidance tabs
     }
   })
   
