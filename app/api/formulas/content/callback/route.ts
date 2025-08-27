@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('🎯 Received backend response:', body)
+    console.log('🔍 FULL BACKEND PAYLOAD:', JSON.stringify(body, null, 2))
     console.log('🔍 RESPONSE DETAILS:', {
       response_type: body.response_type,
       has_writing_guidance_sections: !!body.writing_guidance_sections,
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       
       existingResponse.conversation_stage = body.conversation_stage
       console.log('✅ Stored guidance data for session:', session_id)
+      console.log('📝 GUIDANCE DATA STORED:', existingResponse.guidance)
     }
     
     // Handle content generation response
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
       
       existingResponse.conversation_stage = body.conversation_stage
       console.log('✅ Stored content data for session:', session_id)
+      console.log('📊 CONTENT DATA STORED:', existingResponse.generatedContent)
     }
 
     // Check if both responses received
