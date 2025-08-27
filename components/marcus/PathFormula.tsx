@@ -60,10 +60,13 @@ export default function PathFormula({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Backend example state
-  const [backendExample, setBackendExample] = useState<any>(null)
-const [generatedExample, setGeneratedExample] = useState<any>(null)
+  // Single consolidated content state
+  const [contentData, setContentData] = useState<{
+    guidance: any
+    generatedContent: any
+  } | null>(null)
   const [isLoadingExample, setIsLoadingExample] = useState(false)
+  const [showContentPreview, setShowContentPreview] = useState(false)
   
   // AI enhancement system - enhance database formulas with AI recommendations
 const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
@@ -71,14 +74,14 @@ const [enhancedFormulas, setEnhancedFormulas] = useState<FormulaTemplate[]>([])
 // Tab state management
 const [activeTab, setActiveTab] = useState<'ai-suggested' | 'framework' | 'data' | 'story' | 'lead-magnet'>('framework')
 
-// Poll for guidance response (now 2 minutes for structured processing)
-const pollForGuidanceResponse = async (sessionId: string) => {
+// Single polling function for consolidated content
+const pollForContentResponse = async (sessionId: string) => {
   const maxAttempts = 80 // 2 minutes max wait (80 * 1.5s = 120s)
   let attempts = 0
   
   const poll = async (): Promise<any> => {
     try {
-      const response = await fetch(`/api/formulas/example/callback?session_id=${sessionId}`)
+      const response = await fetch(`/api/formulas/content/callback?session_id=${sessionId}`)
       const result = await response.json()
       
       if (result.success && result.data && result.type === 'final') {
@@ -98,79 +101,6 @@ const pollForGuidanceResponse = async (sessionId: string) => {
   }
   
   return poll()
-}
-
-// Poll for generation response (2 minutes for comprehensive content generation)  
-const pollForGenerationResponse = async (sessionId: string) => {
-  const maxAttempts = 80 // 2 minutes max wait (80 * 1.5s = 120s)
-  let attempts = 0
-  
-  const poll = async (): Promise<any> => {
-    try {
-      const response = await fetch(`/api/formulas/generation/callback?session_id=${sessionId}`)
-      const result = await response.json()
-      
-      if (result.success && result.data && result.type === 'final') {
-        return result.data
-      }
-      
-      if (result.success && result.data && result.type === 'final') {
-        console.log('🔍 FRONTEND POLLING VERIFICATION:')
-        console.log('📦 Frontend received all_filled_variables:', JSON.stringify(result.data.all_filled_variables, null, 2))
-        console.log('📊 Frontend variable count:', Object.keys(result.data.all_filled_variables || {}).length)
-        console.log('📋 Frontend received total_variables_filled claim:', result.data.total_variables_filled)
-        return result.data
-      }
-      
-      attempts++
-      if (attempts >= maxAttempts) {
-        return 'TIMEOUT'
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      return poll()
-    } catch (error) {
-      return 'ERROR'
-    }
-  }
-  
-  return poll()
-}
-
-// Parse the new backend guidance response format
-const parseGuidanceResponse = (rawResponse: any) => {
-  if (!rawResponse || !rawResponse.writing_guidance_sections) {
-    return null
-  }
-  
-  try {
-    // Transform the structured guidance into the format WritingInterface expects
-    const parsedSections = rawResponse.writing_guidance_sections.map((section: any) => ({
-      section_id: section.section_id,
-      section_name: section.section_name,
-      section_order: section.section_order,
-      guidance_types: section.guidance_types || [],
-      // Flatten all the guidance details into the section
-      ...Object.keys(section).reduce((acc: Record<string, any>, key: string) => {
-  if (!['section_id', 'section_name', 'section_order', 'guidance_types'].includes(key)) {
-    acc[key] = section[key]
-  }
-  return acc
-}, {} as Record<string, any>)
-    }))
-    
-    return {
-      response_type: rawResponse.response_type,
-      total_sections: rawResponse.total_sections,
-      writing_guidance_sections: parsedSections,
-      guidance_types_found: rawResponse.guidance_types_found,
-      extraction_metadata: rawResponse.extraction_metadata,
-      processing_status: rawResponse.processing_status
-    }
-  } catch (error) {
-    console.error('Error parsing guidance response:', error)
-    return null
-  }
 }
 
 // Enhance database formulas with AI recommendations
@@ -382,125 +312,102 @@ const renderIdeationContext = () => {
   }
 
   const handleStartWriting = async () => {
-  // Check if we have ideation data - determines if we use backend AI or go direct to writing
-  const hasIdeationData = ideationData && (ideationData.topic || ideationData.title)
-  
-  if (!hasIdeationData) {
-    // Direct route: No ideation data, skip backend calls, go straight to writing
-    console.log('📝 Direct formula route: Skipping backend, using database template only')
+    const hasIdeationData = ideationData && (ideationData.topic || ideationData.title)
     
-    // User has started working - enable navigation protection
-    if (onUserStartedWorking) {
-      onUserStartedWorking()
+    if (!hasIdeationData) {
+      // Direct route: No ideation data, skip backend calls, go straight to writing
+      console.log('📝 Direct formula route: Skipping backend, using database template only')
+      if (onUserStartedWorking) onUserStartedWorking()
+      setCurrentStep('writing')
+      return
     }
-    setCurrentStep('writing')
-    return
-  }
 
-  // Ideation-driven route: Full AI experience with backend integration
-  console.log('🚀 Ideation-driven route: Starting backend AI processing')
-  setIsLoadingExample(true)
-  
-  try {
-    // Generate unique session ID for this request
-    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    // Ideation-driven route: Single backend processing
+    console.log('🚀 Ideation-driven route: Starting single backend AI processing')
+    setIsLoadingExample(true)
     
-    // Prepare payload for backend with REAL data
-    const payload = {
-      // Core system fields
-      user_id: user?.id,
-      session_id: sessionId,
-      request_type: 'generate_example_post',
-      timestamp: new Date().toISOString(),
-      guidance_callback_url: `${window.location.origin}/api/formulas/example/callback`,
-      generation_callback_url: `${window.location.origin}/api/formulas/generation/callback`,
+    try {
+      const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
       
-      // Selected formula info
-      selected_formula: {
-        formula_id: selectedFormula?.id,
-        name: selectedFormula?.name,
-        category: selectedFormula?.category,
-        structure: selectedFormula?.structure,
-        example: selectedFormula?.example,
-        whyItWorks: selectedFormula?.whyItWorks,
-        bestFor: selectedFormula?.bestFor
-      },
+      // WEBHOOK PAYLOAD UNCHANGED - CRITICAL REQUIREMENT
+      const payload = {
+        user_id: user?.id,
+        session_id: sessionId,
+        request_type: 'generate_content_with_guidance',
+        timestamp: new Date().toISOString(),
+        callback_url: `${window.location.origin}/api/formulas/content/callback`,
+        
+        selected_formula: {
+          formula_id: selectedFormula?.id,
+          name: selectedFormula?.name,
+          category: selectedFormula?.category,
+          structure: selectedFormula?.structure,
+          example: selectedFormula?.example,
+          whyItWorks: selectedFormula?.whyItWorks,
+          bestFor: selectedFormula?.bestFor
+        },
+        
+        ai_recommendation_context: selectedFormula?._aiData ? {
+          confidence: selectedFormula._aiData.confidence,
+          whyPerfect: selectedFormula._aiData.whyPerfect,
+          source: selectedFormula._aiData.source
+        } : {},
+        
+        user_context: {
+          role: profile?.role,
+          stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
+                           profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
+                           profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
+        },
+        
+        // ALL IDEATION DATA UNCHANGED
+        title: ideationData?.title || ideationData?.topic,
+        content_type: ideationData?.content_type || 'personal_story',
+        selected_hook: ideationData?.selected_hook || ideationData?.angle,
+        selected_hook_index: ideationData?.selected_hook_index || 0,
+        hooks: ideationData?.hooks || [ideationData?.angle],
+        key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
+        personal_story: ideationData?.personal_story || '',
+        pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
+        concrete_evidence: ideationData?.concrete_evidence || '',
+        audience_and_relevance: ideationData?.audience_and_relevance || ''
+      }
+            
+      const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
       
-      // AI recommendation context
-      ai_recommendation_context: selectedFormula?._aiData ? {
-        confidence: selectedFormula._aiData.confidence,
-        whyPerfect: selectedFormula._aiData.whyPerfect,
-        source: selectedFormula._aiData.source
-      } : {},
+      const response = await fetch(FORMULA_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
       
-      // User context
-      user_context: {
-        role: profile?.role,
-        stakeholder_type: profile?.role?.toLowerCase().includes('cfo') ? 'cfo' : 
-                         profile?.role?.toLowerCase().includes('cmo') ? 'cmo' :
-                         profile?.role?.toLowerCase().includes('ceo') ? 'ceo' : 'executive'
-      },
+      const data = await response.json()
       
-      // Real ideation data (at root level - what backend expects)
-      title: ideationData?.title || ideationData?.topic,
-      content_type: ideationData?.content_type || 'personal_story',
-      selected_hook: ideationData?.selected_hook || ideationData?.angle,
-      selected_hook_index: ideationData?.selected_hook_index || 0,
-      hooks: ideationData?.hooks || [ideationData?.angle],
-      key_takeaways: ideationData?.key_takeaways || ideationData?.takeaways || [],
-      personal_story: ideationData?.personal_story || '',
-      pain_points_and_struggles: ideationData?.pain_points_and_struggles || '',
-      concrete_evidence: ideationData?.concrete_evidence || '',
-      audience_and_relevance: ideationData?.audience_and_relevance || ''
-    }
-          
-    // Call N8N webhook for formula example generation
-    const FORMULA_WEBHOOK_URL = 'https://testcyber.app.n8n.cloud/webhook/ec529d75-8c81-4c97-98a9-0db8b8d68051'
-    
-    const response = await fetch(FORMULA_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    
-    const data = await response.json()
-    
-    if (data.message === "Workflow was started") {
-      // Poll for guidance response (fast)
-      const guidanceResponse = await pollForGuidanceResponse(sessionId)
-      if (guidanceResponse && guidanceResponse !== 'TIMEOUT' && guidanceResponse !== 'ERROR') {
-        // Parse the new structured guidance format
-        const parsedGuidance = parseGuidanceResponse(guidanceResponse)
-        if (parsedGuidance) {
-          console.log('✅ Parsed guidance response:', parsedGuidance)
-          setBackendExample(parsedGuidance)
+      if (data.message === "Workflow was started") {
+        // SINGLE POLLING CALL:
+        const contentResponse = await pollForContentResponse(sessionId)
+        
+        if (contentResponse && contentResponse !== 'TIMEOUT' && contentResponse !== 'ERROR') {
+          console.log('✅ Received consolidated content response:', contentResponse)
+          setContentData({
+            guidance: contentResponse.guidance,
+            generatedContent: contentResponse.content
+          })
+          setShowContentPreview(true) // Show overlay preview
         } else {
-          console.log('⚠️ Failed to parse guidance response, using raw data')
-          setBackendExample(guidanceResponse)
+          console.log('⚠️ Content response timeout - proceeding with template only')
         }
       }
-      
-      // Poll for generation response in background (slower)
-      pollForGenerationResponse(sessionId).then(generationResponse => {
-        if (generationResponse && generationResponse !== 'TIMEOUT' && generationResponse !== 'ERROR') {
-          console.log('✅ Received generation response:', generationResponse)
-          setGeneratedExample(generationResponse)
-        }
-      })
+          
+    } catch (error) {
+      console.error('Error generating content:', error)
+      showToast('warning', 'Could not generate content, proceeding with template')
+    } finally {
+      setIsLoadingExample(false)
+      if (onUserStartedWorking) onUserStartedWorking()
+      setCurrentStep('writing')
     }
-        
-  } catch (error) {
-    console.error('Error generating example:', error)
-    showToast('warning', 'Could not generate example, proceeding with template')
-  } finally {
-    setIsLoadingExample(false)
-    // User has started working - enable navigation protection
-    if (onUserStartedWorking) {
-      onUserStartedWorking()
-    }
-    setCurrentStep('writing')
   }
-}
 
   const renderFormulaSelection = () => {
   return (
