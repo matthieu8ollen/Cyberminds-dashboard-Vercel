@@ -493,6 +493,22 @@ function extractTemplateVariables(
       const varData = generatedExample.all_filled_variables[varKey]
       console.log(`🔍 Processing variable ${varKey}:`, varData)
       
+      // Check if variable belongs to current section using section_order
+      let variableSectionOrder = null
+      if (typeof varData === 'object' && varData !== null && varData.section_order) {
+        variableSectionOrder = parseInt(varData.section_order)
+      }
+      
+      const currentSectionOrder = currentSectionIndex + 1 // Convert 0-based to 1-based
+      const belongsToCurrentSection = variableSectionOrder === currentSectionOrder
+      
+      console.log(`📍 Variable ${varKey} section_order: ${variableSectionOrder} | Current section_order: ${currentSectionOrder} | Match: ${belongsToCurrentSection}`)
+      
+      if (!belongsToCurrentSection) {
+        console.log(`⏭️ Skipping ${varKey} - belongs to section ${variableSectionOrder}, current is ${currentSectionOrder}`)
+        return
+      }
+      
       // Handle any data type - extract useful content regardless of structure
       let aiSuggestion = ''
       
@@ -518,7 +534,7 @@ function extractTemplateVariables(
         placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
       })
       
-      console.log(`✅ Created variable: ${varKey} with suggestion: "${aiSuggestion.substring(0, 50)}..."`)
+      console.log(`✅ Added section-specific variable: ${varKey}`)
     })
     
     console.log(`🎯 Total variables extracted: ${variables.length}`)
