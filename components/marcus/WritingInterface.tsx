@@ -923,6 +923,34 @@ const handleContinueToImages = useCallback(async () => {
         'They value: Authentic experiences and proven frameworks'
       ]
     })()
+  },
+  {
+    id: 'arc',
+    label: 'Emotional Arc',
+    icon: Heart,
+    active: activeGuidanceTab === 'arc',
+    content: [
+      '1. Hook: Curiosity and intrigue',
+      '2. Problem: Recognition and concern',
+      '3. Stakes: Tension and investment',
+      '4. Solution: Relief and hope',
+      '5. Outcome: Satisfaction and learning',
+      'Each section should build emotional momentum toward the resolution'
+    ]
+  },
+  {
+    id: 'voice',
+    label: 'Voice & Tone',
+    icon: Mic,
+    active: activeGuidanceTab === 'voice',
+    content: [
+      'Conversational but professional',
+      'Confident without being arrogant',
+      'Vulnerable about mistakes, strong about lessons learned',
+      'Use contractions: "don\'t" not "do not"',
+      'Avoid jargon unless your audience expects it',
+      'Write like you\'re talking to a colleague over coffee'
+    ]
   }
   ]
 
