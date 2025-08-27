@@ -396,7 +396,10 @@ function extractTemplateVariables(
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
   if (contentData?.generatedContent?.all_filled_variables) {
-    console.log('✅ Enhancing database variables with backend AI suggestions...')
+    console.log('🔍 DEBUGGING TEMPLATE VARIABLES ALIGNMENT:')
+    console.log('📊 Database variables for section:', databaseVariables.map(v => v.name))
+    console.log('🤖 Backend variables available:', Object.keys(contentData.generatedContent.all_filled_variables))
+    console.log('📝 Full backend variable data:', JSON.stringify(contentData.generatedContent.all_filled_variables, null, 2))
     
     return databaseVariables.map(dbVar => {
       // Find matching backend suggestion by name or semantic matching
@@ -1042,6 +1045,12 @@ const renderTemplateVariables = () => (
       })
       return template
     } else if (previewMode === 'example') {
+      console.log('🔍 DEBUGGING LIVE PREVIEW SECTION CONTENT:')
+      console.log('📍 Current section:', currentSection?.title)
+      console.log('🎯 Current section index:', currentSectionIndex)
+      console.log('📊 Full generated content length:', contentData?.generatedContent?.generated_content?.complete_post?.length)
+      console.log('📝 Section-specific data check:', currentSection?.backendData)
+      
       // Show backend example for current section only
       return contentData?.guidance?.section_examples?.[currentSection?.title] || currentSection?.placeholder || ''
     }
