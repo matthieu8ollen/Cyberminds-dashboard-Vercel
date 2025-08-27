@@ -808,7 +808,7 @@ const handleContinueToImages = useCallback(async () => {
   // GUIDANCE TAB CONTENT
   // ============================================================================
 
-  const guidanceTabs: WritingGuidanceTab[] = [
+  const guidanceTabs: WritingGuidanceTab[] = useMemo(() => [
   {
     id: 'matters',
     label: 'Why This Matters',
@@ -826,7 +826,6 @@ const handleContinueToImages = useCallback(async () => {
         }
       }
       
-      // Fallback to generic content
       return [
         'This creates an "insider secret" promise. Your audience desperately wants validation that they\'re not missing critical knowledge.',
         'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.'
@@ -952,7 +951,7 @@ const handleContinueToImages = useCallback(async () => {
       'Write like you\'re talking to a colleague over coffee'
     ]
   }
-  ]
+  ], [currentSection, activeGuidanceTab])
 
   // ============================================================================
   // RENDER FUNCTIONS
