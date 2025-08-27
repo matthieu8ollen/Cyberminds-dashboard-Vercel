@@ -85,10 +85,16 @@ console.log('🔄 EXISTING RESPONSE CHECK:', {
     
     if (hasGuidance && hasContent) {
       existingResponse.processing_status = 'complete'
-      console.log('🎉 Both responses received - marking as complete for session:', session_id)
+      console.log('🎉 BOTH responses received - ready for overlay display:', session_id)
+      console.log('📊 Content ready:', !!existingResponse.generatedContent?.generated_content?.complete_post)
+      console.log('📝 Guidance ready:', existingResponse.guidance?.writing_guidance_sections?.length || 0, 'sections')
     } else {
       existingResponse.processing_status = 'partial'
-      console.log('⏳ Waiting for additional response - current status:', { hasGuidance, hasContent })
+      console.log('⏳ Waiting for complete dataset - current status:', { 
+        hasGuidance, 
+        hasContent,
+        waitingFor: !hasGuidance ? 'guidance' : 'content'
+      })
     }
 
     // Update stored response
