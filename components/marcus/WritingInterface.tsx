@@ -387,75 +387,68 @@ function extractTemplateVariables(
   ideationData?: any, 
   contentData?: any
 ): TemplateVariable[] {
-  const variables: TemplateVariable[] = []
+  console.log('🎯 Using database template variables with backend AI suggestions')
   
-  // PRIORITY 1: Extract from contentData.generatedContent.all_filled_variables
+  // PRIORITY 1: Always use database template variables as structure
+  const databaseVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+  
+  // PRIORITY 2: Enhance database variables with backend AI suggestions
   if (contentData?.generatedContent?.all_filled_variables) {
-    console.log('✅ Processing consolidated all_filled_variables...')
+    console.log('✅ Enhancing database variables with backend AI suggestions...')
     
-    Object.keys(contentData.generatedContent.all_filled_variables).forEach(varKey => {
-      const varData = contentData.generatedContent.all_filled_variables[varKey]
+    return databaseVariables.map(dbVar => {
+      // Find matching backend suggestion by name or semantic matching
+      const backendMatch = findBackendVariableMatch(dbVar.name, contentData.generatedContent.all_filled_variables)
       
-      // Check if variable belongs to current section using section_order
-      let variableSectionOrder = null
-      if (typeof varData === 'object' && varData !== null && varData.section_order) {
-        variableSectionOrder = parseInt(varData.section_order)
+      if (backendMatch) {
+        console.log(`🤖 Enhanced ${dbVar.name} with AI suggestion: ${backendMatch.substring(0, 50)}...`)
+        return {
+          ...dbVar,
+          aiSuggestion: backendMatch
+        }
       }
       
-      const currentSectionOrder = currentSectionIndex + 1 // Convert 0-based to 1-based
-      const belongsToCurrentSection = variableSectionOrder === currentSectionOrder
-      
-      if (!belongsToCurrentSection) {
-        return // Skip variables not for this section
-      }
-      
-      // Extract content from variable data
-      let aiSuggestion = ''
-      if (typeof varData === 'string') {
-        aiSuggestion = varData
-      } else if (typeof varData === 'object' && varData !== null) {
-        aiSuggestion = varData.ai_generated_content || 
-                     varData.suggested_value || 
-                     varData.content || 
-                     varData.value ||
-                     varData.text ||
-                     JSON.stringify(varData)
-      }
-      
-      variables.push({
-        name: varKey,
-        label: varKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        value: '',
-        aiSuggestion: aiSuggestion,
-        required: false,
-        type: 'text',
-        placeholder: `Enter ${varKey.replace(/_/g, ' ').toLowerCase()}`
-      })
+      return dbVar // Keep original if no backend match
     })
-    
-    return variables
   }
   
-  // PRIORITY 2: Extract from contentData.guidance.template_variables
-  if (contentData?.guidance?.template_variables) {
-    console.log('📋 Using consolidated template_variables')
-    Object.keys(contentData.guidance.template_variables).forEach(key => {
-      variables.push({
-        name: key.toUpperCase(),
-        label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        value: '',
-        aiSuggestion: contentData.guidance.template_variables[key] || '',
-        required: false,
-        type: 'text',
-        placeholder: `Enter ${key.replace(/_/g, ' ').toLowerCase()}`
-      })
-    })
-    return variables
+  return databaseVariables
+}
+
+function findBackendVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): string | null {
+  // Direct name matching
+  const directMatch = backendVariables[databaseVarName]
+  if (directMatch) {
+    return extractVariableValue(directMatch)
   }
   
-  // PRIORITY 3: Fallback hardcoded variables
-  console.log('🔄 Using fallback hardcoded variables')
-  return getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+  // Semantic matching for database variable concepts
+  const semanticMappings: Record<string, string[]> = {
+    'OPENING_LINE': ['CRISIS_TIMELINE', 'DRAMATIC_REALIZATION', 'STAKES', 'EMOTIONAL_SETUP'],
+    'PROBLEM_STATEMENT': ['PAIN_FOCUS', 'WRONG_APPROACH_INTRO', 'INTERNAL_STRUGGLE'],
+    'FRAMEWORK_NAME': ['CATEGORY', 'KEY_INSIGHT'],
+    'SITUATION': ['SPECIFIC_SITUATION', 'DISCOVERY_MOMENT'],
+    'CHALLENGE': ['WRONG_POINTS', 'PAIN_FOCUS'],
+    'ENGAGEMENT_QUESTION': ['SIMPLE_CTA', 'CTA']
+  }
+  
+  const possibleMatches = semanticMappings[databaseVarName] || []
+  for (const matchKey of possibleMatches) {
+    if (backendVariables[matchKey]) {
+      return extractVariableValue(backendVariables[matchKey])
+    }
+  }
+  
+  return null
+}
+
+function extractVariableValue(varData: any): string {
+  if (typeof varData === 'string') {
+    return varData
+  } else if (typeof varData === 'object' && varData !== null) {
+    return varData.value || varData.content || varData.ai_generated_content || JSON.stringify(varData)
+  }
+  return ''
 }
   
 function getSectionSpecificVariables(
