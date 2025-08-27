@@ -114,6 +114,14 @@ const pollForGenerationResponse = async (sessionId: string) => {
         return result.data
       }
       
+      if (result.success && result.data && result.type === 'final') {
+        console.log('🔍 FRONTEND POLLING VERIFICATION:')
+        console.log('📦 Frontend received all_filled_variables:', JSON.stringify(result.data.all_filled_variables, null, 2))
+        console.log('📊 Frontend variable count:', Object.keys(result.data.all_filled_variables || {}).length)
+        console.log('📋 Frontend received total_variables_filled claim:', result.data.total_variables_filled)
+        return result.data
+      }
+      
       attempts++
       if (attempts >= maxAttempts) {
         return 'TIMEOUT'
