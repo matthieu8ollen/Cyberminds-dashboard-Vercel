@@ -7,6 +7,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('🎯 Received backend response:', body)
+    console.log('🔍 RESPONSE DETAILS:', {
+      response_type: body.response_type,
+      has_writing_guidance_sections: !!body.writing_guidance_sections,
+      guidance_sections_length: body.writing_guidance_sections?.length || 0,
+      has_generated_content: !!body.generated_content,
+      complete_post_length: body.generated_content?.complete_post?.length || 0,
+      has_all_filled_variables: !!body.all_filled_variables,
+      variables_count: Object.keys(body.all_filled_variables || {}).length
+    })
     
     const { session_id, response_type } = body
 
