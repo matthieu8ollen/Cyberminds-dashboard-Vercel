@@ -821,8 +821,8 @@ const handleContinueToImages = useCallback(async () => {
       const structuredContent: string[] = []
       
       // Extract psychological insights from structured guidance
-      if (backendExample?.writing_guidance_sections) {
-        backendExample.writing_guidance_sections.forEach((section: any) => {
+      if (contentData?.guidance?.writing_guidance_sections) {
+        contentData.guidance.writing_guidance_sections.forEach((section: any) => {
           // Look for psychology-related guidance
           Object.keys(section).forEach(key => {
             if (key.includes('psychology') || key.includes('why_it_works') || key.includes('impact')) {
@@ -838,8 +838,8 @@ const handleContinueToImages = useCallback(async () => {
       }
       
       // Include general guidance types found
-if (backendExample?.guidance_types_found && backendExample.guidance_types_found.length > 0) {
-  structuredContent.push(`Guidance available: ${backendExample.guidance_types_found.join(', ')}`)
+if (contentData?.guidance?.guidance_types_found && contentData.guidance.guidance_types_found.length > 0) {
+  structuredContent.push(`Guidance available: ${contentData.guidance.guidance_types_found.join(', ')}`)
 }
       
       // Fallback to default content if no structured data
@@ -847,7 +847,7 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
         'This creates an "insider secret" promise. Your audience desperately wants validation that they\'re not missing critical knowledge.',
         'By saying "what they don\'t tell you," you position yourself as the truth-teller who\'s seen behind the curtain.',
         'This psychological trigger of "insider knowledge" makes readers feel they\'re getting exclusive information.',
-        backendExample?.tips_and_guidance?.[0] || 'Focus on the psychological impact of your message.'
+        contentData?.guidance?.tips_and_guidance?.[0] || 'Focus on the psychological impact of your message.'
       ]
     })()
   },
@@ -860,8 +860,8 @@ if (backendExample?.guidance_types_found && backendExample.guidance_types_found.
       const structuredEssentials: string[] = []
       
       // Extract essential guidance from structured response
-      if (backendExample?.writing_guidance_sections) {
-        backendExample.writing_guidance_sections.forEach((section: any) => {
+      if (contentData?.guidance?.writing_guidance_sections) {
+        contentData.guidance.writing_guidance_sections.forEach((section: any) => {
           Object.keys(section).forEach(key => {
             if (key.includes('essential') || key.includes('requirement') || key.includes('must_include')) {
               const value = section[key]
