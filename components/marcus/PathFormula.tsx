@@ -157,26 +157,27 @@ const enhanceFormulasWithAI = (dbFormulas: FormulaTemplate[], aiRecommendations:
 }
   
   // Transform backend AI response to FormulaTemplate format
-  const transformAIFormula = (backendFormula: any): FormulaTemplate => {
-    return {
-      id: backendFormula.formula_id || `ai-${backendFormula.sequence}`,
-      name: backendFormula.name || 'AI Suggested Formula',
-      description: backendFormula.why_it_works || 'Personalized formula for your content',
-      category: mapBackendCategory(backendFormula.category),
-      structure: ['AI-optimized structure'],
-      example: `AI-suggested: ${backendFormula.name}`,
-      whyItWorks: [backendFormula.why_it_works || 'AI-optimized for your content'],
-      bestFor: backendFormula.why_it_works || 'Your specific content needs',
-      // Store original backend data for enhanced display
-      _aiData: {
-        confidence: backendFormula.match_score,
-        whyPerfect: backendFormula.why_it_works,
-        characteristics: [], // No longer provided by backend
-        formulaNumber: backendFormula.sequence,
-        source: backendFormula.source
-      }
+const transformAIFormula = (backendFormula: any): FormulaTemplate => {
+  return {
+    id: backendFormula.formula_id || `ai-${backendFormula.sequence}`,
+    name: backendFormula.name || 'AI Suggested Formula',
+    description: backendFormula.why_it_works || 'Personalized formula for your content',
+    category: mapBackendCategory(backendFormula.category),
+    structure: ['AI-optimized structure'],
+    example: `AI-suggested: ${backendFormula.name}`,
+    whyItWorks: [backendFormula.why_it_works || 'AI-optimized for your content'],
+    bestFor: backendFormula.why_it_works || 'Your specific content needs',
+    sections: [], // Add empty sections for AI formulas
+    // Store original backend data for enhanced display
+    _aiData: {
+      confidence: backendFormula.match_score,
+      whyPerfect: backendFormula.why_it_works,
+      characteristics: [], // No longer provided by backend
+      formulaNumber: backendFormula.sequence,
+      source: backendFormula.source
     }
   }
+}
   
   const mapBackendCategory = (backendCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
     const categoryMap: Record<string, 'story' | 'data' | 'framework' | 'lead-magnet'> = {
