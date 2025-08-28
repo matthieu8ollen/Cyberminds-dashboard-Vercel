@@ -49,6 +49,8 @@ console.log('🔄 EXISTING RESPONSE CHECK:', {
       existingResponse.guidance = {
         writing_guidance_sections: body.writing_guidance_sections || [],
         total_sections: body.total_sections || '',
+        total_guidance_types: body.total_guidance_types || '',
+        processing_status: body.processing_status || '',
         guidance_types_found: body.guidance_types_found || [],
         extraction_metadata: body.extraction_metadata || {},
         field_analysis: body.field_analysis || {}
@@ -71,8 +73,10 @@ console.log('🔄 EXISTING RESPONSE CHECK:', {
         sections_data: body.sections_data || [],
         all_filled_variables: body.all_filled_variables || {},
         template_validation: body.template_validation || {},
+        total_sections: body.total_sections || '',
         total_variables_filled: body.total_variables_filled || '',
         validation_score: body.validation_score || '',
+        processing_status: body.processing_status || '',
         extraction_timestamp: body.extraction_timestamp || ''
       }
       
