@@ -20,6 +20,24 @@ interface FormulaTemplate {
   example: string
   whyItWorks: string[]
   bestFor: string
+  sections: Array<{
+    id: string
+    section_order: number
+    section_name: string
+    section_purpose: string
+    section_template?: string
+    section_guidelines?: string
+    template_variables?: string
+    word_count_target?: number
+    word_count_min?: number
+    word_count_max?: number
+    psychological_purpose?: string
+    emotional_target?: string
+    must_contain_elements?: string[]
+    should_avoid_elements?: string[]
+    is_required?: boolean
+    is_customizable?: boolean
+  }>
   _aiData?: {
     confidence?: string
     whyPerfect?: string
