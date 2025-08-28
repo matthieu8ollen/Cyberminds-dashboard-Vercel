@@ -1285,7 +1285,7 @@ const renderTemplateVariables = () => (
         <div className="text-xs">
           <span className="font-medium text-green-700">Must contain: </span>
           <span className="text-green-600">
-            {currentDbSection.must_contain_elements.join(', ')}
+            {currentDbSection.must_contain_elements?.join(', ') || ''}
           </span>
         </div>
       )}
@@ -1293,7 +1293,7 @@ const renderTemplateVariables = () => (
         <div className="text-xs">
           <span className="font-medium text-red-700">Avoid: </span>
           <span className="text-red-600">
-            {currentDbSection.should_avoid_elements.join(', ')}
+            {currentDbSection.should_avoid_elements?.join(', ') || ''}
           </span>
         </div>
       )}
