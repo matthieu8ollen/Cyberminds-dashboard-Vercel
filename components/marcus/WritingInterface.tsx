@@ -296,14 +296,14 @@ useEffect(() => {
     console.log('📊 Current Section Index:', currentSectionIndex)
     console.log('📝 Current Section Title:', currentSection.title)
     console.log('📋 Formula Object Keys:', Object.keys(formula))
-    console.log('📊 Formula Sections Available:', !!formula.sections, formula.sections?.length || 0)
+    console.log('📊 Formula Sections Available:', !formula.sections, formula.sections?.length || 0)
     
     if (formula.sections && formula.sections[currentSectionIndex]) {
       const currentDbSection = formula.sections[currentSectionIndex]
       console.log('🎯 Current Database Section:')
-      console.log('  - Section Name:', currentDbSection.title || currentDbSection.section_name)
+      console.log('  - Section Name:', currentDbSection.section_name)
       console.log('  - Template Variables:', currentDbSection.template_variables)
-      console.log('  - Section Purpose:', currentDbSection.section_purpose || currentDbSection.description)
+      console.log('  - Section Purpose:', currentDbSection.section_purpose)
       console.log('  - All Section Keys:', Object.keys(currentDbSection))
     } else {
       console.log('❌ No database section found for index:', currentSectionIndex)
@@ -311,7 +311,7 @@ useEffect(() => {
     
     const variables = extractTemplateVariables(
       formula, 
-      currentSection.title, 
+      currentSectionIndex, 
       ideationData, 
       contentData
     )
@@ -424,18 +424,19 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
   
 function extractTemplateVariables(
   formula: FormulaTemplate, 
-  currentSectionTitle: string, 
+  currentSectionIndex: number,
   ideationData: any, 
   contentData?: any
 ): TemplateVariable[] {
   console.log('🎯 EXTRACT TEMPLATE VARIABLES DEBUG START:')
   console.log('  - Formula ID:', formula.id)
-  console.log('  - Current Section Title:', currentSectionTitle)
+  console.log('  - Current Section Index:', currentSectionIndex)
   console.log('  - Formula Category:', formula.category)
   console.log('  - Formula Sections Count:', formula.sections?.length || 0)
   
   // PRIORITY 1: Always use database template variables as structure
-  const databaseVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+  const currentSection = formula.sections?.[currentSectionIndex]
+  const databaseVariables = getSectionSpecificVariables(currentSection, formula, ideationData)
   console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
@@ -503,31 +504,86 @@ function extractVariableValue(varData: any): string {
   return ''
 }
   
+function parseTemplateVariables(templateVarString: string, ideationData?: any): TemplateVariable[] {
+  if (!templateVarString) return []
+  
+  // Handle different formats: JSON, comma-separated, or pipe-separated
+  let variableNames: string[] = []
+  
+  try {
+    // Try JSON first
+    const parsed = JSON.parse(templateVarString)
+    if (Array.isArray(parsed)) {
+      variableNames = parsed
+    } else if (typeof parsed === 'object') {
+      variableNames = Object.keys(parsed)
+    }
+  } catch {
+    // Fallback to comma or pipe separated
+    variableNames = templateVarString
+      .split(/[,|;]/)
+      .map(v => v.trim())
+      .filter(v => v.length > 0)
+  }
+  
+  return variableNames.map(name => ({
+    name: name.toUpperCase(),
+    label: formatVariableLabel(name),
+    value: '',
+    aiSuggestion: generateIdeationSuggestion(name, ideationData),
+    required: isRequiredVariable(name),
+    type: 'text' as const,
+    placeholder: `Enter your ${formatVariableLabel(name).toLowerCase()}`
+  }))
+}
+
+function formatVariableLabel(variableName: string): string {
+  return variableName
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+function generateIdeationSuggestion(variableName: string, ideationData?: any): string {
+  if (!ideationData) return ''
+  
+  const suggestionMap: Record<string, string> = {
+    'OPENING_LINE': ideationData.topic ? `Here's what they don't tell you about ${ideationData.topic}` : '',
+    'PROBLEM_STATEMENT': ideationData.topic ? `Most people struggle with ${ideationData.topic} because...` : '',
+    'FRAMEWORK_NAME': ideationData.angle || '',
+    'SITUATION': ideationData.topic || '',
+    'CHALLENGE': ideationData.takeaways?.[0] || ''
+  }
+  
+  return suggestionMap[variableName.toUpperCase()] || ''
+}
+
+function isRequiredVariable(variableName: string): boolean {
+  const requiredVars = ['OPENING_LINE', 'PROBLEM_STATEMENT', 'FRAMEWORK_NAME', 'CTA']
+  return requiredVars.includes(variableName.toUpperCase())
+}
+
 function getSectionSpecificVariables(
-  sectionTitle: string, 
-  category: string, 
+  currentSection: any,
+  formula: FormulaTemplate,
   ideationData?: any
 ): TemplateVariable[] {
-  const variables: TemplateVariable[] = []
-  const cleanTitle = sectionTitle.toLowerCase().trim()
+  // Use database section data if available
+  if (formula.sections && currentSection?.section_order) {
+    const dbSection = formula.sections.find(s => s.section_order === currentSection.section_order)
+    if (dbSection?.template_variables) {
+      return parseTemplateVariables(dbSection.template_variables, ideationData)
+    }
+  }
   
-  // Define section-specific variables based on section title and category
-  switch (cleanTitle) {
-    case 'hook':
-    case 'opening':
-    case 'intro':
-      variables.push({
-        name: 'OPENING_LINE',
-        label: 'Opening Hook',
-        value: '',
-        aiSuggestion: ideationData?.topic ? 
-          `Here's what they don't tell you about ${ideationData.topic}` : 
-          'Here\'s what they don\'t tell you about...',
-        required: true,
-        type: 'text',
-        placeholder: 'Your attention-grabbing opening line'
-      })
-      break
+  // Fallback to current section's template_variables
+  if (currentSection?.template_variables) {
+    return parseTemplateVariables(currentSection.template_variables, ideationData)
+  }
+  
+  return []
+}
       
     case 'problem':
     case 'challenge':
