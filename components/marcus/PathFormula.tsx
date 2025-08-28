@@ -425,9 +425,20 @@ const renderIdeationContext = () => {
           
           if (contentResponse.guidance?.writing_guidance_sections) {
             contentResponse.guidance.writing_guidance_sections.forEach((section: any, index: number) => {
-              console.log(`  Section ${index + 1}:`, section.section_title || 'No title')
-              console.log(`  Expected:`, selectedFormula?.structure[index] || 'No matching structure')
-              console.log(`  Match:`, section.section_title === selectedFormula?.structure[index]?.split(' - ')[0])
+              console.log(`\n🔍 SECTION ${index + 1} COMPLETE FIELD ANALYSIS:`)
+              console.log(`  📋 ALL Available Fields:`, Object.keys(section))
+              
+              // Check specific title fields
+              const titleFields = ['section_title', 'section_name', 'title', 'name']
+              titleFields.forEach(field => {
+                if (section[field]) {
+                  console.log(`    ✅ ${field}: "${section[field]}"`)
+                } else {
+                  console.log(`    ❌ ${field}: null/undefined`)
+                }
+              })
+              
+              console.log(`  ✅ Expected:`, selectedFormula?.structure[index] || 'No matching structure')
             })
           }
           
