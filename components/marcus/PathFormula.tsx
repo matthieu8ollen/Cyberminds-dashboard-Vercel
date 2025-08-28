@@ -428,7 +428,7 @@ const renderIdeationContext = () => {
               console.log(`\n🔍 SECTION ${index + 1} COMPLETE FIELD ANALYSIS:`)
               console.log(`  📋 ALL Available Fields:`, Object.keys(section))
               
-              // Check specific title fields
+              // Check specific title fields  
               const titleFields = ['section_title', 'section_name', 'title', 'name']
               titleFields.forEach(field => {
                 if (section[field]) {
@@ -438,7 +438,9 @@ const renderIdeationContext = () => {
                 }
               })
               
-              console.log(`  ✅ Expected:`, selectedFormula?.structure[index] || 'No matching structure')
+              console.log(`  Section Title:`, section.section_name || 'No title')
+              console.log(`  Expected:`, selectedFormula?.structure[index] || 'No matching structure')
+              console.log(`  Match:`, section.section_name === selectedFormula?.structure[index]?.split(' - ')[0])
             })
           }
           
