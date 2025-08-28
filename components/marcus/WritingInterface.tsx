@@ -41,6 +41,15 @@ interface FormulaTemplate {
   example: string
   whyItWorks: string[]
   bestFor: string
+  sections?: Array<{
+    id: string
+    section_name?: string
+    title?: string
+    template_variables?: string
+    section_purpose?: string
+    description?: string
+    section_order?: number
+  }>
   _aiData?: {
     confidence?: string
     whyPerfect?: string
