@@ -442,7 +442,7 @@ function extractTemplateVariables(
   
   // PRIORITY 1: Always use database template variables as structure
   const currentSection = formula.sections?.[currentSectionIndex]
-  const databaseVariables = getSectionSpecificVariables(currentSection?.title || '', formula.category, ideationData)
+  const databaseVariables = getSectionSpecificVariables(currentSection?.section_name || '', formula.category, ideationData)
   console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
