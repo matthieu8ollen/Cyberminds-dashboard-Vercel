@@ -274,6 +274,23 @@ useEffect(() => {
  // Initialize template variables - section-specific
 useEffect(() => {
   if (currentSection?.title) {
+    console.log('🔍 TEMPLATE VARIABLE LOADING DEBUG:')
+    console.log('📊 Current Section Index:', currentSectionIndex)
+    console.log('📝 Current Section Title:', currentSection.title)
+    console.log('📋 Formula Object Keys:', Object.keys(formula))
+    console.log('📊 Formula Sections Available:', !!formula.sections, formula.sections?.length || 0)
+    
+    if (formula.sections && formula.sections[currentSectionIndex]) {
+      const currentDbSection = formula.sections[currentSectionIndex]
+      console.log('🎯 Current Database Section:')
+      console.log('  - Section Name:', currentDbSection.title || currentDbSection.section_name)
+      console.log('  - Template Variables:', currentDbSection.template_variables)
+      console.log('  - Section Purpose:', currentDbSection.section_purpose || currentDbSection.description)
+      console.log('  - All Section Keys:', Object.keys(currentDbSection))
+    } else {
+      console.log('❌ No database section found for index:', currentSectionIndex)
+    }
+    
     const variables = extractTemplateVariables(
       formula, 
       currentSection.title, 
@@ -281,7 +298,11 @@ useEffect(() => {
       contentData
     )
     setTemplateVariables(variables)
-    console.log(`📝 Loaded ${variables.length} variables for section: ${currentSection.title}`)
+    
+    console.log('📤 FINAL VARIABLES OUTPUT:')
+    console.log('  - Count:', variables.length)
+    console.log('  - Variable Names:', variables.map(v => v.name))
+    console.log('  - First Variable Full:', variables[0])
   } else {
     setTemplateVariables([])
   }
@@ -384,15 +405,20 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
   }
   
 function extractTemplateVariables(
-  formula: FormulaTemplate,
-  currentSectionTitle: string,
-  ideationData?: any, 
+  formula: FormulaTemplate, 
+  currentSectionTitle: string, 
+  ideationData: any, 
   contentData?: any
 ): TemplateVariable[] {
-  console.log('🎯 Using database template variables with backend AI suggestions')
+  console.log('🎯 EXTRACT TEMPLATE VARIABLES DEBUG START:')
+  console.log('  - Formula ID:', formula.id)
+  console.log('  - Current Section Title:', currentSectionTitle)
+  console.log('  - Formula Category:', formula.category)
+  console.log('  - Formula Sections Count:', formula.sections?.length || 0)
   
   // PRIORITY 1: Always use database template variables as structure
   const databaseVariables = getSectionSpecificVariables(currentSectionTitle, formula.category, ideationData)
+  console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
   if (contentData?.generatedContent?.all_filled_variables) {
