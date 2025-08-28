@@ -252,7 +252,7 @@ useEffect(() => {
     
     return {
       id: backendSection?.section_id || `section-${index}`,
-      title: cleanTitle,
+      title: backendSection?.section_name || cleanTitle, // Use backend section_name if available
       content: structuredContent || '',
       guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
       placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
@@ -264,7 +264,7 @@ useEffect(() => {
       isRequired: isRequiredSection(cleanTitle),
       contentChecks: getContentChecks(cleanTitle),
       completedChecks: [],
-      backendData: sectionBackendData // Store complete backend section for guidance tabs
+      backendData: sectionBackendData // Store complete backend section for section-specific guidance
     }
   })
   
