@@ -509,27 +509,40 @@ function extractVariableValue(varData: any): string {
   return ''
 }
   
-function parseTemplateVariables(templateVarString: string, ideationData?: any): TemplateVariable[] {
-  if (!templateVarString) return []
+function parseTemplateVariables(templateVarData: any, ideationData?: any): TemplateVariable[] {
+  if (!templateVarData) return []
   
-  // Handle different formats: JSON, comma-separated, or pipe-separated
   let variableNames: string[] = []
   
-  try {
-    // Try JSON first
-    const parsed = JSON.parse(templateVarString)
-    if (Array.isArray(parsed)) {
-      variableNames = parsed
-    } else if (typeof parsed === 'object') {
-      variableNames = Object.keys(parsed)
+  // Handle if it's already an object
+  if (typeof templateVarData === 'object' && templateVarData !== null) {
+    if (Array.isArray(templateVarData)) {
+      variableNames = templateVarData
+    } else {
+      // If it's an object, use the keys or values
+      variableNames = Object.keys(templateVarData).length > 0 ? Object.keys(templateVarData) : Object.values(templateVarData)
     }
-  } catch {
-    // Fallback to comma or pipe separated
-    variableNames = templateVarString
-      .split(/[,|;]/)
-      .map(v => v.trim())
-      .filter(v => v.length > 0)
+  } else if (typeof templateVarData === 'string') {
+    // Handle string format
+    try {
+      // Try JSON first
+      const parsed = JSON.parse(templateVarData)
+      if (Array.isArray(parsed)) {
+        variableNames = parsed
+      } else if (typeof parsed === 'object') {
+        variableNames = Object.keys(parsed)
+      }
+    } catch {
+      // Fallback to comma or pipe separated
+      variableNames = templateVarData
+        .split(/[,|;]/)
+        .map(v => v.trim())
+        .filter(v => v.length > 0)
+    }
   }
+  
+  // Filter out empty strings and ensure we have valid variable names
+  variableNames = variableNames.filter(name => name && typeof name === 'string' && name.trim().length > 0)
   
   return variableNames.map(name => ({
     name: name.toUpperCase(),
