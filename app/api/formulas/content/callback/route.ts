@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       console.log('  Total Sections:', body.total_sections)
       console.log('  Total Guidance Types:', body.total_guidance_types)
       console.log('  Guidance Sections:')
-      body.writing_guidance_sections?.forEach((section, index) => {
+     body.writing_guidance_sections?.forEach((section: any, index: number) => {
         console.log(`    Section ${index + 1}:`, {
           section_name: section.section_name,
           section_id: section.section_id,
