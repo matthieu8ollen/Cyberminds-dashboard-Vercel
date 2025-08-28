@@ -399,6 +399,9 @@ function extractTemplateVariables(
     console.log('🔍 DEBUGGING TEMPLATE VARIABLES ALIGNMENT:')
     console.log('📊 Database variables for section:', databaseVariables.map(v => v.name))
     console.log('🤖 Backend variables available:', Object.keys(contentData.generatedContent.all_filled_variables))
+    console.log('📊 Backend sections data:', contentData.generatedContent.sections_data?.length || 0, 'sections')
+    console.log('🎯 Backend total variables filled:', contentData.generatedContent.total_variables_filled || 'unknown')
+    console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
     console.log('📝 Full backend variable data:', JSON.stringify(contentData.generatedContent.all_filled_variables, null, 2))
     
     return databaseVariables.map(dbVar => {
