@@ -255,26 +255,44 @@ const currentTabFormulas = getFormulasForTab()
 }
 
   // Convert database format to component format
-  const convertDatabaseToFormula = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): FormulaTemplate => {
-    const sortedSections = dbFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
-    
-    return {
-      id: dbFormula.formula_id || dbFormula.id, // Use formula_id for AI matching, fallback to id
-      name: formatDatabaseText(dbFormula.formula_name),
-      description: formatDatabaseText(dbFormula.funnel_purpose || dbFormula.content_intent || ''),
-      category: mapCategoryToDisplay(dbFormula.formula_category || ''),
-      structure: sortedSections.map(section => 
-        `${formatDatabaseText(section.section_name)} - ${formatDatabaseText(section.section_purpose)}`
-      ),
-      example: dbFormula.complete_template?.split('\n')[0] || `${formatDatabaseText(dbFormula.formula_name)} example...`,
-      whyItWorks: formatDatabaseTextArray(dbFormula.psychological_triggers || [
-        'Proven framework structure',
-        'Optimized for engagement',
-        'Based on successful patterns'
-      ]),
-      bestFor: formatDatabaseText(dbFormula.primary_target_role || 'Professional content creation')
-    }
+const convertDatabaseToFormula = (dbFormula: ContentFormula & { formula_sections: FormulaSection[] }): FormulaTemplate => {
+  const sortedSections = dbFormula.formula_sections.sort((a, b) => a.section_order - b.section_order)
+  
+  return {
+    id: dbFormula.formula_id || dbFormula.id,
+    name: formatDatabaseText(dbFormula.formula_name),
+    description: formatDatabaseText(dbFormula.funnel_purpose || dbFormula.content_intent || ''),
+    category: mapCategoryToDisplay(dbFormula.formula_category || ''),
+    structure: sortedSections.map(section => 
+      `${formatDatabaseText(section.section_name)} - ${formatDatabaseText(section.section_purpose)}`
+    ),
+    example: dbFormula.complete_template?.split('\n')[0] || `${formatDatabaseText(dbFormula.formula_name)} example...`,
+    whyItWorks: formatDatabaseTextArray(dbFormula.psychological_triggers || [
+      'Proven framework structure',
+      'Optimized for engagement',
+      'Based on successful patterns'
+    ]),
+    bestFor: formatDatabaseText(dbFormula.primary_target_role || 'Professional content creation'),
+    sections: sortedSections.map(section => ({
+      id: section.id,
+      section_order: section.section_order,
+      section_name: section.section_name,
+      section_purpose: section.section_purpose,
+      section_template: section.section_template,
+      section_guidelines: section.section_guidelines,
+      template_variables: section.template_variables,
+      word_count_target: section.word_count_target,
+      word_count_min: section.word_count_min,
+      word_count_max: section.word_count_max,
+      psychological_purpose: section.psychological_purpose,
+      emotional_target: section.emotional_target,
+      must_contain_elements: section.must_contain_elements,
+      should_avoid_elements: section.should_avoid_elements,
+      is_required: section.is_required,
+      is_customizable: section.is_customizable
+    }))
   }
+}
   
   const mapCategoryToDisplay = (dbCategory: string): 'story' | 'data' | 'framework' | 'lead-magnet' => {
     switch (dbCategory) {
