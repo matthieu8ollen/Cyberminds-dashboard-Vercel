@@ -19,6 +19,42 @@ export async function POST(request: NextRequest) {
       has_all_filled_variables: !!body.all_filled_variables,
       variables_count: Object.keys(body.all_filled_variables || {}).length
     })
+
+    // COMPREHENSIVE BACKEND STRUCTURE DEBUG
+    if (body.response_type === 'content_generation_complete') {
+      console.log('📊 CONTENT GENERATION STRUCTURE ANALYSIS:')
+      console.log('  Processing Status:', body.processing_status)
+      console.log('  Total Sections:', body.total_sections)
+      console.log('  Total Variables Filled:', body.total_variables_filled)
+      console.log('  Validation Score:', body.validation_score)
+      console.log('  Sections Data:')
+      body.sections_data?.forEach((section, index) => {
+        console.log(`    Section ${index + 1}:`, {
+          section_name: section.section_name,
+          section_order: section.section_order,
+          variable_count: section.variable_count,
+          filled_variables_sample: Object.keys(section.filled_variables || {}).slice(0, 3)
+        })
+      })
+      console.log('  All Variables Keys (first 10):', Object.keys(body.all_filled_variables || {}).slice(0, 10))
+    }
+
+    if (body.response_type === 'writing_guidance_extracted') {
+      console.log('📝 WRITING GUIDANCE STRUCTURE ANALYSIS:')
+      console.log('  Processing Status:', body.processing_status)
+      console.log('  Total Sections:', body.total_sections)
+      console.log('  Total Guidance Types:', body.total_guidance_types)
+      console.log('  Guidance Sections:')
+      body.writing_guidance_sections?.forEach((section, index) => {
+        console.log(`    Section ${index + 1}:`, {
+          section_name: section.section_name,
+          section_id: section.section_id,
+          section_order: section.section_order,
+          guidance_types: section.guidance_types?.length || 0,
+          available_guidance_fields: Object.keys(section).filter(key => !['section_id', 'section_name', 'section_order', 'guidance_types'].includes(key))
+        })
+      })
+    }
     
     const { session_id, response_type } = body
 
