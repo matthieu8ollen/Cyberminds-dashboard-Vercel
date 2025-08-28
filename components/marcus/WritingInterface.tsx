@@ -441,8 +441,8 @@ function extractTemplateVariables(
   console.log('  - Formula Sections Count:', formula.sections?.length || 0)
   
   // PRIORITY 1: Always use database template variables as structure
-  const currentSection = formula.sections?.[currentSectionIndex]
-  const databaseVariables = getSectionSpecificVariables(currentSection?.section_name || '', formula.category, ideationData)
+const currentSection = formula.sections?.[currentSectionIndex]
+const databaseVariables = getSectionSpecificVariables(currentSection, formula, ideationData)
   console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
@@ -570,14 +570,23 @@ function isRequiredVariable(variableName: string): boolean {
 }
 
 function getSectionSpecificVariables(
-  sectionTitle: string, 
-  category: string, 
+  currentSection: any,
+  formula: FormulaTemplate,
   ideationData?: any
 ): TemplateVariable[] {
-  const variables: TemplateVariable[] = []
-  const cleanTitle = sectionTitle.toLowerCase().trim()
+  // Use database section template_variables if available
+  if (currentSection?.template_variables) {
+    return parseTemplateVariables(currentSection.template_variables, ideationData)
+  }
   
-  // Define section-specific variables based on section title and category
+  // Fallback to hardcoded variables based on section name
+  return getHardcodedSectionVariables(currentSection?.section_name || '', ideationData)
+}
+
+function getHardcodedSectionVariables(sectionName: string, ideationData?: any): TemplateVariable[] {
+  const variables: TemplateVariable[] = []
+  const cleanTitle = sectionName.toLowerCase().trim()
+  
   switch (cleanTitle) {
     case 'hook':
     case 'opening':
@@ -587,8 +596,7 @@ function getSectionSpecificVariables(
         label: 'Opening Hook',
         value: '',
         aiSuggestion: ideationData?.topic ? 
-          `Here's what they don't tell you about ${ideationData.topic}` : 
-          'Here\'s what they don\'t tell you about...',
+          `Here's what they don't tell you about ${ideationData.topic}` : '',
         required: true,
         type: 'text',
         placeholder: 'Your attention-grabbing opening line'
@@ -603,8 +611,7 @@ function getSectionSpecificVariables(
         label: 'Main Problem',
         value: '',
         aiSuggestion: ideationData?.topic ? 
-          `Most people struggle with ${ideationData.topic} because...` : 
-          'The core problem is...',
+          `Most people struggle with ${ideationData.topic} because...` : '',
         required: true,
         type: 'text',
         placeholder: 'The specific problem your audience faces'
@@ -618,9 +625,7 @@ function getSectionSpecificVariables(
         name: 'FRAMEWORK_NAME',
         label: 'Framework Name',
         value: '',
-        aiSuggestion: ideationData?.topic ? 
-          `The ${ideationData.topic} Framework` : 
-          'The Solution Framework',
+        aiSuggestion: ideationData?.angle || '',
         required: true,
         type: 'text',
         placeholder: 'Your framework or solution name'
@@ -629,14 +634,12 @@ function getSectionSpecificVariables(
       
     case 'cta':
     case 'call to action':
-    case 'question':
       variables.push({
         name: 'ENGAGEMENT_QUESTION',
         label: 'Engagement Question',
         value: '',
         aiSuggestion: ideationData?.topic ? 
-          `What's your experience with ${ideationData.topic}?` : 
-          'What\'s your take on this?',
+          `What's your experience with ${ideationData.topic}?` : '',
         required: true,
         type: 'text',
         placeholder: 'Question to engage your audience'
@@ -658,7 +661,7 @@ function getSectionSpecificVariables(
   
   return variables
 }
-
+  
   function initializeContentChecks(category: string): ContentCheck[] {
     const baseChecks: ContentCheck[] = [
       {
