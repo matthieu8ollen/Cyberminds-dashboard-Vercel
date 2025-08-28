@@ -1276,25 +1276,25 @@ const renderTemplateVariables = () => (
     
     {/* Database must-contain/avoid elements */}
     {formula.sections?.[currentSectionIndex] && (
-      <div className="mt-3 space-y-2">
-        {formula.sections[currentSectionIndex].must_contain_elements?.length > 0 && (
-          <div className="text-xs">
-            <span className="font-medium text-green-700">Must contain: </span>
-            <span className="text-green-600">
-              {formula.sections[currentSectionIndex].must_contain_elements.join(', ')}
-            </span>
-          </div>
-        )}
-        {formula.sections[currentSectionIndex].should_avoid_elements?.length > 0 && (
-          <div className="text-xs">
-            <span className="font-medium text-red-700">Avoid: </span>
-            <span className="text-red-600">
-              {formula.sections[currentSectionIndex].should_avoid_elements.join(', ')}
-            </span>
-          </div>
-        )}
+  <div className="mt-3 space-y-2">
+    {formula.sections[currentSectionIndex]!.must_contain_elements?.length > 0 && (
+      <div className="text-xs">
+        <span className="font-medium text-green-700">Must contain: </span>
+        <span className="text-green-600">
+          {formula.sections[currentSectionIndex]!.must_contain_elements!.join(', ')}
+        </span>
       </div>
     )}
+    {formula.sections[currentSectionIndex]!.should_avoid_elements?.length > 0 && (
+      <div className="text-xs">
+        <span className="font-medium text-red-700">Avoid: </span>
+        <span className="text-red-600">
+          {formula.sections[currentSectionIndex]!.should_avoid_elements!.join(', ')}
+        </span>
+      </div>
+    )}
+  </div>
+)}
   </div>
 )
 
