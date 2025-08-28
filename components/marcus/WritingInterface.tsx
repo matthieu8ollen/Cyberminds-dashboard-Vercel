@@ -570,25 +570,30 @@ function isRequiredVariable(variableName: string): boolean {
 }
 
 function getSectionSpecificVariables(
-  currentSection: any,
-  formula: FormulaTemplate,
+  sectionTitle: string, 
+  category: string, 
   ideationData?: any
 ): TemplateVariable[] {
-  // Use database section data if available
-  if (formula.sections && currentSection?.section_order) {
-    const dbSection = formula.sections.find(s => s.section_order === currentSection.section_order)
-    if (dbSection?.template_variables) {
-      return parseTemplateVariables(dbSection.template_variables, ideationData)
-    }
-  }
+  const variables: TemplateVariable[] = []
+  const cleanTitle = sectionTitle.toLowerCase().trim()
   
-  // Fallback to current section's template_variables
-  if (currentSection?.template_variables) {
-    return parseTemplateVariables(currentSection.template_variables, ideationData)
-  }
-  
-  return []
-}
+  // Define section-specific variables based on section title and category
+  switch (cleanTitle) {
+    case 'hook':
+    case 'opening':
+    case 'intro':
+      variables.push({
+        name: 'OPENING_LINE',
+        label: 'Opening Hook',
+        value: '',
+        aiSuggestion: ideationData?.topic ? 
+          `Here's what they don't tell you about ${ideationData.topic}` : 
+          'Here\'s what they don\'t tell you about...',
+        required: true,
+        type: 'text',
+        placeholder: 'Your attention-grabbing opening line'
+      })
+      break
       
     case 'problem':
     case 'challenge':
@@ -609,68 +614,16 @@ function getSectionSpecificVariables(
     case 'framework':
     case 'solution':
     case 'approach':
-      variables.push(
-        {
-          name: 'FRAMEWORK_NAME',
-          label: 'Framework Name',
-          value: '',
-          aiSuggestion: ideationData?.topic ? 
-            `The ${ideationData.topic} Framework` : 
-            'The [Solution] Framework',
-          required: true,
-          type: 'text',
-          placeholder: 'Your framework or solution name'
-        },
-        {
-          name: 'KEY_STEPS',
-          label: 'Number of Steps',
-          value: '',
-          aiSuggestion: '5',
-          required: false,
-          type: 'text',
-          placeholder: 'e.g., 3, 5, 7'
-        }
-      )
-      break
-      
-    case 'story':
-    case 'experience':
-    case 'example':
-      if (category === 'story') {
-        variables.push(
-          {
-            name: 'SITUATION',
-            label: 'The Situation',
-            value: '',
-            aiSuggestion: 'When I was facing...',
-            required: true,
-            type: 'text',
-            placeholder: 'Describe the context or situation'
-          },
-          {
-            name: 'CHALLENGE',
-            label: 'What Went Wrong',
-            value: '',
-            aiSuggestion: 'The problem was...',
-            required: true,
-            type: 'text',
-            placeholder: 'What challenge or mistake occurred'
-          }
-        )
-      }
-      break
-      
-    case 'evidence':
-    case 'proof':
-    case 'data':
       variables.push({
-        name: 'SUPPORTING_DATA',
-        label: 'Evidence/Data',
+        name: 'FRAMEWORK_NAME',
+        label: 'Framework Name',
         value: '',
-        aiSuggestion: 'Studies show that...',
-        required: false,
+        aiSuggestion: ideationData?.topic ? 
+          `The ${ideationData.topic} Framework` : 
+          'The Solution Framework',
+        required: true,
         type: 'text',
-        placeholder: 'Statistics, studies, or concrete evidence'
+        placeholder: 'Your framework or solution name'
       })
       break
       
@@ -684,22 +637,21 @@ function getSectionSpecificVariables(
         aiSuggestion: ideationData?.topic ? 
           `What's your experience with ${ideationData.topic}?` : 
           'What\'s your take on this?',
-        required: false,
+        required: true,
         type: 'text',
         placeholder: 'Question to engage your audience'
       })
       break
       
     default:
-      // Generic fallback for unknown sections
       variables.push({
         name: 'SECTION_CONTENT',
-        label: `${sectionTitle} Content`,
+        label: 'Content',
         value: '',
-        aiSuggestion: `Your ${sectionTitle.toLowerCase()} goes here...`,
+        aiSuggestion: '',
         required: false,
         type: 'text',
-        placeholder: `Enter content for ${sectionTitle}`
+        placeholder: 'Enter your content'
       })
       break
   }
