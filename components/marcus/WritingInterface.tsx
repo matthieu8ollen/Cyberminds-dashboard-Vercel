@@ -1281,7 +1281,7 @@ const renderTemplateVariables = () => (
   
   return (
     <div className="mt-3 space-y-2">
-      {currentDbSection.must_contain_elements?.length > 0 && (
+      {(currentDbSection.must_contain_elements?.length || 0) > 0 && (
         <div className="text-xs">
           <span className="font-medium text-green-700">Must contain: </span>
           <span className="text-green-600">
@@ -1289,7 +1289,7 @@ const renderTemplateVariables = () => (
           </span>
         </div>
       )}
-      {currentDbSection.should_avoid_elements?.length > 0 && (
+      {(currentDbSection.should_avoid_elements?.length || 0) > 0 && (
         <div className="text-xs">
           <span className="font-medium text-red-700">Avoid: </span>
           <span className="text-red-600">
