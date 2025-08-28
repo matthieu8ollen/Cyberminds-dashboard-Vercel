@@ -256,7 +256,10 @@ useEffect(() => {
     const [title, guidance] = step.includes(' - ') ? step.split(' - ') : [step, '']
     const cleanTitle = title.trim()
     
-    // Find matching backend section by section_order (1-based matching to 0-based index)
+    // PRIORITY 1: Use database section data
+    const dbSection = formula.sections?.[index]
+    
+    // PRIORITY 2: Find matching backend section by section_order (1-based matching to 0-based index)
     const backendSection = contentData?.guidance?.writing_guidance_sections?.find(
       (section: any) => section.section_order === (index + 1)
     )
@@ -269,17 +272,17 @@ useEffect(() => {
     const structuredContent = extractContentFromStructured(backendSection, cleanTitle)
     
     return {
-      id: backendSection?.section_id || `section-${index}`,
-      title: backendSection?.section_name || cleanTitle, // Use backend section_name if available
+      id: dbSection?.id || backendSection?.section_id || `section-${index}`,
+      title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
       content: structuredContent || '',
-      guidance: structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-      placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
+      guidance: dbSection?.section_guidelines || structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
+      placeholder: dbSection?.section_template || getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
-      wordCountTarget: getWordCountTarget(cleanTitle),
-      wordCountMin: Math.floor(getWordCountTarget(cleanTitle) * 0.7),
-      psychologyNote: getPsychologyNote(cleanTitle),
-      emotionalTarget: getEmotionalTarget(cleanTitle),
-      isRequired: isRequiredSection(cleanTitle),
+      wordCountTarget: dbSection?.word_count_target || getWordCountTarget(cleanTitle),
+      wordCountMin: dbSection?.word_count_min || Math.floor((dbSection?.word_count_target || getWordCountTarget(cleanTitle)) * 0.7),
+      psychologyNote: dbSection?.psychological_purpose || getPsychologyNote(cleanTitle),
+      emotionalTarget: dbSection?.emotional_target || getEmotionalTarget(cleanTitle),
+      isRequired: dbSection?.is_required ?? isRequiredSection(cleanTitle),
       contentChecks: getContentChecks(cleanTitle),
       completedChecks: [],
       backendData: sectionBackendData // Store complete backend section for section-specific guidance
@@ -337,19 +340,20 @@ useEffect(() => {
   // ============================================================================
 
   function getGuidanceForSection(formulaId: string, title: string, index: number): string {
-    const guidanceMap: Record<string, string> = {
-      'Hook': 'Create an attention-grabbing opening that stops the scroll. Use specific details, questions, or contrarian statements.',
-      'Problem': 'Identify a specific pain point your audience faces. Make it relatable and urgent.',
-      'Framework': 'Present your systematic approach. Use numbered steps or clear structure.',
-      'Solution': 'Provide actionable advice that directly addresses the problem.',
-      'CTA': 'End with a question or call-to-action that encourages engagement.',
-      'Context': 'Set the scene for your story. Help readers understand the situation.',
-      'Learning': 'Extract the key lesson or insight from your experience.',
-      'Evidence': 'Support your position with data, examples, or specific details.'
-    }
-    
-    return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
+  // Fallback guidance when database doesn't provide section_guidelines
+  const guidanceMap: Record<string, string> = {
+    'Hook': 'Create an attention-grabbing opening that stops the scroll. Use specific details, questions, or contrarian statements.',
+    'Problem': 'Identify a specific pain point your audience faces. Make it relatable and urgent.',
+    'Framework': 'Present your systematic approach. Use numbered steps or clear structure.',
+    'Solution': 'Provide actionable advice that directly addresses the problem.',
+    'CTA': 'End with a question or call-to-action that encourages engagement.',
+    'Context': 'Set the scene for your story. Help readers understand the situation.',
+    'Learning': 'Extract the key lesson or insight from your experience.',
+    'Evidence': 'Support your position with data, examples, or specific details.'
   }
+  
+  return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
+}
 
  function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
   return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
@@ -372,29 +376,31 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
 }
   
   function getWordCountTarget(title: string): number {
-    const targetMap: Record<string, number> = {
-      'Hook': 30,
-      'Problem': 50,
-      'Framework': 100,
-      'Solution': 80,
-      'CTA': 25,
-      'Context': 60,
-      'Learning': 40
-    }
-    
-    return targetMap[title] || 50
+  // Fallback word counts when database doesn't provide word_count_target
+  const targetMap: Record<string, number> = {
+    'Hook': 30,
+    'Problem': 50,
+    'Framework': 100,
+    'Solution': 80,
+    'CTA': 25,
+    'Context': 60,
+    'Learning': 40
   }
+  
+  return targetMap[title] || 50
+}
 
   function getPsychologyNote(title: string): string {
-    const psychologyMap: Record<string, string> = {
-      'Hook': 'Use pattern interrupts and curiosity gaps to capture attention',
-      'Problem': 'Trigger pain points and create urgency for solution',
-      'Framework': 'Provide structure and reduce cognitive load',
-      'Solution': 'Offer clear path forward and build confidence'
-    }
-    
-    return psychologyMap[title] || 'Focus on connecting with your audience emotionally'
+  // Fallback psychology notes when database doesn't provide psychological_purpose
+  const psychologyMap: Record<string, string> = {
+    'Hook': 'Use pattern interrupts and curiosity gaps to capture attention',
+    'Problem': 'Trigger pain points and create urgency for solution',
+    'Framework': 'Provide structure and reduce cognitive load',
+    'Solution': 'Offer clear path forward and build confidence'
   }
+  
+  return psychologyMap[title] || 'Focus on connecting with your audience emotionally'
+}
 
   function getEmotionalTarget(title: string): string {
     const emotionMap: Record<string, string> = {
@@ -440,32 +446,31 @@ function extractTemplateVariables(
   console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
   // PRIORITY 2: Enhance database variables with backend AI suggestions
-  if (contentData?.generatedContent?.all_filled_variables) {
-    console.log('🔍 DEBUGGING TEMPLATE VARIABLES ALIGNMENT:')
-    console.log('📊 Database variables for section:', databaseVariables.map(v => v.name))
-    console.log('🤖 Backend variables available:', Object.keys(contentData.generatedContent.all_filled_variables))
-    console.log('📊 Backend sections data:', contentData.generatedContent.sections_data?.length || 0, 'sections')
-    console.log('🎯 Backend total variables filled:', contentData.generatedContent.total_variables_filled || 'unknown')
-    console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
-    console.log('📝 Full backend variable data:', JSON.stringify(contentData.generatedContent.all_filled_variables, null, 2))
-    
-    return databaseVariables.map(dbVar => {
-      // Find matching backend suggestion by name or semantic matching
-      const backendMatch = findBackendVariableMatch(dbVar.name, contentData.generatedContent.all_filled_variables)
-      
-      if (backendMatch) {
-        console.log(`🤖 Enhanced ${dbVar.name} with AI suggestion: ${backendMatch.substring(0, 50)}...`)
-        return {
-          ...dbVar,
-          aiSuggestion: backendMatch
-        }
-      }
-      
-      return dbVar // Keep original if no backend match
-    })
-  }
+if (contentData?.generatedContent?.all_filled_variables) {
+  console.log('🔍 DEBUGGING TEMPLATE VARIABLES ALIGNMENT:')
+  console.log('📊 Database variables for section:', databaseVariables.map(v => v.name))
+  console.log('🤖 Backend variables available:', Object.keys(contentData.generatedContent.all_filled_variables))
+  console.log('📊 Backend sections data:', contentData.generatedContent.sections_data?.length || 0, 'sections')
+  console.log('🎯 Backend total variables filled:', contentData.generatedContent.total_variables_filled || 'unknown')
+  console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
   
-  return databaseVariables
+  return databaseVariables.map(dbVar => {
+    // Find matching backend suggestion by name or semantic matching
+    const backendMatch = findBackendVariableMatch(dbVar.name, contentData.generatedContent.all_filled_variables)
+    
+    if (backendMatch) {
+      console.log(`🤖 Enhanced ${dbVar.name} with AI suggestion: ${backendMatch.substring(0, 50)}...`)
+      return {
+        ...dbVar,
+        aiSuggestion: backendMatch
+      }
+    }
+    
+    return dbVar // Keep original if no backend match
+  })
+}
+
+return databaseVariables
 }
 
 function findBackendVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): string | null {
@@ -1064,22 +1069,28 @@ const handleContinueToImages = useCallback(async () => {
   // ============================================================================
 
   const renderCurrentSectionHeader = () => (
-    <div className="border-b border-gray-200 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{currentSection?.title}</h1>
-          <p className="text-gray-600 mt-1">{currentSection?.guidance}</p>
-        </div>
-        <button
-          onClick={onBack}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
+  <div className="border-b border-gray-200 p-4">
+    <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{currentSection?.title}</h1>
+        <p className="text-gray-600 mt-1">{currentSection?.guidance}</p>
+        {/* Database section purpose */}
+        {formula.sections?.[currentSectionIndex]?.section_purpose && (
+          <p className="text-sm text-blue-600 mt-2 bg-blue-50 px-3 py-1 rounded-lg">
+            <strong>Purpose:</strong> {formula.sections[currentSectionIndex].section_purpose}
+          </p>
+        )}
       </div>
+      <button
+        onClick={onBack}
+        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back</span>
+      </button>
     </div>
-  )
+  </div>
+)
 
   const renderContentChecklist = () => {
   // Backend will implement this later with live detection
@@ -1291,26 +1302,49 @@ const renderTemplateVariables = () => (
 )
 
   const renderWritingArea = () => (
-    <div className="mb-6">
-      <textarea
-        value={currentSection?.content || ''}
-        onChange={(e) => handleSectionChange(e.target.value)}
-        placeholder={currentSection?.placeholder || 'Start writing...'}
-        className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-        style={{ fontSize: '16px', lineHeight: '1.6' }}
-      />
-      
-      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-        <span>
-          {currentSection?.content.trim().split(/\s+/).filter(w => w).length || 0} words
-          {currentSection?.wordCountTarget && ` / ${currentSection.wordCountTarget} target`}
-        </span>
-        <span>
-          {currentSection?.psychologyNote}
-        </span>
-      </div>
+  <div className="mb-6">
+    <textarea
+      value={currentSection?.content || ''}
+      onChange={(e) => handleSectionChange(e.target.value)}
+      placeholder={currentSection?.placeholder || 'Start writing...'}
+      className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+      style={{ fontSize: '16px', lineHeight: '1.6' }}
+    />
+    
+    <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+      <span>
+        {currentSection?.content.trim().split(/\s+/).filter(w => w).length || 0} words
+        {currentSection?.wordCountTarget && ` / ${currentSection.wordCountTarget} target`}
+        {currentSection?.wordCountMin && ` (min: ${currentSection.wordCountMin})`}
+      </span>
+      <span>
+        {currentSection?.psychologyNote}
+      </span>
     </div>
-  )
+    
+    {/* Database must-contain/avoid elements */}
+    {formula.sections?.[currentSectionIndex] && (
+      <div className="mt-3 space-y-2">
+        {formula.sections[currentSectionIndex].must_contain_elements?.length > 0 && (
+          <div className="text-xs">
+            <span className="font-medium text-green-700">Must contain: </span>
+            <span className="text-green-600">
+              {formula.sections[currentSectionIndex].must_contain_elements.join(', ')}
+            </span>
+          </div>
+        )}
+        {formula.sections[currentSectionIndex].should_avoid_elements?.length > 0 && (
+          <div className="text-xs">
+            <span className="font-medium text-red-700">Avoid: </span>
+            <span className="text-red-600">
+              {formula.sections[currentSectionIndex].should_avoid_elements.join(', ')}
+            </span>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)
 
   const renderNavigationButtons = () => (
     <div className="flex items-center justify-between">
