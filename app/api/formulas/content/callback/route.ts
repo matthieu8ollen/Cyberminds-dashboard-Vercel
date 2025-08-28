@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       console.log('  Total Variables Filled:', body.total_variables_filled)
       console.log('  Validation Score:', body.validation_score)
       console.log('  Sections Data:')
-      body.sections_data?.forEach((section, index) => {
+      body.sections_data?.forEach((section: any, index: number) => {
         console.log(`    Section ${index + 1}:`, {
           section_name: section.section_name,
           section_order: section.section_order,
