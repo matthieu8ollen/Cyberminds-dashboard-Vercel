@@ -1277,7 +1277,7 @@ const renderTemplateVariables = () => (
     {/* Database must-contain/avoid elements */}
     {formula.sections?.[currentSectionIndex] && (
   <div className="mt-3 space-y-2">
-    {formula.sections[currentSectionIndex]!.must_contain_elements?.length > 0 && (
+    {formula.sections[currentSectionIndex]!.must_contain_elements?.length! > 0 && (
       <div className="text-xs">
         <span className="font-medium text-green-700">Must contain: </span>
         <span className="text-green-600">
