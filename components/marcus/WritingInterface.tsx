@@ -1195,8 +1195,8 @@ const renderTemplateVariables = () => (
         }
       }
       
-      // PATH 1: Show database placeholder content
-      return currentSection?.placeholder || 'No example content available'
+      // PATH 1: Show example from database or fallback
+      return currentSection?.content || currentSection?.placeholder || 'No example content available for this section'
     }
     
     // Default to template mode
@@ -1333,20 +1333,10 @@ const renderTemplateVariables = () => (
 
   const renderWritingArea = () => (
   <div className="mb-6">
-    {/* Show AI suggestion preview when section is empty */}
-    {!currentSection?.content?.trim() && templateVariables.length > 0 && (
-      <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="text-sm text-gray-500 mb-2">AI Suggestion Preview:</div>
-        <div className="text-sm text-gray-400 italic whitespace-pre-wrap">
-          {getTemplateWithAISuggestions()}
-        </div>
-      </div>
-    )}
-    
     <textarea
       value={currentSection?.content || ''}
       onChange={(e) => handleSectionChange(e.target.value)}
-      placeholder={currentSection?.content?.trim() ? '' : getTemplateWithAISuggestions()}
+      placeholder={!currentSection?.content?.trim() ? getTemplateWithAISuggestions() : 'Continue writing...'}
       className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
       style={{ fontSize: '16px', lineHeight: '1.6' }}
     />
