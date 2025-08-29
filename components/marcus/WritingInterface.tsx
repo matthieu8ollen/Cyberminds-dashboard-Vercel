@@ -1432,6 +1432,7 @@ const renderFullDraftModal = () => {
 // MAIN RENDER
 // ============================================================================
 
+// Early returns MUST be at component function level, not in JSX
 if (!currentSection) {
   return (
     <div className="flex items-center justify-center h-64">
@@ -1440,7 +1441,6 @@ if (!currentSection) {
   )
 }
 
-  // Render appropriate view based on current state
 if (currentView === 'preview') {
   return (
     <ContentPreview
@@ -1457,15 +1457,15 @@ return (
   <>
     <div className="h-screen bg-gray-50 flex">
       {/* Sidebar */}
-<WritingSidebar
-  formula={formula}
-  sections={sections}
-  currentSectionIndex={currentSectionIndex}
-  totalSections={totalSections}
-  sidebarCollapsed={sidebarCollapsed}
-  onSectionNavigation={handleSectionNavigation}
-  onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-/>
+      <WritingSidebar
+        formula={formula}
+        sections={sections}
+        currentSectionIndex={currentSectionIndex}
+        totalSections={totalSections}
+        sidebarCollapsed={sidebarCollapsed}
+        onSectionNavigation={handleSectionNavigation}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
       
       <AIContentOverlay
         isVisible={showAIOverlay}
@@ -1476,35 +1476,34 @@ return (
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-          {/* Header */}
-          {renderCurrentSectionHeader()}
-          
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-6xl mx-auto p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column */}
-                <div>
-                  {renderContentChecklist()}
-                  {renderTemplateVariables()}
-                  {renderWritingArea()}
-                  {renderAIButtons()}
-                  {renderNavigationButtons()}
-                </div>
-                
-                {/* Right Column */}
-                <div>
-                  {renderLivePreview()}
-                  {renderWritingGuidanceTabs()}
-                </div>
+        {/* Header */}
+        {renderCurrentSectionHeader()}
+        
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column */}
+              <div>
+                {renderContentChecklist()}
+                {renderTemplateVariables()}
+                {renderWritingArea()}
+                {renderAIButtons()}
+                {renderNavigationButtons()}
+              </div>
+              
+              {/* Right Column */}
+              <div>
+                {renderLivePreview()}
+                {renderWritingGuidanceTabs()}
               </div>
             </div>
           </div>
+        </div>
       </div>
     </div>
     
     {/* Modals */}
     {renderFullDraftModal()}
- </>
+  </>
 )
-}
