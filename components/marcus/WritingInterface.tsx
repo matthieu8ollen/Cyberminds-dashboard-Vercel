@@ -739,22 +739,32 @@ function getHardcodedSectionVariables(sectionName: string, ideationData?: any): 
   const handleSectionChange = useCallback((content: string) => {
   setSections(prev => prev.map((section, index) => {
     if (index === currentSectionIndex) {
-      // No auto-completion - sections complete only when user clicks Next
+      // Apply template variable substitution to content
+      let processedContent = content
+      templateVariables.forEach(variable => {
+        if (variable.value.trim()) {
+          const placeholder = `[${variable.name}]`
+          processedContent = processedContent.replace(
+            new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 
+            variable.value
+          )
+        }
+      })
+      
       // Update content checks
       const updatedChecks = section.contentChecks.filter(check => 
-        content.toLowerCase().includes(check.toLowerCase())
+        processedContent.toLowerCase().includes(check.toLowerCase())
       )
       
       return {
         ...section,
-        content,
+        content: processedContent,
         completedChecks: updatedChecks
-        // Keep existing completed status, don't override
       }
     }
     return section
   }))
-}, [currentSectionIndex])
+}, [currentSectionIndex, templateVariables])
 
   const handleTemplateVariableChange = useCallback((name: string, value: string) => {
     setTemplateVariables(prev => prev.map(variable => 
@@ -1323,10 +1333,20 @@ const renderTemplateVariables = () => (
 
   const renderWritingArea = () => (
   <div className="mb-6">
+    {/* Show AI suggestion preview when section is empty */}
+    {!currentSection?.content?.trim() && templateVariables.length > 0 && (
+      <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="text-sm text-gray-500 mb-2">AI Suggestion Preview:</div>
+        <div className="text-sm text-gray-400 italic whitespace-pre-wrap">
+          {getTemplateWithAISuggestions()}
+        </div>
+      </div>
+    )}
+    
     <textarea
       value={currentSection?.content || ''}
       onChange={(e) => handleSectionChange(e.target.value)}
-      placeholder={currentSection?.placeholder || 'Start writing...'}
+      placeholder={currentSection?.content?.trim() ? '' : getTemplateWithAISuggestions()}
       className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
       style={{ fontSize: '16px', lineHeight: '1.6' }}
     />
