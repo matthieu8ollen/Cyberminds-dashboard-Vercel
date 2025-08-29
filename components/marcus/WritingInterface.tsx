@@ -444,26 +444,6 @@ function extractTemplateVariables(
   return getSectionSpecificVariables(currentSection, formula, ideationData)
 }
 
-function createBackendTemplateVariables(backendVariables: Record<string, any>): TemplateVariable[] {
-  return Object.entries(backendVariables)
-    .filter(([_, value]) => extractVariableValue(value)?.trim())
-    .map(([key, value]) => ({
-      name: key,
-      label: formatVariableLabel(key),
-      value: '',
-      aiSuggestion: extractVariableValue(value),
-      required: false, // Let user determine what's required
-      type: 'text' as const,
-      placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
-    }))
-}
-  console.log('🎯 EXTRACT TEMPLATE VARIABLES DEBUG START:')
-  console.log('  - Formula ID:', formula.id)
-  console.log('  - Current Section Index:', currentSectionIndex)
-  console.log('  - Ideation Data Present:', !!ideationData)
-  console.log('  - Content Data Present:', !!contentData)
-  console.log('  - Backend Variables Available:', !!contentData?.generatedContent?.all_filled_variables)
-
   // PATH 2: Backend-driven variables (AI-enhanced from ideation)
   if (contentData?.generatedContent?.all_filled_variables && ideationData) {
     console.log('🚀 PATH 2: Using backend-generated template variables')
@@ -471,7 +451,7 @@ function createBackendTemplateVariables(backendVariables: Record<string, any>): 
 console.log('🎯 Formula-specific backend variables detected')
     console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
     
-    return createBackendTemplateVariables(contentData.generatedContent.all_filled_variables, ideationData)
+return createBackendTemplateVariables(contentData.generatedContent.all_filled_variables, ideationData)
   }
 
   // PATH 1: Database-driven variables (direct formula selection)
