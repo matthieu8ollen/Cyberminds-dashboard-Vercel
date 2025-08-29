@@ -270,11 +270,16 @@ useEffect(() => {
     // Extract structured content and guidance
     const structuredGuidanceText = extractGuidanceFromStructured(backendSection)
     const structuredContent = extractContentFromStructured(backendSection, cleanTitle)
-    
-    return {
-      id: dbSection?.id || backendSection?.section_id || `section-${index}`,
-      title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
-      content: structuredContent || '',
+
+// PATH 2: Get section content from sections_data
+const backendSectionContent = contentData?.generatedContent?.sections_data?.find(
+  (section: any) => section.section_order === (index + 1)
+)?.section_content || ''
+
+return {
+  id: dbSection?.id || backendSection?.section_id || `section-${index}`,
+  title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
+  content: backendSectionContent || structuredContent || '',
       guidance: dbSection?.section_guidelines || structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
       placeholder: dbSection?.section_template || getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
