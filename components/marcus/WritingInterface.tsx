@@ -474,26 +474,69 @@ return databaseVariables
 }
 
 function findBackendVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): string | null {
+  console.log('🔍 Finding backend match for database variable:', databaseVarName)
+  console.log('🎯 Available backend variables:', Object.keys(backendVariables))
+  
   // Direct name matching
   const directMatch = backendVariables[databaseVarName]
   if (directMatch) {
+    console.log('✅ Direct match found for:', databaseVarName)
     return extractVariableValue(directMatch)
   }
   
-  // Semantic matching for database variable concepts
+  // Enhanced semantic mapping for sophisticated database variables
   const semanticMappings: Record<string, string[]> = {
+    // Your sophisticated database variables → Backend AI variables
+    'TOOL': ['KEY_PLATFORM', 'MAIN_TOOL', 'PRIMARY_SYSTEM', 'TECHNOLOGY', 'PLATFORM_NAME'],
+    'PROCESS_1': ['FIRST_STEP', 'INITIAL_PROCESS', 'PRIMARY_METHOD', 'STEP_ONE', 'OPENING_MOVE'],
+    'PROCESS_2': ['SECOND_STEP', 'NEXT_PROCESS', 'SECONDARY_METHOD', 'STEP_TWO', 'FOLLOW_UP'],
+    'SUB-USE_1': ['SPECIFIC_APPLICATION', 'USE_CASE_ONE', 'PRIMARY_USAGE', 'FIRST_APPLICATION'],
+    'SUB-USE_2': ['SECONDARY_APPLICATION', 'USE_CASE_TWO', 'ALTERNATE_USAGE', 'SECOND_APPLICATION'],
+    'DESCRIPTOR': ['MAIN_DESCRIPTION', 'CORE_CONCEPT', 'KEY_DESCRIPTOR', 'PRIMARY_LABEL'],
+    'PILLAR_NAME': ['FRAMEWORK_NAME', 'CORE_PILLAR', 'MAIN_PRINCIPLE', 'KEY_FOUNDATION'],
+    'TACTICAL/PHILOSOPHICAL_ADVICE': ['STRATEGIC_ADVICE', 'KEY_INSIGHT', 'CORE_WISDOM', 'MAIN_GUIDANCE'],
+    'PERSONAL_USAGE/CULTURE_STATEMENT': ['PERSONAL_APPROACH', 'CULTURAL_CONTEXT', 'USAGE_PHILOSOPHY'],
+    'KEY_PLATFORM/TOOL_AS_CORE_ENGINE': ['CORE_TECHNOLOGY', 'MAIN_ENGINE', 'PRIMARY_PLATFORM'],
+    
+    // Legacy mappings for simpler variables
     'OPENING_LINE': ['CRISIS_TIMELINE', 'DRAMATIC_REALIZATION', 'STAKES', 'EMOTIONAL_SETUP'],
     'PROBLEM_STATEMENT': ['PAIN_FOCUS', 'WRONG_APPROACH_INTRO', 'INTERNAL_STRUGGLE'],
-    'FRAMEWORK_NAME': ['CATEGORY', 'KEY_INSIGHT'],
+    'FRAMEWORK_NAME': ['CATEGORY', 'KEY_INSIGHT', 'PILLAR_NAME'],
     'SITUATION': ['SPECIFIC_SITUATION', 'DISCOVERY_MOMENT'],
     'CHALLENGE': ['WRONG_POINTS', 'PAIN_FOCUS'],
     'ENGAGEMENT_QUESTION': ['SIMPLE_CTA', 'CTA']
   }
   
   const possibleMatches = semanticMappings[databaseVarName] || []
+  console.log('🎯 Checking semantic matches for', databaseVarName, ':', possibleMatches)
+  
   for (const matchKey of possibleMatches) {
     if (backendVariables[matchKey]) {
+      console.log('✅ Semantic match found:', databaseVarName, '→', matchKey)
       return extractVariableValue(backendVariables[matchKey])
+    }
+  }
+  
+  // Fuzzy matching for partial matches
+  const fuzzyMatch = findFuzzyVariableMatch(databaseVarName, backendVariables)
+  if (fuzzyMatch) {
+    console.log('✅ Fuzzy match found:', databaseVarName, '→', fuzzyMatch.key)
+    return extractVariableValue(fuzzyMatch.value)
+  }
+  
+  console.log('❌ No match found for:', databaseVarName)
+  return null
+}
+
+function findFuzzyVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): { key: string, value: any } | null {
+  const searchTerms = databaseVarName.toLowerCase().split(/[_\-\/]/)
+  
+  for (const [backendKey, backendValue] of Object.entries(backendVariables)) {
+    const backendKeyLower = backendKey.toLowerCase()
+    
+    // Check if any search term appears in backend key
+    if (searchTerms.some(term => backendKeyLower.includes(term) || term.includes(backendKeyLower.replace(/_/g, '')))) {
+      return { key: backendKey, value: backendValue }
     }
   }
   
