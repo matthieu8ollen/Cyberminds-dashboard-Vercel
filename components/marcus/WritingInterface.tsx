@@ -1485,6 +1485,7 @@ return (
     </div>
     
     {/* Modals */}
-    {renderFullDraftModal()}
-  </>
+{renderFullDraftModal()}
+</>
 )
+}
