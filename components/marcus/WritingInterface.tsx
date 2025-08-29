@@ -436,7 +436,11 @@ function extractTemplateVariables(
 ): TemplateVariable[] {
   // PATH 2: Backend-driven variables (AI-enhanced from ideation)
   if (contentData?.generatedContent?.all_filled_variables && ideationData) {
-    return createBackendTemplateVariables(contentData.generatedContent.all_filled_variables)
+    return createBackendTemplateVariables(
+      contentData.generatedContent.all_filled_variables, 
+      currentSectionIndex, 
+      contentData
+    )
   }
 
   // PATH 1: Database-driven variables (direct formula selection)
@@ -444,33 +448,43 @@ function extractTemplateVariables(
   return getSectionSpecificVariables(currentSection, formula, ideationData)
 }
 
-function createBackendTemplateVariables(backendVariables: Record<string, any>): TemplateVariable[] {
-  console.log('🔧 Creating template variables from backend data')
-  console.log('📊 Backend variables received:', Object.keys(backendVariables).length)
+function createBackendTemplateVariables(
+  backendVariables: Record<string, any>, 
+  currentSectionIndex: number, 
+  contentData: any
+): TemplateVariable[] {
+  // Get section-specific variables from backend sections_data
+  const sectionData = contentData?.generatedContent?.sections_data?.find(
+    (section: any) => section.section_order === (currentSectionIndex + 1)
+  )
   
-  const templateVariables: TemplateVariable[] = []
-  
-  Object.entries(backendVariables).forEach(([key, value]) => {
-    const extractedValue = extractVariableValue(value)
-    
-    // Accept any non-empty backend variable, regardless of count
-    if (extractedValue && extractedValue.trim().length > 0) {
-      templateVariables.push({
+  if (sectionData?.filled_variables) {
+    // Use section-specific variables
+    return Object.entries(sectionData.filled_variables)
+      .filter(([_, value]) => extractVariableValue(value)?.trim())
+      .map(([key, value]) => ({
         name: key.toUpperCase(),
         label: formatVariableLabel(key),
         value: '',
-        aiSuggestion: extractedValue,
-        required: isBackendVariableRequired(key),
+        aiSuggestion: extractVariableValue(value),
+        required: false,
         type: 'text' as const,
         placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
-      })
-    }
-  })
+      }))
+  }
   
-  console.log(`✅ Created ${templateVariables.length} backend template variables from ${Object.keys(backendVariables).length} backend variables`)
-  console.log('📋 Variable names:', templateVariables.map(v => v.name))
-  
-  return templateVariables
+  // Fallback to all variables if no section-specific data
+  return Object.entries(backendVariables)
+    .filter(([_, value]) => extractVariableValue(value)?.trim())
+    .map(([key, value]) => ({
+      name: key.toUpperCase(),
+      label: formatVariableLabel(key),
+      value: '',
+      aiSuggestion: extractVariableValue(value),
+      required: false,
+      type: 'text' as const,
+      placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
+    }))
 }
 
 function isBackendVariableRequired(variableName: string): boolean {
