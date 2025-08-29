@@ -183,9 +183,25 @@ const [allSectionVariables, setAllSectionVariables] = useState<Record<number, Te
   const assembledContent = useMemo(() => {
     return sections
       .filter(section => section.content.trim())
-      .map(section => section.content.trim())
+      .map((section, index) => {
+        let finalContent = section.content.trim()
+        
+        // Apply template variable substitution to final output
+        const sectionVariables = allSectionVariables[index] || []
+        sectionVariables.forEach(variable => {
+          if (variable.value.trim()) {
+            const placeholder = `[${variable.name}]`
+            finalContent = finalContent.replace(
+              new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+              variable.value
+            )
+          }
+        })
+        
+        return finalContent
+      })
       .join('\n\n')
-  }, [sections])
+  }, [sections, allSectionVariables])
 
   // ============================================================================
 // DEBUG LOGGING
