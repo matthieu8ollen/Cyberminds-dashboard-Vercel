@@ -169,6 +169,9 @@ const [templateVariables, setTemplateVariables] = useState<TemplateVariable[]>([
 const [contentChecks, setContentChecks] = useState<ContentCheck[]>([])
 const [showTemplateVariables, setShowTemplateVariables] = useState(true)
 
+// Template Variable Persistence - Store all sections' variables
+const [allSectionVariables, setAllSectionVariables] = useState<Record<number, TemplateVariable[]>>({})
+
   // Computed values - DECLARED IMMEDIATELY AFTER STATE
   const currentSection = sections[currentSectionIndex]
   const totalSections = sections.length
@@ -297,20 +300,33 @@ placeholder: getSectionTemplate({title: cleanTitle}, formula, index),
   setSections(initializedSections)
 }, [formula, contentData])
   
-// Initialize template variables - section-specific
+// Initialize template variables - section-specific with persistence
 useEffect(() => {
   if (currentSection?.title) {
-    const variables = extractTemplateVariables(
-      formula, 
-      currentSectionIndex, 
-      ideationData, 
-      contentData
-    )
-    setTemplateVariables(variables)
+    // Check if we have saved variables for this section
+    const savedVariables = allSectionVariables[currentSectionIndex]
+    
+    if (savedVariables) {
+      // Restore saved variables
+      setTemplateVariables(savedVariables)
+    } else {
+      // Generate new variables and save them
+      const variables = extractTemplateVariables(
+        formula, 
+        currentSectionIndex, 
+        ideationData, 
+        contentData
+      )
+      setTemplateVariables(variables)
+      setAllSectionVariables(prev => ({
+        ...prev,
+        [currentSectionIndex]: variables
+      }))
+    }
   } else {
     setTemplateVariables([])
   }
-}, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex])
+}, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex, allSectionVariables])
 
   // Initialize content checks
   useEffect(() => {
@@ -416,14 +432,31 @@ function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, 
   }
 
   function getContentChecks(title: string): string[] {
-    const checksMap: Record<string, string[]> = {
-      'Hook': ['Specific details', 'Attention-grabbing', 'Relevant to audience'],
-      'Problem': ['Clear pain point', 'Relatable situation', 'Creates urgency'],
-      'Framework': ['Numbered steps', 'Logical flow', 'Actionable guidance'],
-      'Solution': ['Specific advice', 'Directly addresses problem', 'Easy to implement']
+    // Dynamic content checks based on any section title
+    const lowerTitle = title.toLowerCase()
+    
+    if (lowerTitle.includes('hook') || lowerTitle.includes('opening') || lowerTitle.includes('credibility')) {
+      return ['Specific details', 'Attention-grabbing', 'Relevant to audience', 'Authority building']
     }
     
-    return checksMap[title] || ['Clear message', 'Value provided', 'Engaging content']
+    if (lowerTitle.includes('problem') || lowerTitle.includes('pain') || lowerTitle.includes('challenge')) {
+      return ['Clear pain point', 'Relatable situation', 'Creates urgency', 'Specific examples']
+    }
+    
+    if (lowerTitle.includes('framework') || lowerTitle.includes('method') || lowerTitle.includes('system')) {
+      return ['Numbered steps', 'Logical flow', 'Actionable guidance', 'Clear structure']
+    }
+    
+    if (lowerTitle.includes('story') || lowerTitle.includes('experience') || lowerTitle.includes('breakdown')) {
+      return ['Personal details', 'Specific timeline', 'Emotional connection', 'Lessons learned']
+    }
+    
+    if (lowerTitle.includes('cta') || lowerTitle.includes('action') || lowerTitle.includes('engage')) {
+      return ['Clear question', 'Easy to respond', 'Encourages interaction', 'Relevant to content']
+    }
+    
+    // Universal fallback for any section
+    return ['Clear message', 'Value provided', 'Engaging content', 'Professional tone']
   }
   
 function extractTemplateVariables(
@@ -775,10 +808,21 @@ function getHardcodedSectionVariables(sectionName: string, ideationData?: any): 
 }, [currentSectionIndex, templateVariables])
 
   const handleTemplateVariableChange = useCallback((name: string, value: string) => {
+    // Update current section variables
     setTemplateVariables(prev => prev.map(variable => 
       variable.name === name ? { ...variable, value } : variable
     ))
-  }, [])
+    
+    // Persist variables for current section
+    setAllSectionVariables(prev => ({
+      ...prev,
+      [currentSectionIndex]: prev[currentSectionIndex]?.map(variable => 
+        variable.name === name ? { ...variable, value } : variable
+      ) || templateVariables.map(variable => 
+        variable.name === name ? { ...variable, value } : variable
+      )
+    }))
+  }, [currentSectionIndex, templateVariables])
 
   const getTemplateWithAISuggestions = useCallback(() => {
     // Generate template directly from current template variables
