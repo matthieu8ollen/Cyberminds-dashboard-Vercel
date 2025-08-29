@@ -487,12 +487,6 @@ function createBackendTemplateVariables(
     }))
 }
 
-function isBackendVariableRequired(variableName: string): boolean {
-  // Backend variables have different naming - make intelligent guesses
-  const requiredPatterns = ['CONCEPT', 'HOOK', 'OPENING', 'MAIN', 'PRIMARY', 'KEY', 'TITLE']
-  return requiredPatterns.some(pattern => variableName.toUpperCase().includes(pattern))
-}
-
 function extractVariableValue(varData: any): string {
   if (typeof varData === 'string') {
     return varData
