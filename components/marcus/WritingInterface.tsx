@@ -292,26 +292,9 @@ useEffect(() => {
   setSections(initializedSections)
 }, [formula, contentData])
   
- // Initialize template variables - section-specific
+// Initialize template variables - section-specific
 useEffect(() => {
   if (currentSection?.title) {
-    console.log('🔍 TEMPLATE VARIABLE LOADING DEBUG:')
-    console.log('📊 Current Section Index:', currentSectionIndex)
-    console.log('📝 Current Section Title:', currentSection.title)
-    console.log('📋 Formula Object Keys:', Object.keys(formula))
-    console.log('📊 Formula Sections Available:', !formula.sections, formula.sections?.length || 0)
-    
-    if (formula.sections && formula.sections[currentSectionIndex]) {
-      const currentDbSection = formula.sections[currentSectionIndex]
-      console.log('🎯 Current Database Section:')
-      console.log('  - Section Name:', currentDbSection.section_name)
-      console.log('  - Template Variables:', currentDbSection.template_variables)
-      console.log('  - Section Purpose:', currentDbSection.section_purpose)
-      console.log('  - All Section Keys:', Object.keys(currentDbSection))
-    } else {
-      console.log('❌ No database section found for index:', currentSectionIndex)
-    }
-    
     const variables = extractTemplateVariables(
       formula, 
       currentSectionIndex, 
@@ -319,11 +302,6 @@ useEffect(() => {
       contentData
     )
     setTemplateVariables(variables)
-    
-    console.log('📤 FINAL VARIABLES OUTPUT:')
-    console.log('  - Count:', variables.length)
-    console.log('  - Variable Names:', variables.map(v => v.name))
-    console.log('  - First Variable Full:', variables[0])
   } else {
     setTemplateVariables([])
   }
@@ -1142,14 +1120,19 @@ const renderTemplateVariables = () => (
       })
       return template
     } else if (previewMode === 'example') {
-      console.log('🔍 DEBUGGING LIVE PREVIEW SECTION CONTENT:')
-      console.log('📍 Current section:', currentSection?.title)
-      console.log('🎯 Current section index:', currentSectionIndex)
-      console.log('📊 Full generated content length:', contentData?.generatedContent?.generated_content?.complete_post?.length)
-      console.log('📝 Section-specific data check:', currentSection?.backendData)
+      // PATH 2: Show backend-generated content for current section
+      if (contentData?.generatedContent?.sections_data) {
+        const sectionData = contentData.generatedContent.sections_data.find(
+          (section: any) => section.section_order === (currentSectionIndex + 1)
+        )
+        
+        if (sectionData?.section_content) {
+          return sectionData.section_content
+        }
+      }
       
-      // Show backend example for current section only
-      return contentData?.guidance?.section_examples?.[currentSection?.title] || currentSection?.placeholder || ''
+      // PATH 1: Show database placeholder content
+      return currentSection?.placeholder || 'No example content available'
     }
     
     // Default to template mode
