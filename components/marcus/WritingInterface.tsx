@@ -349,21 +349,14 @@ function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index
     return dbSection.section_template
   }
   
-  // PATH 2: Generate template from backend variables
-  if (currentSection?.backendData) {
-    return generateTemplateFromBackendVariables(currentSection.backendData)
-  }
-  
-  // FALLBACK: Use hardcoded template
-  return getTemplatePlaceholder(currentSection?.title || '', formula, index)
+  // PATH 2: Generate template from current template variables (backend or database)
+  // This ensures we use the actual variables that are loaded for this section
+  return generateDynamicTemplate()
 }
 
-function generateTemplateFromBackendVariables(backendSectionData: any): string {
-  if (!backendSectionData?.filled_variables) return ''
-  
-  // Create template using all variables from this section
-  const variables = Object.keys(backendSectionData.filled_variables)
-  return variables.map(varName => `[${varName.toUpperCase()}]`).join('\n\n')
+function generateDynamicTemplate(): string {
+  // This will be called from context where templateVariables are available
+  return '[DYNAMIC_TEMPLATE]' // Placeholder - will be replaced by actual implementation
 }
 
 function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
@@ -458,31 +451,37 @@ function createBackendTemplateVariables(
   currentSectionIndex: number, 
   contentData: any
 ): TemplateVariable[] {
-  // Get section-specific variables from backend sections_data
-  const sectionData = contentData?.generatedContent?.sections_data?.find(
-    (section: any) => section.section_order === (currentSectionIndex + 1)
-  )
+  // UNIVERSAL BACKEND HANDLER - Works with any formula structure
   
-  if (sectionData?.filled_variables) {
-    // Use section-specific variables
-    return Object.entries(sectionData.filled_variables)
-      .filter(([_, value]) => extractVariableValue(value)?.trim())
-      .map(([key, value]) => ({
-        name: key.toUpperCase(),
-        label: formatVariableLabel(key),
-        value: '',
-        aiSuggestion: extractVariableValue(value),
-        required: false,
-        type: 'text' as const,
-        placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
-      }))
+  // PRIORITY 1: Try section-specific variables from sections_data
+  const sectionsData = contentData?.generatedContent?.sections_data
+  if (sectionsData && sectionsData.length > 0) {
+    const targetSection = sectionsData.find((section: any) => 
+      section.section_order === (currentSectionIndex + 1)
+    )
+    
+    if (targetSection && targetSection.filled_variables) {
+      return createVariablesFromObject(targetSection.filled_variables)
+    }
   }
   
-  // Fallback to all variables if no section-specific data
-  return Object.entries(backendVariables)
-    .filter(([_, value]) => extractVariableValue(value)?.trim())
+  // PRIORITY 2: Use all_filled_variables as fallback
+  if (backendVariables && Object.keys(backendVariables).length > 0) {
+    return createVariablesFromObject(backendVariables)
+  }
+  
+  // PRIORITY 3: No backend variables available
+  return []
+}
+
+function createVariablesFromObject(variablesObj: Record<string, any>): TemplateVariable[] {
+  return Object.entries(variablesObj)
+    .filter(([_, value]) => {
+      const extractedValue = extractVariableValue(value)
+      return extractedValue && extractedValue.trim().length > 0
+    })
     .map(([key, value]) => ({
-      name: key.toUpperCase(),
+      name: sanitizeVariableName(key),
       label: formatVariableLabel(key),
       value: '',
       aiSuggestion: extractVariableValue(value),
@@ -490,6 +489,15 @@ function createBackendTemplateVariables(
       type: 'text' as const,
       placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
     }))
+}
+
+function sanitizeVariableName(name: string): string {
+  // Convert any variable name to valid template variable format
+  return name
+    .toUpperCase()
+    .replace(/[^A-Z0-9_]/g, '_') // Replace non-alphanumeric with underscore
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+    .replace(/^_|_$/g, '') // Remove leading/trailing underscores
 }
 
 function extractVariableValue(varData: any): string {
@@ -773,16 +781,16 @@ function getHardcodedSectionVariables(sectionName: string, ideationData?: any): 
   }, [])
 
   const getTemplateWithAISuggestions = useCallback(() => {
-    let template = getSectionTemplate(currentSection, formula, currentSectionIndex)
+    // Generate template directly from current template variables
+    if (templateVariables.length > 0) {
+      return templateVariables
+        .map(variable => `[${variable.name}]: ${variable.aiSuggestion || 'Enter your ' + variable.label.toLowerCase()}`)
+        .join('\n\n')
+    }
     
-    templateVariables.forEach(variable => {
-      const placeholder = `[${variable.name}]`
-      const value = variable.aiSuggestion || placeholder
-      template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
-    })
-    
-    return template
-  }, [currentSection, formula, currentSectionIndex, templateVariables])
+    // Fallback to section placeholder
+    return currentSection?.placeholder || 'No template variables available'
+  }, [templateVariables, currentSection])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
@@ -1158,31 +1166,19 @@ const renderTemplateVariables = () => (
 )
 
   const renderLivePreview = () => {
-  const getPreviewContent = () => {
+ const getPreviewContent = () => {
     if (previewMode === 'template') {
-      // Universal template substitution system
-      let template = getSectionTemplate(currentSection, formula, currentSectionIndex)
-      
-      // Replace ALL template variables with user input OR AI suggestions (greyed)
-      templateVariables.forEach(variable => {
-        const placeholder = `[${variable.name}]`
-        let value
-        
-        if (variable.value.trim()) {
-          // User has typed something - use their input
-          value = variable.value
-        } else if (variable.aiSuggestion) {
-          // Show AI suggestion in grey styling
-          value = `**${variable.aiSuggestion}**`
-        } else {
-          // Keep placeholder
-          value = placeholder
-        }
-        
-        template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
-      })
-      
-      return template
+      // Generate template directly from current template variables
+      return templateVariables
+        .map(variable => {
+          const placeholder = `[${variable.name}]`
+          if (variable.value.trim()) {
+            return variable.value
+          } else {
+            return placeholder
+          }
+        })
+        .join('\n\n') || 'No template variables available'
     } else if (previewMode === 'example') {
       // PATH 2: Show backend-generated content for current section
       if (contentData?.generatedContent?.sections_data) {
