@@ -342,20 +342,42 @@ useEffect(() => {
   return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
 }
 
+function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index: number): string {
+  // PATH 1: Use database section template
+  const dbSection = formula.sections?.[index]
+  if (dbSection?.section_template) {
+    return dbSection.section_template
+  }
+  
+  // PATH 2: Generate template from backend variables
+  if (currentSection?.backendData) {
+    return generateTemplateFromBackendVariables(currentSection.backendData)
+  }
+  
+  // FALLBACK: Use hardcoded template
+  return getTemplatePlaceholder(currentSection?.title || '', formula, index)
+}
+
+function generateTemplateFromBackendVariables(backendSectionData: any): string {
+  if (!backendSectionData?.filled_variables) return ''
+  
+  // Create template using all variables from this section
+  const variables = Object.keys(backendSectionData.filled_variables)
+  return variables.map(varName => `[${varName.toUpperCase()}]`).join('\n\n')
+}
+
 function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
-  // Template with variable placeholders based on section type
+  // Fallback templates when no database/backend template available
   const templates: Record<string, string> = {
-    'Hook': '[OPENING_LINE]\n\nCreate an attention-grabbing opening that stops the scroll...',
-    'Problem': '[PROBLEM_STATEMENT]\n\nDescribe the specific challenge your audience faces...',
-    'Framework': '[FRAMEWORK_NAME]\n\nA [KEY_STEPS]-step approach to solve this problem...',
-    'Solution': 'Here\'s how to solve [PROBLEM_STATEMENT]:\n\n[SOLUTION_APPROACH]',
+    'Hook': '[OPENING_LINE]\n\nCreate an attention-grabbing opening...',
+    'Problem': '[PROBLEM_STATEMENT]\n\nDescribe the challenge...',
+    'Framework': '[FRAMEWORK_NAME]\n\nA systematic approach...',
+    'Solution': '[SOLUTION_APPROACH]',
     'Story': '[SITUATION]\n\nThe challenge was [CHALLENGE]...',
-    'Evidence': '[SUPPORTING_DATA] proves that...',
     'CTA': '[ENGAGEMENT_QUESTION]'
   }
   
-  const cleanTitle = sectionTitle.replace(/\s+/g, '')
-  return templates[cleanTitle] || `[SECTION_CONTENT]\n\nWrite your ${sectionTitle.toLowerCase()} here...`
+  return templates[sectionTitle] || `[SECTION_CONTENT]`
 }
   
   function getWordCountTarget(title: string): number {
@@ -1116,13 +1138,28 @@ const renderTemplateVariables = () => (
   const renderLivePreview = () => {
   const getPreviewContent = () => {
     if (previewMode === 'template') {
-      // Show current section template with variables filled
-      let template = getTemplatePlaceholder(currentSection?.title || '', formula, currentSectionIndex)
+      // Universal template substitution system
+      let template = getSectionTemplate(currentSection, formula, currentSectionIndex)
+      
+      // Replace ALL template variables with user input OR AI suggestions (greyed)
       templateVariables.forEach(variable => {
         const placeholder = `[${variable.name}]`
-        const value = variable.value || variable.aiSuggestion || placeholder
+        let value
+        
+        if (variable.value.trim()) {
+          // User has typed something - use their input
+          value = variable.value
+        } else if (variable.aiSuggestion) {
+          // Show AI suggestion in grey styling
+          value = `**${variable.aiSuggestion}**`
+        } else {
+          // Keep placeholder
+          value = placeholder
+        }
+        
         template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
       })
+      
       return template
     } else if (previewMode === 'example') {
       // PATH 2: Show backend-generated content for current section
