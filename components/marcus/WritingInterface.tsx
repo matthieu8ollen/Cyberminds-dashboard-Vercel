@@ -476,6 +476,10 @@ return databaseVariables
 function findBackendVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): string | null {
   console.log('🔍 Finding backend match for database variable:', databaseVarName)
   console.log('🎯 Available backend variables:', Object.keys(backendVariables))
+console.log('🔍 FULL BACKEND VARIABLE DUMP:')
+Object.entries(backendVariables).forEach(([key, value]) => {
+  console.log(`  ${key}:`, typeof value === 'string' ? value.substring(0, 100) + '...' : value)
+})
   
   // Direct name matching
   const directMatch = backendVariables[databaseVarName]
