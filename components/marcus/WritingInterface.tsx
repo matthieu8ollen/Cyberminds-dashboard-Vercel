@@ -500,26 +500,65 @@ function createBackendTemplateVariables(
   currentSectionIndex: number, 
   contentData: any
 ): TemplateVariable[] {
-  // UNIVERSAL BACKEND HANDLER - Works with any formula structure
+  console.log('🔧 DEBUG: createBackendTemplateVariables called')
+  console.log('📊 Current Section Index:', currentSectionIndex)
+  console.log('📋 Content Data Structure:', {
+    hasGeneratedContent: !!contentData?.generatedContent,
+    hasSectionsData: !!contentData?.generatedContent?.sections_data,
+    sectionsDataLength: contentData?.generatedContent?.sections_data?.length || 0,
+    hasAllFilledVariables: !!contentData?.generatedContent?.all_filled_variables,
+    allFilledVariablesCount: Object.keys(contentData?.generatedContent?.all_filled_variables || {}).length
+  })
   
   // PRIORITY 1: Try section-specific variables from sections_data
   const sectionsData = contentData?.generatedContent?.sections_data
   if (sectionsData && sectionsData.length > 0) {
+    console.log('📝 Sections Data Available:')
+    sectionsData.forEach((section: any, index: number) => {
+      console.log(`  Section ${index + 1}:`, {
+        section_name: section.section_name,
+        section_order: section.section_order,
+        has_filled_variables: !!section.filled_variables,
+        filled_variables_keys: section.filled_variables ? Object.keys(section.filled_variables) : 'none'
+      })
+    })
+    
     const targetSection = sectionsData.find((section: any) => 
       section.section_order === (currentSectionIndex + 1)
     )
     
-    if (targetSection && targetSection.filled_variables) {
-      return createVariablesFromObject(targetSection.filled_variables)
+    console.log('🎯 Target Section Found:', !!targetSection)
+    if (targetSection) {
+      console.log('📝 Target Section Details:', {
+        section_name: targetSection.section_name,
+        section_order: targetSection.section_order,
+        has_filled_variables: !!targetSection.filled_variables,
+        filled_variables: targetSection.filled_variables ? Object.keys(targetSection.filled_variables) : 'none'
+      })
+      
+      if (targetSection.filled_variables) {
+        console.log('✅ Using section-specific filled_variables:', targetSection.filled_variables)
+        return createVariablesFromObject(targetSection.filled_variables)
+      } else {
+        console.log('❌ Target section has no filled_variables')
+      }
+    } else {
+      console.log('❌ No target section found for section_order:', currentSectionIndex + 1)
     }
+  } else {
+    console.log('❌ No sections_data available')
   }
   
   // PRIORITY 2: Use all_filled_variables as fallback
   if (backendVariables && Object.keys(backendVariables).length > 0) {
+    console.log('🔄 Falling back to all_filled_variables:', Object.keys(backendVariables))
     return createVariablesFromObject(backendVariables)
+  } else {
+    console.log('❌ No all_filled_variables available')
   }
   
   // PRIORITY 3: No backend variables available
+  console.log('❌ No backend variables available - returning empty array')
   return []
 }
 
