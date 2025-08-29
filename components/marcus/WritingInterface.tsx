@@ -437,42 +437,55 @@ function extractTemplateVariables(
   console.log('🎯 EXTRACT TEMPLATE VARIABLES DEBUG START:')
   console.log('  - Formula ID:', formula.id)
   console.log('  - Current Section Index:', currentSectionIndex)
-  console.log('  - Formula Category:', formula.category)
-  console.log('  - Formula Sections Count:', formula.sections?.length || 0)
-  
-  // PRIORITY 1: Always use database template variables as structure
-const currentSection = formula.sections?.[currentSectionIndex]
-const databaseVariables = getSectionSpecificVariables(currentSection, formula, ideationData)
+  console.log('  - Ideation Data Present:', !!ideationData)
+  console.log('  - Content Data Present:', !!contentData)
+  console.log('  - Backend Variables Available:', !!contentData?.generatedContent?.all_filled_variables)
+
+  // PATH 2: Backend-driven variables (AI-enhanced from ideation)
+  if (contentData?.generatedContent?.all_filled_variables && ideationData) {
+    console.log('🚀 PATH 2: Using backend-generated template variables')
+    console.log('🤖 Backend variables count:', Object.keys(contentData.generatedContent.all_filled_variables).length)
+    console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
+    
+    return createBackendTemplateVariables(contentData.generatedContent.all_filled_variables, ideationData)
+  }
+
+  // PATH 1: Database-driven variables (direct formula selection)
+  console.log('📝 PATH 1: Using database template variables')
+  const currentSection = formula.sections?.[currentSectionIndex]
+  const databaseVariables = getSectionSpecificVariables(currentSection, formula, ideationData)
   console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
   
-  // PRIORITY 2: Enhance database variables with backend AI suggestions
-if (contentData?.generatedContent?.all_filled_variables) {
-  console.log('🔍 DEBUGGING TEMPLATE VARIABLES ALIGNMENT:')
-  console.log('📊 Database variables for section:', databaseVariables.map(v => v.name))
-  console.log('🤖 Backend variables available:', Object.keys(contentData.generatedContent.all_filled_variables))
-  console.log('📊 Backend sections data:', contentData.generatedContent.sections_data?.length || 0, 'sections')
-  console.log('🎯 Backend total variables filled:', contentData.generatedContent.total_variables_filled || 'unknown')
-  console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
+  return databaseVariables
+}
+
+function createBackendTemplateVariables(backendVariables: Record<string, any>, ideationData: any): TemplateVariable[] {
+  console.log('🔧 Creating template variables from backend data')
   
-  return databaseVariables.map(dbVar => {
-    // Find matching backend suggestion by name or semantic matching
-    const backendMatch = findBackendVariableMatch(dbVar.name, contentData.generatedContent.all_filled_variables)
+  const templateVariables: TemplateVariable[] = []
+  
+  Object.entries(backendVariables).forEach(([key, value]) => {
+    const extractedValue = extractVariableValue(value)
     
-    if (backendMatch) {
-      console.log(`🤖 Enhanced ${dbVar.name} with AI suggestion: ${backendMatch.substring(0, 50)}...`)
-      return {
-        ...dbVar,
-        aiSuggestion: backendMatch
-      }
+    if (extractedValue && extractedValue.trim().length > 0) {
+      templateVariables.push({
+        name: key.toUpperCase(),
+        label: formatVariableLabel(key),
+        value: '', // User starts with empty value
+        aiSuggestion: extractedValue, // Backend value becomes suggestion
+        required: isRequiredVariable(key),
+        type: 'text' as const,
+        placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
+      })
     }
-    
-    return dbVar // Keep original if no backend match
   })
+  
+  console.log('✅ Created backend template variables:', templateVariables.length)
+  console.log('📋 Variable names:', templateVariables.map(v => v.name))
+  
+  return templateVariables
 }
-
-return databaseVariables
-}
-
+  
 function findBackendVariableMatch(databaseVarName: string, backendVariables: Record<string, any>): string | null {
   console.log('🔍 Finding backend match for database variable:', databaseVarName)
   console.log('🎯 Available backend variables:', Object.keys(backendVariables))
