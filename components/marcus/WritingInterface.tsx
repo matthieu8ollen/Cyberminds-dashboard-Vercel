@@ -587,13 +587,39 @@ function getSectionSpecificVariables(
   formula: FormulaTemplate,
   ideationData?: any
 ): TemplateVariable[] {
-  // Use database section template_variables if available
+  console.log('🎯 getSectionSpecificVariables called with:', {
+    currentSection: currentSection?.section_name || currentSection?.title,
+    hasTemplateVars: !!currentSection?.template_variables,
+    templateVarsValue: currentSection?.template_variables
+  })
+  
+  // PRIORITY 1: Use database section template_variables if available
   if (currentSection?.template_variables) {
+    console.log('✅ Using database template_variables:', currentSection.template_variables)
     return parseTemplateVariables(currentSection.template_variables, ideationData)
   }
   
-  // Fallback to hardcoded variables based on section name
-  return getHardcodedSectionVariables(currentSection?.section_name || '', ideationData)
+  // PRIORITY 2: Index-based lookup for database sections
+  if (typeof currentSection === 'number' && formula.sections?.[currentSection]) {
+    const dbSection = formula.sections[currentSection]
+    if (dbSection?.template_variables) {
+      console.log('✅ Using index-based database template_variables:', dbSection.template_variables)
+      return parseTemplateVariables(dbSection.template_variables, ideationData)
+    }
+  }
+  
+  // PRIORITY 3: Section order lookup
+  if (currentSection?.section_order && formula.sections) {
+    const dbSection = formula.sections.find(s => s.section_order === currentSection.section_order)
+    if (dbSection?.template_variables) {
+      console.log('✅ Using section_order-based database template_variables:', dbSection.template_variables)
+      return parseTemplateVariables(dbSection.template_variables, ideationData)
+    }
+  }
+  
+  // FALLBACK: Hardcoded variables based on section name
+  console.log('⚠️ Falling back to hardcoded variables for:', currentSection?.section_name || currentSection?.title || 'unknown')
+  return getHardcodedSectionVariables(currentSection?.section_name || currentSection?.title || '', ideationData)
 }
 
 function getHardcodedSectionVariables(sectionName: string, ideationData?: any): TemplateVariable[] {
