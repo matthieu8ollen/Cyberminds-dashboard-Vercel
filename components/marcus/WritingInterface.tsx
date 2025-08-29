@@ -444,26 +444,7 @@ function extractTemplateVariables(
   return getSectionSpecificVariables(currentSection, formula, ideationData)
 }
 
-  // PATH 2: Backend-driven variables (AI-enhanced from ideation)
-  if (contentData?.generatedContent?.all_filled_variables && ideationData) {
-    console.log('🚀 PATH 2: Using backend-generated template variables')
-    console.log('🤖 Backend variables count:', Object.keys(contentData.generatedContent.all_filled_variables).length, 'variables')
-console.log('🎯 Formula-specific backend variables detected')
-    console.log('📊 Backend validation score:', contentData.generatedContent.validation_score || 'unknown')
-    
-return createBackendTemplateVariables(contentData.generatedContent.all_filled_variables, ideationData)
-  }
-
-  // PATH 1: Database-driven variables (direct formula selection)
-  console.log('📝 PATH 1: Using database template variables')
-  const currentSection = formula.sections?.[currentSectionIndex]
-  const databaseVariables = getSectionSpecificVariables(currentSection, formula, ideationData)
-  console.log('🏗️ DATABASE VARIABLES RESULT:', databaseVariables.map(v => v.name))
-  
-  return databaseVariables
-}
-
-function createBackendTemplateVariables(backendVariables: Record<string, any>, ideationData: any): TemplateVariable[] {
+function createBackendTemplateVariables(backendVariables: Record<string, any>): TemplateVariable[] {
   console.log('🔧 Creating template variables from backend data')
   console.log('📊 Backend variables received:', Object.keys(backendVariables).length)
   
