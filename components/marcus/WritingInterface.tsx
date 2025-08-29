@@ -481,85 +481,80 @@ function extractTemplateVariables(
   ideationData: any, 
   contentData?: any
 ): TemplateVariable[] {
-  // PATH 2: Backend-driven variables (AI-enhanced from ideation)
-  if (contentData?.generatedContent?.all_filled_variables && ideationData) {
-    return createBackendTemplateVariables(
-      contentData.generatedContent.all_filled_variables, 
-      currentSectionIndex, 
-      contentData
-    )
-  }
+  console.log('🎯 UNIFIED EXTRACTION: Template variable extraction started')
+  console.log('📊 Input Context:', {
+    formulaName: formula.name,
+    sectionIndex: currentSectionIndex,
+    hasContentData: !!contentData,
+    hasBackendData: !!contentData?.generatedContent,
+    hasIdeationData: !!ideationData
+  })
 
-  // PATH 1: Database-driven variables (direct formula selection)
-  const currentSection = formula.sections?.[currentSectionIndex]
-  return getSectionSpecificVariables(currentSection, formula, ideationData)
+  // BACKEND PATH: When contentData exists (premium ideation workflow)
+  if (contentData?.generatedContent) {
+    console.log('✨ BACKEND PATH: Processing AI-enhanced data')
+    const backendVariables = extractFromBackend(contentData, currentSectionIndex)
+    if (backendVariables.length > 0) {
+      console.log('✅ Backend variables extracted:', backendVariables.length)
+      return backendVariables
+    }
+    console.log('⚠️ Backend data present but no variables extracted, falling back to database')
+  }
+  
+  // DATABASE PATH: Direct Writer Suite access or backend fallback
+  console.log('🗄️ DATABASE PATH: Using formula database sections')
+  const databaseVariables = extractFromDatabase(formula, currentSectionIndex, ideationData)
+  console.log('📋 Database variables extracted:', databaseVariables.length)
+  return databaseVariables
 }
 
-function createBackendTemplateVariables(
-  backendVariables: Record<string, any>, 
-  currentSectionIndex: number, 
-  contentData: any
-): TemplateVariable[] {
-  console.log('🔧 DEBUG: createBackendTemplateVariables called')
-  console.log('📊 Current Section Index:', currentSectionIndex)
-  console.log('📋 Content Data Structure:', {
-    hasGeneratedContent: !!contentData?.generatedContent,
-    hasSectionsData: !!contentData?.generatedContent?.sections_data,
-    sectionsDataLength: contentData?.generatedContent?.sections_data?.length || 0,
-    hasAllFilledVariables: !!contentData?.generatedContent?.all_filled_variables,
-    allFilledVariablesCount: Object.keys(contentData?.generatedContent?.all_filled_variables || {}).length
-  })
+function extractFromBackend(contentData: any, currentSectionIndex: number): TemplateVariable[] {
+  console.log('🔍 BACKEND EXTRACTION: Analyzing backend data structure')
   
-  // PRIORITY 1: Try section-specific variables from sections_data
-  const sectionsData = contentData?.generatedContent?.sections_data
-  if (sectionsData && sectionsData.length > 0) {
-    console.log('📝 Sections Data Available:')
-    sectionsData.forEach((section: any, index: number) => {
-      console.log(`  Section ${index + 1}:`, {
-        section_name: section.section_name,
-        section_order: section.section_order,
-        has_filled_variables: !!section.filled_variables,
-        filled_variables_keys: section.filled_variables ? Object.keys(section.filled_variables) : 'none'
-      })
-    })
+  // METHOD 1: Section-specific variables (highest accuracy)
+  const sectionsData = contentData.generatedContent?.sections_data
+  if (sectionsData && Array.isArray(sectionsData) && sectionsData.length > 0) {
+    console.log('📝 Found sections_data with', sectionsData.length, 'sections')
     
+    // Find section matching current index (section_order is 1-based, index is 0-based)
     const targetSection = sectionsData.find((section: any) => 
       section.section_order === (currentSectionIndex + 1)
     )
     
-    console.log('🎯 Target Section Found:', !!targetSection)
-    if (targetSection) {
-      console.log('📝 Target Section Details:', {
-        section_name: targetSection.section_name,
-        section_order: targetSection.section_order,
-        has_filled_variables: !!targetSection.filled_variables,
-        filled_variables: targetSection.filled_variables ? Object.keys(targetSection.filled_variables) : 'none'
-      })
-      
-      if (targetSection.filled_variables) {
-        console.log('✅ Using section-specific filled_variables:', targetSection.filled_variables)
-        return createVariablesFromObject(targetSection.filled_variables)
-      } else {
-        console.log('❌ Target section has no filled_variables')
-      }
-    } else {
-      console.log('❌ No target section found for section_order:', currentSectionIndex + 1)
+    if (targetSection?.filled_variables) {
+      console.log('✅ Using section-specific variables:', Object.keys(targetSection.filled_variables))
+      return createVariablesFromBackendData(targetSection.filled_variables)
     }
-  } else {
-    console.log('❌ No sections_data available')
   }
   
-  // PRIORITY 2: Use all_filled_variables as fallback
-  if (backendVariables && Object.keys(backendVariables).length > 0) {
-    console.log('🔄 Falling back to all_filled_variables:', Object.keys(backendVariables))
-    return createVariablesFromObject(backendVariables)
-  } else {
-    console.log('❌ No all_filled_variables available')
+  // METHOD 2: Global variables (fallback)
+  const allVariables = contentData.generatedContent?.all_filled_variables
+  if (allVariables && typeof allVariables === 'object' && Object.keys(allVariables).length > 0) {
+    console.log('🔄 Using global variables:', Object.keys(allVariables))
+    return createVariablesFromBackendData(allVariables)
   }
   
-  // PRIORITY 3: No backend variables available
-  console.log('❌ No backend variables available - returning empty array')
+  console.log('❌ No backend variables found')
   return []
+}
+
+function createVariablesFromBackendData(variablesData: Record<string, any>): TemplateVariable[] {
+  return Object.entries(variablesData)
+    .filter(([key, value]) => {
+      // Ensure we have valid variable name and value
+      if (!key || typeof key !== 'string') return false
+      const extractedValue = extractVariableValue(value)
+      return extractedValue && extractedValue.trim().length > 0
+    })
+    .map(([key, value]) => ({
+      name: sanitizeVariableName(key),
+      label: formatVariableLabel(key),
+      value: '',
+      aiSuggestion: extractVariableValue(value),
+      required: false,
+      type: 'text' as const,
+      placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
+    }))
 }
 
 function createVariablesFromObject(variablesObj: Record<string, any>): TemplateVariable[] {
@@ -595,6 +590,144 @@ function extractVariableValue(varData: any): string {
     return varData.value || varData.content || varData.ai_generated_content || JSON.stringify(varData)
   }
   return ''
+}
+
+function extractFromDatabase(formula: FormulaTemplate, currentSectionIndex: number, ideationData?: any): TemplateVariable[] {
+  console.log('🗄️ DATABASE EXTRACTION: Processing formula sections')
+  
+  const currentSection = formula.sections?.[currentSectionIndex]
+  if (!currentSection) {
+    console.log('❌ No section found at index', currentSectionIndex)
+    return generateFallbackVariables('Content', ideationData)
+  }
+  
+  console.log('📋 Processing section:', currentSection.section_name)
+  
+  // METHOD 1: Use template_variables field from database
+  if (currentSection.template_variables) {
+    console.log('✅ Found database template_variables')
+    return parseDatabaseTemplateVariables(currentSection.template_variables, ideationData)
+  }
+  
+  // METHOD 2: Generate variables based on section name
+  console.log('🔄 Generating variables from section name:', currentSection.section_name)
+  return generateFallbackVariables(currentSection.section_name, ideationData)
+}
+
+function parseDatabaseTemplateVariables(templateVarData: any, ideationData?: any): TemplateVariable[] {
+  if (!templateVarData) return []
+  
+  let variableNames: string[] = []
+  
+  // Handle different data formats from database
+  if (typeof templateVarData === 'object' && templateVarData !== null) {
+    if (Array.isArray(templateVarData)) {
+      variableNames = templateVarData
+    } else {
+      variableNames = Object.keys(templateVarData)
+    }
+  } else if (typeof templateVarData === 'string') {
+    try {
+      const parsed = JSON.parse(templateVarData)
+      if (Array.isArray(parsed)) {
+        variableNames = parsed
+      } else if (typeof parsed === 'object') {
+        variableNames = Object.keys(parsed)
+      }
+    } catch {
+      variableNames = templateVarData.split(/[,|;]/).map(v => v.trim()).filter(v => v.length > 0)
+    }
+  }
+  
+  variableNames = variableNames.filter(name => name && typeof name === 'string' && name.trim().length > 0)
+  
+  return variableNames.map(name => ({
+    name: name.toUpperCase(),
+    label: formatVariableLabel(name),
+    value: '',
+    aiSuggestion: generateDatabaseSuggestion(name, ideationData),
+    required: isRequiredVariable(name),
+    type: 'text' as const,
+    placeholder: `Enter your ${formatVariableLabel(name).toLowerCase()}`
+  }))
+}
+
+function generateFallbackVariables(sectionName: string, ideationData?: any): TemplateVariable[] {
+  const cleanName = sectionName.toLowerCase().trim()
+  
+  // Pattern-based variable generation
+  if (cleanName.includes('hook') || cleanName.includes('opening') || cleanName.includes('intro')) {
+    return [{
+      name: 'OPENING_LINE',
+      label: 'Opening Hook',
+      value: '',
+      aiSuggestion: ideationData?.topic ? `Here's what they don't tell you about ${ideationData.topic}` : '',
+      required: true,
+      type: 'text',
+      placeholder: 'Write your attention-grabbing opening'
+    }]
+  }
+  
+  if (cleanName.includes('problem') || cleanName.includes('pain') || cleanName.includes('challenge')) {
+    return [{
+      name: 'PROBLEM_STATEMENT',
+      label: 'Problem Description',
+      value: '',
+      aiSuggestion: ideationData?.topic ? `Most people struggle with ${ideationData.topic} because...` : '',
+      required: true,
+      type: 'text',
+      placeholder: 'Describe the specific problem or pain point'
+    }]
+  }
+  
+  if (cleanName.includes('framework') || cleanName.includes('method') || cleanName.includes('system')) {
+    return [{
+      name: 'FRAMEWORK_NAME',
+      label: 'Framework Name',
+      value: '',
+      aiSuggestion: ideationData?.angle || '',
+      required: true,
+      type: 'text',
+      placeholder: 'Name your framework or methodology'
+    }]
+  }
+  
+  if (cleanName.includes('cta') || cleanName.includes('call') || cleanName.includes('action') || cleanName.includes('engage')) {
+    return [{
+      name: 'ENGAGEMENT_QUESTION',
+      label: 'Call to Action',
+      value: '',
+      aiSuggestion: ideationData?.topic ? `What's your experience with ${ideationData.topic}?` : '',
+      required: true,
+      type: 'text',
+      placeholder: 'Ask a question to encourage engagement'
+    }]
+  }
+  
+  // Default fallback
+  return [{
+    name: 'SECTION_CONTENT',
+    label: sectionName,
+    value: '',
+    aiSuggestion: '',
+    required: false,
+    type: 'text',
+    placeholder: `Enter your ${sectionName.toLowerCase()} content`
+  }]
+}
+
+function generateDatabaseSuggestion(variableName: string, ideationData?: any): string {
+  if (!ideationData) return ''
+  
+  const suggestionMap: Record<string, string> = {
+    'OPENING_LINE': ideationData.topic ? `Here's what they don't tell you about ${ideationData.topic}` : '',
+    'PROBLEM_STATEMENT': ideationData.topic ? `Most people struggle with ${ideationData.topic} because...` : '',
+    'FRAMEWORK_NAME': ideationData.angle || '',
+    'SITUATION': ideationData.topic || '',
+    'CHALLENGE': ideationData.takeaways?.[0] || ''
+  }
+  
+  return suggestionMap[variableName.toUpperCase()] || ''
 }
   
 function parseTemplateVariables(templateVarData: any, ideationData?: any): TemplateVariable[] {
