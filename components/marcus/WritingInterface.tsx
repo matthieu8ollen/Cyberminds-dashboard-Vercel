@@ -281,7 +281,7 @@ return {
   title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
   content: backendSectionContent || structuredContent || '',
       guidance: dbSection?.section_guidelines || structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-      placeholder: dbSection?.section_template || getTemplatePlaceholder(cleanTitle, formula, index),
+placeholder: getSectionTemplate({title: cleanTitle}, formula, index),
       completed: false,
       wordCountTarget: dbSection?.word_count_target || getWordCountTarget(cleanTitle),
       wordCountMin: dbSection?.word_count_min || Math.floor((dbSection?.word_count_target || getWordCountTarget(cleanTitle)) * 0.7),
@@ -761,6 +761,18 @@ function getHardcodedSectionVariables(sectionName: string, ideationData?: any): 
       variable.name === name ? { ...variable, value } : variable
     ))
   }, [])
+
+  const getTemplateWithAISuggestions = useCallback(() => {
+    let template = getSectionTemplate(currentSection, formula, currentSectionIndex)
+    
+    templateVariables.forEach(variable => {
+      const placeholder = `[${variable.name}]`
+      const value = variable.aiSuggestion || placeholder
+      template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value)
+    })
+    
+    return template
+  }, [currentSection, formula, currentSectionIndex, templateVariables])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
