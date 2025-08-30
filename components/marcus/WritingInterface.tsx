@@ -344,6 +344,17 @@ useEffect(() => {
   }
 }, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex])
 
+// Update section placeholder after template variables are loaded
+useEffect(() => {
+  if (currentSection && templateVariables.length > 0) {
+    setSections(prev => prev.map((section, index) => 
+      index === currentSectionIndex 
+        ? { ...section, placeholder: generateLiveTemplate(templateVariables, section.title) }
+        : section
+    ))
+  }
+}, [templateVariables, currentSectionIndex, currentSection])
+
   // Initialize content checks
   useEffect(() => {
     const checks = initializeContentChecks(formula.category)
@@ -383,7 +394,8 @@ function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index
   
   // PATH 2: Generate template from loaded variables
   if (templateVariables && templateVariables.length > 0) {
-    return generateLiveTemplate(templateVariables)
+    const sectionTitle = currentSection?.title || dbSection?.section_name
+    return generateLiveTemplate(templateVariables, sectionTitle)
   }
   
   // FALLBACK: Basic placeholder
@@ -391,9 +403,12 @@ function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index
   return `Enter your ${sectionTitle.toLowerCase()} here...`
 }
 
-function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
+function generateLiveTemplate(templateVariables: TemplateVariable[], sectionTitle?: string): string {
   if (templateVariables.length === 0) {
-    return 'Write your content here...'
+    const contextualMessage = sectionTitle 
+      ? `Write your ${sectionTitle.toLowerCase()} content here...`
+      : 'Write your content here...'
+    return contextualMessage
   }
   
   return templateVariables
@@ -816,8 +831,8 @@ function isRequiredVariable(variableName: string): boolean {
   }, [currentSectionIndex, templateVariables])
 
   const getTemplateWithAISuggestions = useCallback(() => {
-    return generateLiveTemplate(templateVariables)
-  }, [templateVariables])
+    return generateLiveTemplate(templateVariables, currentSection?.title)
+  }, [templateVariables, currentSection?.title])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
@@ -1196,16 +1211,19 @@ const renderTemplateVariables = () => (
  const getPreviewContent = () => {
     if (previewMode === 'template') {
       // Generate template directly from current template variables
+      if (templateVariables.length === 0) {
+        return currentSection?.title ? `Write your ${currentSection.title.toLowerCase()} content here...` : 'No template variables available'
+      }
+      
       return templateVariables
         .map(variable => {
-          const placeholder = `[${variable.name}]`
           if (variable.value.trim()) {
-            return variable.value
+            return `[${variable.name}]: ${variable.value}`
           } else {
-            return placeholder
+            return `[${variable.name}]: ${variable.aiSuggestion || 'Enter your ' + variable.label.toLowerCase()}`
           }
         })
-        .join('\n\n') || 'No template variables available'
+        .join('\n\n')
     } else if (previewMode === 'example') {
       // PATH 2: Show backend-generated content for current section
       if (contentData?.generatedContent?.sections_data) {
