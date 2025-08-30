@@ -342,7 +342,7 @@ useEffect(() => {
   } else {
     setTemplateVariables([])
   }
-}, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex, allSectionVariables])
+}, [formula, currentSection?.title, ideationData, contentData, currentSectionIndex])
 
   // Initialize content checks
   useEffect(() => {
@@ -374,21 +374,31 @@ useEffect(() => {
   return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
 }
 
-function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index: number): string {
+function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index: number, templateVariables?: TemplateVariable[]): string {
   // PATH 1: Use database section template
   const dbSection = formula.sections?.[index]
   if (dbSection?.section_template) {
     return dbSection.section_template
   }
   
-  // PATH 2: Generate template from current template variables (backend or database)
-  // This ensures we use the actual variables that are loaded for this section
-  return generateDynamicTemplate()
+  // PATH 2: Generate template from loaded variables
+  if (templateVariables && templateVariables.length > 0) {
+    return generateLiveTemplate(templateVariables)
+  }
+  
+  // FALLBACK: Basic placeholder
+  const sectionTitle = currentSection?.title || dbSection?.section_name || 'Content'
+  return `Enter your ${sectionTitle.toLowerCase()} here...`
 }
 
-function generateDynamicTemplate(): string {
-  // This will be called from context where templateVariables are available
-  return '[DYNAMIC_TEMPLATE]' // Placeholder - will be replaced by actual implementation
+function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
+  if (templateVariables.length === 0) {
+    return 'No template variables available'
+  }
+  
+  return templateVariables
+    .map(variable => `[${variable.name}]: ${variable.aiSuggestion || 'Enter your ' + variable.label.toLowerCase()}`)
+    .join('\n\n')
 }
 
 function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
@@ -729,52 +739,6 @@ function generateDatabaseSuggestion(variableName: string, ideationData?: any): s
   
   return suggestionMap[variableName.toUpperCase()] || ''
 }
-  
-function parseTemplateVariables(templateVarData: any, ideationData?: any): TemplateVariable[] {
-  if (!templateVarData) return []
-  
-  let variableNames: string[] = []
-  
-  // Handle if it's already an object
-  if (typeof templateVarData === 'object' && templateVarData !== null) {
-    if (Array.isArray(templateVarData)) {
-      variableNames = templateVarData
-    } else {
-      // If it's an object, use the keys or values
-      variableNames = Object.keys(templateVarData).length > 0 ? Object.keys(templateVarData) : Object.values(templateVarData)
-    }
-  } else if (typeof templateVarData === 'string') {
-    // Handle string format
-    try {
-      // Try JSON first
-      const parsed = JSON.parse(templateVarData)
-      if (Array.isArray(parsed)) {
-        variableNames = parsed
-      } else if (typeof parsed === 'object') {
-        variableNames = Object.keys(parsed)
-      }
-    } catch {
-      // Fallback to comma or pipe separated
-      variableNames = templateVarData
-        .split(/[,|;]/)
-        .map(v => v.trim())
-        .filter(v => v.length > 0)
-    }
-  }
-  
-  // Filter out empty strings and ensure we have valid variable names
-  variableNames = variableNames.filter(name => name && typeof name === 'string' && name.trim().length > 0)
-  
-  return variableNames.map(name => ({
-    name: name.toUpperCase(),
-    label: formatVariableLabel(name),
-    value: '',
-    aiSuggestion: generateIdeationSuggestion(name, ideationData),
-    required: isRequiredVariable(name),
-    type: 'text' as const,
-    placeholder: `Enter your ${formatVariableLabel(name).toLowerCase()}`
-  }))
-}
 
 function formatVariableLabel(variableName: string): string {
   return variableName
@@ -784,65 +748,9 @@ function formatVariableLabel(variableName: string): string {
     .join(' ')
 }
 
-function generateIdeationSuggestion(variableName: string, ideationData?: any): string {
-  // This function is only used for Path 1 (database variables)
-  // Path 2 gets suggestions directly from backend
-  if (!ideationData) return ''
-  
-  const suggestionMap: Record<string, string> = {
-    'OPENING_LINE': ideationData.topic ? `Here's what they don't tell you about ${ideationData.topic}` : '',
-    'PROBLEM_STATEMENT': ideationData.topic ? `Most people struggle with ${ideationData.topic} because...` : '',
-    'FRAMEWORK_NAME': ideationData.angle || '',
-    'SITUATION': ideationData.topic || '',
-    'CHALLENGE': ideationData.takeaways?.[0] || ''
-  }
-  
-  return suggestionMap[variableName.toUpperCase()] || ''
-}
-
 function isRequiredVariable(variableName: string): boolean {
   const requiredVars = ['OPENING_LINE', 'PROBLEM_STATEMENT', 'FRAMEWORK_NAME', 'CTA', 'TRENDY_CONCEPT', 'ACTUAL_IMPLEMENTATION_OR_REALITY_CHECK']
   return requiredVars.includes(variableName.toUpperCase())
-}
-
-function getSectionSpecificVariables(
-  currentSection: any,
-  formula: FormulaTemplate,
-  ideationData?: any
-): TemplateVariable[] {
-  console.log('🎯 getSectionSpecificVariables called with:', {
-    currentSection: currentSection?.section_name || currentSection?.title,
-    hasTemplateVars: !!currentSection?.template_variables,
-    templateVarsValue: currentSection?.template_variables
-  })
-  
-  // PRIORITY 1: Use database section template_variables if available
-  if (currentSection?.template_variables) {
-    console.log('✅ Using database template_variables:', currentSection.template_variables)
-    return parseTemplateVariables(currentSection.template_variables, ideationData)
-  }
-  
-  // PRIORITY 2: Index-based lookup for database sections
-  if (typeof currentSection === 'number' && formula.sections?.[currentSection]) {
-    const dbSection = formula.sections[currentSection]
-    if (dbSection?.template_variables) {
-      console.log('✅ Using index-based database template_variables:', dbSection.template_variables)
-      return parseTemplateVariables(dbSection.template_variables, ideationData)
-    }
-  }
-  
-  // PRIORITY 3: Section order lookup
-  if (currentSection?.section_order && formula.sections) {
-    const dbSection = formula.sections.find(s => s.section_order === currentSection.section_order)
-    if (dbSection?.template_variables) {
-      console.log('✅ Using section_order-based database template_variables:', dbSection.template_variables)
-      return parseTemplateVariables(dbSection.template_variables, ideationData)
-    }
-  }
-  
-  // FALLBACK: Hardcoded variables based on section name
-  console.log('⚠️ Falling back to hardcoded variables for:', currentSection?.section_name || currentSection?.title || 'unknown')
-  return getHardcodedSectionVariables(currentSection?.section_name || currentSection?.title || '', ideationData)
 }
 
 function getHardcodedSectionVariables(sectionName: string, ideationData?: any): TemplateVariable[] {
@@ -1013,16 +921,8 @@ function getHardcodedSectionVariables(sectionName: string, ideationData?: any): 
   }, [currentSectionIndex, templateVariables])
 
   const getTemplateWithAISuggestions = useCallback(() => {
-    // Generate template directly from current template variables
-    if (templateVariables.length > 0) {
-      return templateVariables
-        .map(variable => `[${variable.name}]: ${variable.aiSuggestion || 'Enter your ' + variable.label.toLowerCase()}`)
-        .join('\n\n')
-    }
-    
-    // Fallback to section placeholder
-    return currentSection?.placeholder || 'No template variables available'
-  }, [templateVariables, currentSection])
+    return generateLiveTemplate(templateVariables)
+  }, [templateVariables])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
