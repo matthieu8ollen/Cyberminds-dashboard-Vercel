@@ -402,17 +402,8 @@ function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
 }
 
 function getTemplatePlaceholder(sectionTitle: string, formula: FormulaTemplate, index: number): string {
-  // Fallback templates when no database/backend template available
-  const templates: Record<string, string> = {
-    'Hook': '[OPENING_LINE]\n\nCreate an attention-grabbing opening...',
-    'Problem': '[PROBLEM_STATEMENT]\n\nDescribe the challenge...',
-    'Framework': '[FRAMEWORK_NAME]\n\nA systematic approach...',
-    'Solution': '[SOLUTION_APPROACH]',
-    'Story': '[SITUATION]\n\nThe challenge was [CHALLENGE]...',
-    'CTA': '[ENGAGEMENT_QUESTION]'
-  }
-  
-  return templates[sectionTitle] || `[SECTION_CONTENT]`
+  // Simplified fallback - unified system handles template generation
+  return `Write your ${sectionTitle.toLowerCase()} content here...`
 }
   
   function getWordCountTarget(title: string): number {
@@ -553,23 +544,6 @@ function createVariablesFromBackendData(variablesData: Record<string, any>): Tem
     .filter(([key, value]) => {
       // Ensure we have valid variable name and value
       if (!key || typeof key !== 'string') return false
-      const extractedValue = extractVariableValue(value)
-      return extractedValue && extractedValue.trim().length > 0
-    })
-    .map(([key, value]) => ({
-      name: sanitizeVariableName(key),
-      label: formatVariableLabel(key),
-      value: '',
-      aiSuggestion: extractVariableValue(value),
-      required: false,
-      type: 'text' as const,
-      placeholder: `Enter your ${formatVariableLabel(key).toLowerCase()}`
-    }))
-}
-
-function createVariablesFromObject(variablesObj: Record<string, any>): TemplateVariable[] {
-  return Object.entries(variablesObj)
-    .filter(([_, value]) => {
       const extractedValue = extractVariableValue(value)
       return extractedValue && extractedValue.trim().length > 0
     })
@@ -751,85 +725,6 @@ function formatVariableLabel(variableName: string): string {
 function isRequiredVariable(variableName: string): boolean {
   const requiredVars = ['OPENING_LINE', 'PROBLEM_STATEMENT', 'FRAMEWORK_NAME', 'CTA', 'TRENDY_CONCEPT', 'ACTUAL_IMPLEMENTATION_OR_REALITY_CHECK']
   return requiredVars.includes(variableName.toUpperCase())
-}
-
-function getHardcodedSectionVariables(sectionName: string, ideationData?: any): TemplateVariable[] {
-  const variables: TemplateVariable[] = []
-  const cleanTitle = sectionName.toLowerCase().trim()
-  
-  switch (cleanTitle) {
-    case 'hook':
-    case 'opening':
-    case 'intro':
-      variables.push({
-        name: 'OPENING_LINE',
-        label: 'Opening Hook',
-        value: '',
-        aiSuggestion: ideationData?.topic ? 
-          `Here's what they don't tell you about ${ideationData.topic}` : '',
-        required: true,
-        type: 'text',
-        placeholder: 'Your attention-grabbing opening line'
-      })
-      break
-      
-    case 'problem':
-    case 'challenge':
-    case 'pain point':
-      variables.push({
-        name: 'PROBLEM_STATEMENT',
-        label: 'Main Problem',
-        value: '',
-        aiSuggestion: ideationData?.topic ? 
-          `Most people struggle with ${ideationData.topic} because...` : '',
-        required: true,
-        type: 'text',
-        placeholder: 'The specific problem your audience faces'
-      })
-      break
-      
-    case 'framework':
-    case 'solution':
-    case 'approach':
-      variables.push({
-        name: 'FRAMEWORK_NAME',
-        label: 'Framework Name',
-        value: '',
-        aiSuggestion: ideationData?.angle || '',
-        required: true,
-        type: 'text',
-        placeholder: 'Your framework or solution name'
-      })
-      break
-      
-    case 'cta':
-    case 'call to action':
-      variables.push({
-        name: 'ENGAGEMENT_QUESTION',
-        label: 'Engagement Question',
-        value: '',
-        aiSuggestion: ideationData?.topic ? 
-          `What's your experience with ${ideationData.topic}?` : '',
-        required: true,
-        type: 'text',
-        placeholder: 'Question to engage your audience'
-      })
-      break
-      
-    default:
-      variables.push({
-        name: 'SECTION_CONTENT',
-        label: 'Content',
-        value: '',
-        aiSuggestion: '',
-        required: false,
-        type: 'text',
-        placeholder: 'Enter your content'
-      })
-      break
-  }
-  
-  return variables
 }
   
   function initializeContentChecks(category: string): ContentCheck[] {
