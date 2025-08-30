@@ -393,7 +393,7 @@ function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index
 
 function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
   if (templateVariables.length === 0) {
-    return 'No template variables available'
+    return 'Write your content here...'
   }
   
   return templateVariables
@@ -1359,7 +1359,7 @@ const renderTemplateVariables = () => (
     <textarea
       value={currentSection?.content || ''}
       onChange={(e) => handleSectionChange(e.target.value)}
-      placeholder={!currentSection?.content?.trim() ? getTemplateWithAISuggestions() : 'Continue writing...'}
+      placeholder={!currentSection?.content?.trim() ? (currentSection?.placeholder || getTemplateWithAISuggestions()) : 'Continue writing...'}
       className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
       style={{ fontSize: '16px', lineHeight: '1.6' }}
     />
