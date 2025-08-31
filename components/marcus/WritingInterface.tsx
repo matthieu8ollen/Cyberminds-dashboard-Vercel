@@ -370,10 +370,6 @@ useEffect(() => {
   return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
 }
 
- function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
-  return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
-}
-
 function generateLiveTemplate(templateVariables: TemplateVariable[], sectionTitle?: string): string {
   if (templateVariables.length === 0) {
     const contextualMessage = sectionTitle 
