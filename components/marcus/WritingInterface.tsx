@@ -293,15 +293,16 @@ useEffect(() => {
     const structuredGuidanceText = extractGuidanceFromStructured(backendSection)
     const structuredContent = extractContentFromStructured(backendSection, cleanTitle)
 
-// PATH 2: Backend provides complete_post, not individual section_content in sections_data
-// Section content extracted from complete_post via AI button, not initialization
+// PATH 2: Backend provides filled_variables, not section_content in sections_data
+// Section content comes from complete_post via AI button, not initialization
 const backendSectionContent = ''
+
 return {
   id: dbSection?.id || backendSection?.section_id || `section-${index}`,
   title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
   content: backendSectionContent || structuredContent || '',
       guidance: dbSection?.section_guidelines || structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
+placeholder: getSectionTemplate({title: cleanTitle}, formula, index),
       completed: false,
       wordCountTarget: dbSection?.word_count_target || getWordCountTarget(cleanTitle),
       wordCountMin: dbSection?.word_count_min || Math.floor((dbSection?.word_count_target || getWordCountTarget(cleanTitle)) * 0.7),
@@ -371,12 +372,30 @@ useEffect(() => {
   return guidanceMap[title] || `Write compelling content for your ${title.toLowerCase()} section.`
 }
 
-function generateLiveTemplate(templateVariables: TemplateVariable[], sectionTitle?: string): string {
+ function getPlaceholderForSection(formulaId: string, title: string, index: number): string {
+  return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
+}
+
+function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index: number, templateVariables?: TemplateVariable[]): string {
+  // PATH 1: Use database section template
+  const dbSection = formula.sections?.[index]
+  if (dbSection?.section_template) {
+    return dbSection.section_template
+  }
+  
+  // PATH 2: Generate template from loaded variables
+  if (templateVariables && templateVariables.length > 0) {
+    return generateLiveTemplate(templateVariables)
+  }
+  
+  // FALLBACK: Basic placeholder
+  const sectionTitle = currentSection?.title || dbSection?.section_name || 'Content'
+  return `Enter your ${sectionTitle.toLowerCase()} here...`
+}
+
+function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
   if (templateVariables.length === 0) {
-    const contextualMessage = sectionTitle 
-      ? `Write your ${sectionTitle.toLowerCase()} content here...`
-      : 'Write your content here...'
-    return contextualMessage
+    return 'Write your content here...'
   }
   
   return templateVariables
@@ -799,8 +818,8 @@ function isRequiredVariable(variableName: string): boolean {
   }, [currentSectionIndex, templateVariables])
 
   const getTemplateWithAISuggestions = useCallback(() => {
-    return generateLiveTemplate(templateVariables, currentSection?.title)
-  }, [templateVariables, currentSection?.title])
+    return generateLiveTemplate(templateVariables)
+  }, [templateVariables])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
@@ -1178,8 +1197,17 @@ const renderTemplateVariables = () => (
   const renderLivePreview = () => {
  const getPreviewContent = () => {
     if (previewMode === 'template') {
-      // Use unified template generation system
-      return generateLiveTemplate(templateVariables, currentSection?.title)
+      // Generate template directly from current template variables
+      return templateVariables
+        .map(variable => {
+          const placeholder = `[${variable.name}]`
+          if (variable.value.trim()) {
+            return variable.value
+          } else {
+            return placeholder
+          }
+        })
+        .join('\n\n') || 'No template variables available'
     } else if (previewMode === 'example') {
       // PATH 2: Show backend-generated content for current section
       if (contentData?.generatedContent?.sections_data) {
