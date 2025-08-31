@@ -374,26 +374,12 @@ useEffect(() => {
   return getTemplatePlaceholder(title, { id: formulaId } as FormulaTemplate, index)
 }
 
-function getSectionTemplate(currentSection: any, formula: FormulaTemplate, index: number, templateVariables?: TemplateVariable[]): string {
-  // PATH 1: Use database section template
-  const dbSection = formula.sections?.[index]
-  if (dbSection?.section_template) {
-    return dbSection.section_template
-  }
-  
-  // PATH 2: Generate template from loaded variables
-  if (templateVariables && templateVariables.length > 0) {
-    return generateLiveTemplate(templateVariables)
-  }
-  
-  // FALLBACK: Basic placeholder
-  const sectionTitle = currentSection?.title || dbSection?.section_name || 'Content'
-  return `Enter your ${sectionTitle.toLowerCase()} here...`
-}
-
-function generateLiveTemplate(templateVariables: TemplateVariable[]): string {
+function generateLiveTemplate(templateVariables: TemplateVariable[], sectionTitle?: string): string {
   if (templateVariables.length === 0) {
-    return 'Write your content here...'
+    const contextualMessage = sectionTitle 
+      ? `Write your ${sectionTitle.toLowerCase()} content here...`
+      : 'Write your content here...'
+    return contextualMessage
   }
   
   return templateVariables
@@ -816,8 +802,8 @@ function isRequiredVariable(variableName: string): boolean {
   }, [currentSectionIndex, templateVariables])
 
   const getTemplateWithAISuggestions = useCallback(() => {
-    return generateLiveTemplate(templateVariables)
-  }, [templateVariables])
+    return generateLiveTemplate(templateVariables, currentSection?.title)
+  }, [templateVariables, currentSection?.title])
 
   const handleSectionNavigation = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
