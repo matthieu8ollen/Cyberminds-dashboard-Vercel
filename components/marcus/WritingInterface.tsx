@@ -229,17 +229,20 @@ const extractGuidanceFromStructured = (structuredSection: any): string => {
   
   const guidanceElements: string[] = []
   
-  // Extract different types of guidance based on backend response format
-  Object.keys(structuredSection).forEach(key => {
-    if (key.includes('guidance') && structuredSection[key]) {
-      const guidanceData = structuredSection[key]
-      if (typeof guidanceData === 'string') {
-        guidanceElements.push(guidanceData)
-      } else if (typeof guidanceData === 'object') {
-        // Extract nested guidance fields
-        Object.keys(guidanceData).forEach(subKey => {
-          if (guidanceData[subKey] && typeof guidanceData[subKey] === 'string') {
-            guidanceElements.push(`${subKey}: ${guidanceData[subKey]}`)
+  // Extract dynamic guidance fields from backend response
+  // Backend provides: why_this_matters, story_essentials, writing_techniques, know_your_reader, etc.
+  const guidanceFields = ['why_this_matters', 'story_essentials', 'writing_techniques', 'know_your_reader']
+  
+  guidanceFields.forEach(fieldName => {
+    const fieldData = structuredSection[fieldName]
+    if (fieldData) {
+      if (typeof fieldData === 'string') {
+        guidanceElements.push(`${fieldName.replace(/_/g, ' ').toUpperCase()}: ${fieldData}`)
+      } else if (typeof fieldData === 'object') {
+        // Extract nested guidance content
+        Object.entries(fieldData).forEach(([subKey, subValue]) => {
+          if (subKey !== '_analytics' && typeof subValue === 'string') {
+            guidanceElements.push(`${subKey.replace(/_/g, ' ')}: ${subValue}`)
           }
         })
       }
@@ -290,11 +293,9 @@ useEffect(() => {
     const structuredGuidanceText = extractGuidanceFromStructured(backendSection)
     const structuredContent = extractContentFromStructured(backendSection, cleanTitle)
 
-// PATH 2: Get section content from sections_data
-const backendSectionContent = contentData?.generatedContent?.sections_data?.find(
-  (section: any) => section.section_order === (index + 1)
-)?.section_content || ''
-
+// PATH 2: Backend provides complete_post, not individual section_content in sections_data
+// Section content extracted from complete_post via AI button, not initialization
+const backendSectionContent = ''
 return {
   id: dbSection?.id || backendSection?.section_id || `section-${index}`,
   title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
