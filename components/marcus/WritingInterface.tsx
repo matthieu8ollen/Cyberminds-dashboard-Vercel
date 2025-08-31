@@ -300,7 +300,7 @@ return {
   title: dbSection?.section_name || backendSection?.section_name || cleanTitle,
   content: backendSectionContent || structuredContent || '',
       guidance: dbSection?.section_guidelines || structuredGuidanceText || guidance || getGuidanceForSection(formula.id, cleanTitle, index),
-placeholder: getSectionTemplate({title: cleanTitle}, formula, index),
+placeholder: getTemplatePlaceholder(cleanTitle, formula, index),
       completed: false,
       wordCountTarget: dbSection?.word_count_target || getWordCountTarget(cleanTitle),
       wordCountMin: dbSection?.word_count_min || Math.floor((dbSection?.word_count_target || getWordCountTarget(cleanTitle)) * 0.7),
@@ -1195,17 +1195,8 @@ const renderTemplateVariables = () => (
   const renderLivePreview = () => {
  const getPreviewContent = () => {
     if (previewMode === 'template') {
-      // Generate template directly from current template variables
-      return templateVariables
-        .map(variable => {
-          const placeholder = `[${variable.name}]`
-          if (variable.value.trim()) {
-            return variable.value
-          } else {
-            return placeholder
-          }
-        })
-        .join('\n\n') || 'No template variables available'
+      // Use unified template generation system
+      return generateLiveTemplate(templateVariables, currentSection?.title)
     } else if (previewMode === 'example') {
       // PATH 2: Show backend-generated content for current section
       if (contentData?.generatedContent?.sections_data) {
