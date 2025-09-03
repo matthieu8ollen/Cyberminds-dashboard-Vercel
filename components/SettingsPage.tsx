@@ -91,8 +91,6 @@ const ModernSettingsPage = () => {
     systemUpdates: false,
   })
 
-  // ===== DATA LOADING =====
-  useEffect(() => {
    // ===== DATA LOADING =====
 useEffect(() => {
   if (user && profile) {
