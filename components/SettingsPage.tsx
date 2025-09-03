@@ -93,13 +93,12 @@ const ModernSettingsPage = () => {
 
   // ===== DATA LOADING =====
   useEffect(() => {
-    if (user && profile) {
-      // Load account data
-      setAccountData({
-        firstName: profile.first_name || '',
-        lastName: profile.last_name || '',
-        email: user.email || '',
-        role: profile.role || ''
+    // Load account data
+setAccountData({
+  firstName: '',
+  lastName: '',
+  email: user.email || '',
+  role: profile.role || ''
       })
       
       // Load content preferences
