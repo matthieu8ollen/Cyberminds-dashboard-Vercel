@@ -79,7 +79,7 @@ const ModernSettingsPage = () => {
     { id: 'personal_stories', name: 'Personal Stories & Lessons', type: 'predefined', selected: false }
   ])
   // Add this new type definition
-type AiPersonaId = "insightful-cfo" | "bold-operator" | "strategic-advisor" | "data-driven-expert";
+type AiPersonaId = "insightful_cfo" | "bold_operator" | "strategic_advisor" | "data_driven_expert";
   const [postingFrequency, setPostingFrequency] = useState('weekly')
   const [targetAudience, setTargetAudience] = useState('')
   
@@ -105,7 +105,7 @@ useEffect(() => {
     })
     
     // Load content preferences
-    setSelectedPersona(profile.preferred_tone || 'insightful-cfo')
+    setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
     setTargetAudience(profile.target_audience || '')
     setPostingFrequency(profile.posting_frequency || 'weekly')
     
@@ -140,25 +140,25 @@ useEffect(() => {
 
   const aiPersonas = [
     {
-      id: "insightful-cfo",
+      id: "insightful_cfo",
       name: "Insightful CFO",
       description: "Data-driven financial perspective with strategic insights",
       tone: "Professional, analytical, forward-thinking",
     },
     {
-      id: "bold-operator", 
+      id: "bold_operator", 
       name: "Bold Operator",
       description: "Action-oriented execution focus with practical solutions",
       tone: "Direct, confident, results-focused",
     },
     {
-      id: "strategic-advisor",
+      id: "strategic_advisor",
       name: "Strategic Advisor",
       description: "High-level strategic thinking with industry expertise",
       tone: "Thoughtful, experienced, advisory",
     },
     {
-      id: "data-driven-expert",
+      id: "data-driven_expert",
       name: "Data-Driven Expert",
       description: "Evidence-based insights with analytical depth",
       tone: "Precise, factual, research-oriented",
