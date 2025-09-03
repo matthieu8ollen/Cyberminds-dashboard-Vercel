@@ -13,6 +13,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from './ui/breadcrumb'
+import { Button } from './ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Switch } from './ui/switch'
+import { Badge } from './ui/badge'
+import { Checkbox } from './ui/checkbox'
+import { Alert, AlertDescription } from './ui/alert'
 import {
   User,
   Sparkles,
@@ -23,10 +32,8 @@ import {
   Settings,
   Check,
   Save,
-  ChevronRight,
   Download,
   Trash2,
-  AlertTriangle,
   Linkedin,
   Plus,
   X
@@ -84,7 +91,7 @@ const ModernSettingsPage = () => {
     systemUpdates: false,
   })
 
-  // ===== DATA LOADING (useEffect to load user's current settings) =====
+  // ===== DATA LOADING =====
   useEffect(() => {
     if (user && profile) {
       // Load account data
@@ -227,111 +234,111 @@ const ModernSettingsPage = () => {
   // ===== RENDER SECTIONS =====
   const renderAccountTab = () => (
     <div className="space-y-6">
-      {/* Basic Information */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Basic Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-            <input
-              type="text"
-              value={accountData.firstName}
-              onChange={(e) => setAccountData(prev => ({ ...prev, firstName: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              placeholder="Enter your first name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-            <input
-              type="text"
-              value={accountData.lastName}
-              onChange={(e) => setAccountData(prev => ({ ...prev, lastName: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              placeholder="Enter your last name"
-            />
-          </div>
-        </div>
-        
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-          <input
-            type="email"
-            value={accountData.email}
-            onChange={(e) => setAccountData(prev => ({ ...prev, email: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            placeholder="your.email@company.com"
-            disabled
-          />
-          <p className="text-xs text-gray-500 mt-1">Email cannot be changed. Contact support if you need to update this.</p>
-        </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Professional Role</label>
-          <select
-            value={accountData.role}
-            onChange={(e) => setAccountData(prev => ({ ...prev, role: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-          >
-            <option value="">Select your role</option>
-            {roles.map(role => (
-              <option key={role.value} value={role.value}>{role.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* LinkedIn Integration */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Social Connections</h3>
-        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Linkedin className="w-5 h-5 text-blue-600" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Basic Information</CardTitle>
+          <CardDescription>Update your personal details</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={accountData.firstName}
+                onChange={(e) => setAccountData(prev => ({ ...prev, firstName: e.target.value }))}
+                placeholder="Enter your first name"
+              />
             </div>
-            <div>
-              <div className="font-medium text-gray-900">LinkedIn</div>
-              <div className="text-sm text-gray-600">
-                {isLinkedInConnected ? 'Connected and ready to publish' : 'Connect to publish directly'}
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={accountData.lastName}
+                onChange={(e) => setAccountData(prev => ({ ...prev, lastName: e.target.value }))}
+                placeholder="Enter your last name"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={accountData.email}
+              disabled
+              placeholder="your.email@company.com"
+            />
+            <p className="text-xs text-gray-500">Email cannot be changed. Contact support if needed.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="role">Professional Role</Label>
+            <Select value={accountData.role} onValueChange={(value) => setAccountData(prev => ({ ...prev, role: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map(role => (
+                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Social Connections</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Linkedin className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <div className="font-medium">LinkedIn</div>
+                <div className="text-sm text-gray-600">
+                  {isLinkedInConnected ? 'Connected and ready to publish' : 'Connect to publish directly'}
+                </div>
               </div>
             </div>
+            <Button 
+              onClick={() => isLinkedInConnected ? disconnectLinkedIn() : connectLinkedIn()}
+              variant={isLinkedInConnected ? "destructive" : "default"}
+            >
+              {isLinkedInConnected ? 'Disconnect' : 'Connect'}
+            </Button>
           </div>
-          <button 
-            onClick={() => isLinkedInConnected ? disconnectLinkedIn() : connectLinkedIn()}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              isLinkedInConnected 
-                ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
-          >
-            {isLinkedInConnected ? 'Disconnect' : 'Connect'}
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 
   const renderContentTab = () => (
     <div className="space-y-6">
-      {/* AI Persona Selection */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">AI Writing Persona</h3>
-        <p className="text-gray-600 mb-6">Choose the professional voice that best matches your style and industry position.</p>
-        
-        <div className="grid gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">AI Writing Persona</CardTitle>
+          <CardDescription>Choose the professional voice that best matches your style</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {aiPersonas.map((persona) => (
             <div 
               key={persona.id}
               onClick={() => setSelectedPersona(persona.id)}
-              className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                 selectedPersona === persona.id
                   ? 'border-emerald-500 bg-emerald-50'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900 mb-1">{persona.name}</div>
+                  <div className="font-semibold mb-1">{persona.name}</div>
                   <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
                   <div className="text-xs text-gray-500">
                     <strong>Tone:</strong> {persona.tone}
@@ -349,102 +356,92 @@ const ModernSettingsPage = () => {
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Content Pillars */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Content Focus Areas</h3>
-        <p className="text-gray-600 mb-6">Select the topics you want to focus on for better personalized content suggestions.</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {contentPillars.map((pillar) => (
-            <label 
-              key={pillar.id}
-              className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all"
-            >
-              <input
-                type="checkbox"
-                checked={pillar.selected}
-                onChange={() => handlePillarToggle(pillar.id)}
-                className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-              />
-              <span className="text-sm text-gray-900 flex-1">{pillar.name}</span>
-              {pillar.type === 'custom' && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    removePillar(pillar.id)
-                  }}
-                  className="text-red-500 hover:text-red-700 text-xs"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </label>
-          ))}
-        </div>
-
-        {/* Add Custom Pillar */}
-        <div className="mt-4 flex gap-2">
-          <input
-            type="text"
-            value={newCustomPillar}
-            onChange={(e) => setNewCustomPillar(e.target.value)}
-            placeholder="Add custom content pillar..."
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-            onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
-          />
-          <button
-            onClick={addCustomPillar}
-            className="px-3 py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Publishing Preferences */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Publishing Preferences</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</label>
-            <select
-              value={postingFrequency}
-              onChange={(e) => setPostingFrequency(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="biweekly">Bi-weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Content Focus Areas</CardTitle>
+          <CardDescription>Select topics for better personalized suggestions</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {contentPillars.map((pillar) => (
+              <div key={pillar.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                <Checkbox
+                  checked={pillar.selected}
+                  onCheckedChange={() => handlePillarToggle(pillar.id)}
+                />
+                <span className="text-sm flex-1">{pillar.name}</span>
+                {pillar.type === 'custom' && (
+                  <Button
+                    onClick={() => removePillar(pillar.id)}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</label>
-            <textarea
+          <div className="flex gap-2">
+            <Input
+              value={newCustomPillar}
+              onChange={(e) => setNewCustomPillar(e.target.value)}
+              placeholder="Add custom content pillar..."
+              onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
+            />
+            <Button onClick={addCustomPillar} variant="outline">
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Publishing Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="frequency">Posting Frequency</Label>
+            <Select value={postingFrequency} onValueChange={setPostingFrequency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="audience">Target Audience</Label>
+            <Input
+              id="audience"
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              rows={3}
-              placeholder="Describe your ideal audience (e.g., 'SaaS executives, finance professionals, startup founders...')"
+              placeholder="Describe your ideal audience..."
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Notification Preferences</h3>
-        <p className="text-gray-600 mb-6">Manage how and when you want to receive updates from Writer Suite.</p>
-        
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Notification Preferences</CardTitle>
+          <CardDescription>Manage how you receive updates</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {Object.entries({
             postPublished: { label: 'Post Published', description: 'When your scheduled posts go live' },
             queueEmpty: { label: 'Queue Empty', description: 'When you need to schedule more content' },
@@ -453,63 +450,63 @@ const ModernSettingsPage = () => {
             draftReminders: { label: 'Draft Reminders', description: 'Reminders about incomplete drafts' },
             systemUpdates: { label: 'System Updates', description: 'Product updates and new features' }
           }).map(([key, { label, description }]) => (
-            <div key={key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <div className="font-medium text-gray-900">{label}</div>
+                <div className="font-medium">{label}</div>
                 <div className="text-sm text-gray-600">{description}</div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notifications[key as keyof typeof notifications]}
-                  onChange={(e) => handleNotificationChange(key, e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
+              <Switch
+                checked={notifications[key as keyof typeof notifications]}
+                onCheckedChange={(checked) => handleNotificationChange(key, checked)}
+              />
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 
   const renderBillingTab = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Billing & Subscription</h3>
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CreditCard className="w-8 h-8 text-emerald-600" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Billing & Subscription</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CreditCard className="w-8 h-8 text-emerald-600" />
+            </div>
+            <h4 className="text-xl font-semibold mb-2">Billing Management</h4>
+            <p className="text-gray-600 mb-6">
+              Subscription management, payment methods, and billing history will be available soon.
+            </p>
+            <Button className="bg-emerald-600 hover:bg-emerald-700">
+              Contact Support
+            </Button>
           </div>
-          <h4 className="text-xl font-semibold text-gray-900 mb-2">Billing Management</h4>
-          <p className="text-gray-600 mb-6">
-            Subscription management, payment methods, and billing history will be available soon.
-          </p>
-          <button className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-            Contact Support
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 
   const renderPrivacyTab = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-emerald-800 mb-4">Privacy & Data</h3>
-        
-        <div className="space-y-4">
-          <div className="p-4 border border-gray-200 rounded-lg">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-emerald-800">Privacy & Data</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-gray-900">Export Your Data</div>
+                <div className="font-medium">Export Your Data</div>
                 <div className="text-sm text-gray-600">Download all your content and settings</div>
               </div>
-              <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
             </div>
           </div>
           
@@ -519,26 +516,23 @@ const ModernSettingsPage = () => {
                 <div className="font-medium text-red-900">Delete Account</div>
                 <div className="text-sm text-red-700">Permanently delete your account and all data</div>
               </div>
-              <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2">
-                <Trash2 className="w-4 h-4" />
-                <span>Delete</span>
-              </button>
+              <Button variant="destructive">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Your Existing Sidebar */}
       <SidebarNavigation />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white border-b px-6 py-4">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -555,37 +549,33 @@ const ModernSettingsPage = () => {
           </Breadcrumb>
 
           <div className="mt-4">
-            <h1 className="text-3xl font-medium tracking-tight text-balance font-sans text-emerald-800">Settings</h1>
-            <p className="text-gray-600 text-pretty">Manage your account preferences and Writer Suite configuration</p>
+            <h1 className="text-3xl font-medium text-emerald-800">Settings</h1>
+            <p className="text-gray-600">Manage your account preferences and Writer Suite configuration</p>
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Settings Navigation */}
-          <div className="w-64 bg-white border-r border-gray-200 p-4">
+          <div className="w-64 bg-white border-r p-4">
             <nav className="space-y-2">
               {settingsSections.map((section) => {
                 const Icon = section.icon
                 return (
-                  <button
+                  <Button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all ${
-                      activeSection === section.id
-                        ? 'bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    variant={activeSection === section.id ? "default" : "ghost"}
+                    className={`w-full justify-start ${
+                      activeSection === section.id ? 'bg-emerald-50 text-emerald-700 border-emerald-500' : ''
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{section.label}</span>
-                  </button>
+                    <Icon className="w-4 h-4 mr-2" />
+                    {section.label}
+                  </Button>
                 )
               })}
             </nav>
           </div>
 
-          {/* Settings Content */}
           <div className="flex-1 p-6 overflow-auto">
             {activeSection === 'account' && renderAccountTab()}
             {activeSection === 'content' && renderContentTab()}
@@ -593,31 +583,30 @@ const ModernSettingsPage = () => {
             {activeSection === 'billing' && renderBillingTab()}
             {activeSection === 'privacy' && renderPrivacyTab()}
 
-            {/* Save Button */}
             {(activeSection === 'account' || activeSection === 'content' || activeSection === 'notifications') && (
-              <div className="mt-8 flex justify-end space-x-4">
-                <button
+              <div className="mt-8 flex justify-end">
+                <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 disabled:opacity-50 shadow-lg"
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90"
                 >
                   {saving ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Saving...</span>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Saving...
                     </>
                   ) : saved ? (
                     <>
-                      <Check className="w-4 h-4" />
-                      <span>Saved!</span>
+                      <Check className="w-4 h-4 mr-2" />
+                      Saved!
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      <span>Save Changes</span>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             )}
           </div>
