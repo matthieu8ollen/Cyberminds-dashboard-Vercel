@@ -105,7 +105,7 @@ useEffect(() => {
     })
     
     // Load content preferences
-    setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
+    setSelectedPersona(profile.preferred_tone || 'insightful-cfo')
     setTargetAudience(profile.target_audience || '')
     setPostingFrequency(profile.posting_frequency || 'weekly')
     
