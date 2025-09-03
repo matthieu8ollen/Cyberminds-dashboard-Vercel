@@ -618,4 +618,4 @@ useEffect(() => {
   )
 }
 
-export default ModernSettingsPage
+export default ModernSettingsPage;
