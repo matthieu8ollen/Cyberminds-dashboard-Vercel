@@ -67,7 +67,7 @@ const ModernSettingsPage = () => {
   })
 
   // Content & AI Settings
-  const [selectedPersona, setSelectedPersona] = useState<AiPersonaId>("insightful-cfo")
+  const [selectedPersona, setSelectedPersona] = useState<AiPersonaId>("insightful_cfo")
   const [contentPillars, setContentPillars] = useState<ContentPillar[]>([
     { id: 'industry_trends', name: 'Industry Trends & Analysis', type: 'predefined', selected: false },
     { id: 'case_studies', name: 'Case Studies & Best Practices', type: 'predefined', selected: false },
