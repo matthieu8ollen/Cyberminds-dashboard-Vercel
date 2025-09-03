@@ -67,7 +67,7 @@ const ModernSettingsPage = () => {
   })
 
   // Content & AI Settings
-  const [selectedPersona, setSelectedPersona] = useState("insightful-cfo")
+  const [selectedPersona, setSelectedPersona] = useState<AiPersonaId>("insightful-cfo")
   const [contentPillars, setContentPillars] = useState<ContentPillar[]>([
     { id: 'industry_trends', name: 'Industry Trends & Analysis', type: 'predefined', selected: false },
     { id: 'case_studies', name: 'Case Studies & Best Practices', type: 'predefined', selected: false },
@@ -78,6 +78,8 @@ const ModernSettingsPage = () => {
     { id: 'tools_tech', name: 'Finance Tools & Technology', type: 'predefined', selected: false },
     { id: 'personal_stories', name: 'Personal Stories & Lessons', type: 'predefined', selected: false }
   ])
+  // Add this new type definition
+type AiPersonaId = "insightful-cfo" | "bold-operator" | "strategic-advisor" | "data-driven-expert";
   const [postingFrequency, setPostingFrequency] = useState('weekly')
   const [targetAudience, setTargetAudience] = useState('')
   
