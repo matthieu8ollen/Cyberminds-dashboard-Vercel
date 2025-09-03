@@ -93,37 +93,41 @@ const ModernSettingsPage = () => {
 
   // ===== DATA LOADING =====
   useEffect(() => {
+   // ===== DATA LOADING =====
+useEffect(() => {
+  if (user && profile) {
     // Load account data
-setAccountData({
-  firstName: '',
-  lastName: '',
-  email: user.email || '',
-  role: profile.role || ''
-      })
-      
-      // Load content preferences
-      setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
-      setTargetAudience(profile.target_audience || '')
-      setPostingFrequency(profile.posting_frequency || 'weekly')
-      
-      // Load content pillars
-      if (profile.content_pillars && Array.isArray(profile.content_pillars)) {
-        setContentPillars(prev => prev.map(pillar => ({
-          ...pillar,
-          selected: profile.content_pillars?.includes(pillar.id) || false
-        })))
-      }
-      
-      // Extract email parts for default names if empty
-      if (!profile.first_name && user.email) {
-        const emailParts = user.email.split('@')[0].split('.')
-        setAccountData(prev => ({
-          ...prev,
-          firstName: emailParts[0]?.charAt(0).toUpperCase() + emailParts[0]?.slice(1) || '',
-          lastName: emailParts[1]?.charAt(0).toUpperCase() + emailParts[1]?.slice(1) || ''
-        }))
-      }
+    setAccountData({
+      firstName: '',
+      lastName: '',
+      email: user.email || '',
+      role: profile.role || ''
+    })
+    
+    // Load content preferences
+    setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
+    setTargetAudience(profile.target_audience || '')
+    setPostingFrequency(profile.posting_frequency || 'weekly')
+    
+    // Load content pillars
+    if (profile.content_pillars && Array.isArray(profile.content_pillars)) {
+      setContentPillars(prev => prev.map(pillar => ({
+        ...pillar,
+        selected: profile.content_pillars?.includes(pillar.id) || false
+      })))
     }
+    
+    // Extract email parts for default names
+    if (user.email) {
+      const emailParts = user.email.split('@')[0].split('.')
+      setAccountData(prev => ({
+        ...prev,
+        firstName: emailParts[0]?.charAt(0).toUpperCase() + emailParts[0]?.slice(1) || '',
+        lastName: emailParts[1]?.charAt(0).toUpperCase() + emailParts[1]?.slice(1) || ''
+      }))
+    }
+  }
+}, [user, profile])    }
   }, [user, profile])
 
   // ===== DATA DEFINITIONS =====
