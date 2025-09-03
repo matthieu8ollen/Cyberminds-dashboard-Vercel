@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { updateUserProfile } from '../lib/supabase'
 import { useLinkedInAuth } from '../lib/linkedInAPI'
-import { SidebarNavigation } from './sidebar-navigation'
+// // import { SidebarNavigation } from './sidebar-navigation'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -529,7 +529,7 @@ const ModernSettingsPage = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <SidebarNavigation />
+      //       <SidebarNavigation />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="bg-white border-b px-6 py-4">
