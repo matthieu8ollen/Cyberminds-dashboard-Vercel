@@ -127,8 +127,7 @@ useEffect(() => {
       }))
     }
   }
-}, [user, profile])    }
-  }, [user, profile])
+}, [user, profile])
 
   // ===== DATA DEFINITIONS =====
   const settingsSections = [
