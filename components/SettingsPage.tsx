@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { updateUserProfile } from '../lib/supabase'
 import { useLinkedInAuth } from '../lib/linkedInAPI'
-import { SidebarNavigation } from './sidebar-navigation'
 import {
   Breadcrumb,
   BreadcrumbItem,
