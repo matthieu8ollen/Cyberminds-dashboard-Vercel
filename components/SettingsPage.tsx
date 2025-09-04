@@ -235,91 +235,119 @@ const SettingsPage = () => {
   }
 
   // ===== RENDER SECTIONS =====
-  const renderAccountTab = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Basic Information</CardTitle>
-          <CardDescription>Update your personal details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                value={accountData.firstName}
-                onChange={(e) => setAccountData(prev => ({ ...prev, firstName: e.target.value }))}
-                placeholder="Enter your first name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                value={accountData.lastName}
-                onChange={(e) => setAccountData(prev => ({ ...prev, lastName: e.target.value }))}
-                placeholder="Enter your last name"
-              />
-            </div>
+  const renderContentTab = () => (
+  <div className="space-y-6 max-w-2xl">
+    <Card>
+      <CardHeader>
+        <CardTitle>AI Writing Persona</CardTitle>
+        <CardDescription>Choose the professional voice that best matches your style</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Preferred Tone</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {aiPersonas.map(persona => (
+              <div
+                key={persona.id}
+                onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
+                className={`p-3 border-2 rounded-lg cursor-pointer transition ${
+                  selectedPersona === persona.id
+                    ? 'border-emerald-500 bg-emerald-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="font-medium text-gray-900">{persona.name}</div>
+                <div className="text-sm text-gray-600">{persona.description}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  <strong>Tone:</strong> {persona.tone}
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={accountData.email}
-              disabled
-              placeholder="your.email@company.com"
-            />
-            <p className="text-xs text-gray-500">Email cannot be changed. Contact support if needed.</p>
-          </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Professional Role</Label>
-            <Select value={accountData.role} onValueChange={(value) => setAccountData(prev => ({ ...prev, role: value }))}>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="audience">Target Audience</Label>
+            <Select value={targetAudience} onValueChange={setTargetAudience}>
               <SelectTrigger>
-                <SelectValue placeholder="Select your role" />
+                <SelectValue placeholder="Select your audience" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => (
-                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
-                ))}
+                <SelectItem value="fellow_cfos">Fellow CFOs</SelectItem>
+                <SelectItem value="startup_founders">Startup Founders</SelectItem>
+                <SelectItem value="finance_professionals">Finance Professionals</SelectItem>
+                <SelectItem value="potential_clients">Potential Clients</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Social Connections</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Linkedin className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="font-medium">LinkedIn</div>
-                <div className="text-sm text-gray-600">
-                  {isLinkedInConnected ? 'Connected and ready to publish' : 'Connect to publish directly'}
-                </div>
-              </div>
-            </div>
-            <Button 
-              onClick={() => isLinkedInConnected ? disconnectLinkedIn() : connectLinkedIn()}
-              variant={isLinkedInConnected ? "destructive" : "default"}
-            >
-              {isLinkedInConnected ? 'Disconnect' : 'Connect'}
-            </Button>
+          <div>
+            <Label htmlFor="frequency">Posting Frequency</Label>
+            <Select value={postingFrequency} onValueChange={setPostingFrequency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Content Focus Areas</CardTitle>
+        <CardDescription>Select topics for better personalized suggestions</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {contentPillars.map(pillar => (
+            <div
+              key={pillar.id}
+              className={`flex items-center justify-between p-3 border rounded-lg ${
+                pillar.selected ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  checked={pillar.selected}
+                  onCheckedChange={() => handlePillarToggle(pillar.id)}
+                />
+                <span className="text-sm font-medium text-gray-900">{pillar.name}</span>
+              </div>
+              {pillar.type === 'custom' && (
+                <Button
+                  onClick={() => removePillar(pillar.id)}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            value={newCustomPillar}
+            onChange={(e) => setNewCustomPillar(e.target.value)}
+            placeholder="Add custom content pillar..."
+            onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
+          />
+          <Button onClick={addCustomPillar} variant="outline">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+)
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
