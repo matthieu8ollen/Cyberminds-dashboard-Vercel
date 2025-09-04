@@ -370,24 +370,25 @@ const SettingsPage = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {contentPillars.map((pillar) => (
-              <Card key={pillar.id}>
-  <CardContent className="flex items-center space-x-3 p-3">
-                <Checkbox
-                  checked={pillar.selected}
-                  onCheckedChange={() => handlePillarToggle(pillar.id)}
-                />
-                <span className="text-sm flex-1">{pillar.name}</span>
-                {pillar.type === 'custom' && (
-                  <Button
-                    onClick={() => removePillar(pillar.id)}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                )}
-              </div>
-            ))}
+  <Card key={pillar.id}>
+    <CardContent className="flex items-center space-x-3 p-3">
+      <Checkbox
+        checked={pillar.selected}
+        onCheckedChange={() => handlePillarToggle(pillar.id)}
+      />
+      <span className="text-sm flex-1">{pillar.name}</span>
+      {pillar.type === 'custom' && (
+        <Button
+          onClick={() => removePillar(pillar.id)}
+          size="sm"
+          variant="ghost"
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      )} 
+    </CardContent>
+  </Card>
+))}
           </div>
 
           <div className="flex gap-2">
