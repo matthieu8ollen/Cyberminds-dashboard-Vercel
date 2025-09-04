@@ -359,8 +359,7 @@ const SettingsPage = () => {
     </div>
   </CardContent>
 </Card>
-        </CardContent>
-      </Card>
+
 
       <Card>
         <CardHeader>
