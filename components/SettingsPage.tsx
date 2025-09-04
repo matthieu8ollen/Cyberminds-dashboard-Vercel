@@ -322,123 +322,131 @@ const SettingsPage = () => {
   )
   
   const renderContentTab = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">AI Writing Persona</CardTitle>
-          <CardDescription>Choose the professional voice that best matches your style</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {aiPersonas.map((persona) => (
-            <Card 
-  key={persona.id}
-  onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
-  className={`cursor-pointer transition-all ${
-    selectedPersona === persona.id
-      ? 'border-emerald-500 bg-emerald-50'
-      : 'hover:border-gray-300'
-  }`}
->
-  <CardContent className="p-4">
-    <div className="flex items-start justify-between">
-      <div className="flex-1">
-        <div className="font-semibold mb-1">{persona.name}</div>
-        <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
-        <div className="text-xs text-gray-500">
-          <strong>Tone:</strong> {persona.tone}
-        </div>
-      </div>
-      <div className={`w-5 h-5 rounded-full border-2 transition-all ${
-        selectedPersona === persona.id
-          ? 'bg-emerald-500 border-emerald-500'
-          : 'border-gray-300'
-      }`}>
-        {selectedPersona === persona.id && (
-          <Check className="w-3 h-3 text-white m-0.5" />
-        )}
-      </div>
-    </div>
-  </CardContent>
-</Card>
-))}
-</CardContent>
-</Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Content Focus Areas</CardTitle>
-          <CardDescription>Select topics for better personalized suggestions</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+  <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-emerald-800">AI Writing Persona</CardTitle>
+        <CardDescription>Choose the professional voice that best matches your style</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Preferred Tone</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {contentPillars.map((pillar) => (
-  <Card key={pillar.id}>
-    <CardContent className="flex items-center space-x-3 p-3">
-      <Checkbox
-        checked={pillar.selected}
-        onCheckedChange={() => handlePillarToggle(pillar.id)}
-      />
-      <span className="text-sm flex-1">{pillar.name}</span>
-      {pillar.type === 'custom' && (
-        <Button
-          onClick={() => removePillar(pillar.id)}
-          size="sm"
-          variant="ghost"
-        >
-          <X className="w-3 h-3" />
-        </Button>
-      )} 
-    </CardContent>
-  </Card>
-))}
+            {aiPersonas.map((persona) => (
+              <Card 
+                key={persona.id}
+                onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
+                className={`cursor-pointer transition-all ${
+                  selectedPersona === persona.id
+                    ? 'border-emerald-500 bg-emerald-50'
+                    : 'hover:border-gray-300'
+                }`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-semibold mb-1">{persona.name}</div>
+                      <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
+                      <div className="text-xs text-gray-500">
+                        <strong>Tone:</strong> {persona.tone}
+                      </div>
+                    </div>
+                    <div className={`w-5 h-5 rounded-full border-2 transition-all ${
+                      selectedPersona === persona.id
+                        ? 'bg-emerald-500 border-emerald-500'
+                        : 'border-gray-300'
+                    }`}>
+                      {selectedPersona === persona.id && (
+                        <Check className="w-3 h-3 text-white m-0.5" />
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Input
-              value={newCustomPillar}
-              onChange={(e) => setNewCustomPillar(e.target.value)}
-              placeholder="Add custom content pillar..."
-              onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
-            />
-            <Button onClick={addCustomPillar} variant="outline">
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="space-y-2">
+          <Label htmlFor="audience">Target Audience</Label>
+          <Select value={targetAudience} onValueChange={setTargetAudience}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your audience" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fellow_cfos">Fellow CFOs and Finance Leaders</SelectItem>
+              <SelectItem value="startup_founders">Startup Founders & Entrepreneurs</SelectItem>
+              <SelectItem value="finance_professionals">Finance Professionals & Teams</SelectItem>
+              <SelectItem value="potential_clients">Potential Clients & Partners</SelectItem>
+              <SelectItem value="industry_peers">Industry Peers & Colleagues</SelectItem>
+              <SelectItem value="mixed_audience">Mixed Professional Audience</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Publishing Preferences</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="frequency">Posting Frequency</Label>
-            <Select value={postingFrequency} onValueChange={setPostingFrequency}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="biweekly">Bi-weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="frequency">Posting Frequency</Label>
+          <Select value={postingFrequency} onValueChange={setPostingFrequency}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily (7 posts/week)</SelectItem>
+              <SelectItem value="weekdays">Weekdays only (5 posts/week)</SelectItem>
+              <SelectItem value="3x_week">3 times per week</SelectItem>
+              <SelectItem value="2x_week">2 times per week</SelectItem>
+              <SelectItem value="weekly">Weekly (1 post/week)</SelectItem>
+              <SelectItem value="flexible">Flexible - as needed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
 
-          <div className="space-y-2">
-            <Label htmlFor="audience">Target Audience</Label>
-            <Input
-              id="audience"
-              value={targetAudience}
-              onChange={(e) => setTargetAudience(e.target.value)}
-              placeholder="Describe your ideal audience..."
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-emerald-800">Content Focus Areas</CardTitle>
+        <CardDescription>Select topics for better personalized suggestions</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {contentPillars.map((pillar) => (
+            <Card key={pillar.id} className={pillar.selected ? 'border-emerald-500 bg-emerald-50' : ''}>
+              <CardContent className="flex items-center space-x-3 p-3">
+                <Checkbox
+                  checked={pillar.selected}
+                  onCheckedChange={() => handlePillarToggle(pillar.id)}
+                />
+                <span className="text-sm flex-1">{pillar.name}</span>
+                {pillar.type === 'custom' && (
+                  <Button
+                    onClick={() => removePillar(pillar.id)}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            value={newCustomPillar}
+            onChange={(e) => setNewCustomPillar(e.target.value)}
+            placeholder="Add custom content pillar..."
+            onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
+          />
+          <Button onClick={addCustomPillar} variant="outline">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+)
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
