@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { updateUserProfile } from '../../lib/supabase'
-import { useLinkedInAuth } from '../../lib/linkedInAPI'
-import { SidebarNavigation } from '../../components/sidebar-navigation'
+import { useAuth } from '../contexts/AuthContext'
+import { updateUserProfile } from '../lib/supabase'
+import { useLinkedInAuth } from '../lib/linkedInAPI'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,16 +11,16 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '../../components/ui/breadcrumb'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
-import { Switch } from '../../components/ui/switch'
-import { Badge } from '../../components/ui/badge'
-import { Checkbox } from '../../components/ui/checkbox'
-import { Alert, AlertDescription } from '../../components/ui/alert'
+} from './ui/breadcrumb'
+import { Button } from './ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Switch } from './ui/switch'
+import { Badge } from './ui/badge'
+import { Checkbox } from './ui/checkbox'
+import { Alert, AlertDescription } from './ui/alert'
 import {
   User,
   Sparkles,
@@ -51,7 +50,7 @@ interface ContentPillar {
 // Add this type definition
 type AiPersonaId = "insightful_cfo" | "bold_operator" | "strategic_advisor" | "data_driven_expert";
 
-export default function SettingsPage() {
+const SettingsPage = () => {
   const { user, profile, refreshProfile } = useAuth()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
   
@@ -530,91 +529,72 @@ export default function SettingsPage() {
   )
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <SidebarNavigation />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-emerald-800">Settings</h1>
+        <p className="text-gray-600 mt-2">Manage your account preferences and Writer Suite configuration</p>
+      </div>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="bg-white border-b px-6 py-4">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
-                  Dashboard
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Settings</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <div className="mt-4">
-            <h1 className="text-3xl font-medium text-emerald-800">Settings</h1>
-            <p className="text-gray-600">Manage your account preferences and Writer Suite configuration</p>
-          </div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="lg:w-64 flex-shrink-0">
+          <nav className="space-y-1">
+            {settingsSections.map(section => {
+              const Icon = section.icon
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition ${
+                    activeSection === section.id
+                      ? 'bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{section.label}</span>
+                </button>
+              )
+            })}
+          </nav>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-64 bg-white border-r p-4">
-            <nav className="space-y-2">
-              {settingsSections.map((section) => {
-                const Icon = section.icon
-                return (
-                  <Button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    variant={activeSection === section.id ? "default" : "ghost"}
-                    className={`w-full justify-start ${
-                      activeSection === section.id ? 'bg-emerald-50 text-emerald-700 border-emerald-500' : ''
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {section.label}
-                  </Button>
-                )
-              })}
-            </nav>
-          </div>
+        <div className="flex-1">
+          {activeSection === 'account' && renderAccountTab()}
+          {activeSection === 'content' && renderContentTab()}
+          {activeSection === 'notifications' && renderNotificationsTab()}
+          {activeSection === 'billing' && renderBillingTab()}
+          {activeSection === 'privacy' && renderPrivacyTab()}
 
-          <div className="flex-1 p-6 overflow-auto">
-            {activeSection === 'account' && renderAccountTab()}
-            {activeSection === 'content' && renderContentTab()}
-            {activeSection === 'notifications' && renderNotificationsTab()}
-            {activeSection === 'billing' && renderBillingTab()}
-            {activeSection === 'privacy' && renderPrivacyTab()}
-
-            {(activeSection === 'account' || activeSection === 'content' || activeSection === 'notifications') && (
-              <div className="mt-8 flex justify-end">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90"
-                >
-                  {saving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Saving...
-                    </>
-                  ) : saved ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Saved!
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
+          {(activeSection === 'account' || activeSection === 'content' || activeSection === 'notifications') && (
+            <div className="mt-8 flex justify-end space-x-4">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : saved ? (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-export default ModernSettingsPage;
+
+export default SettingsPage;
