@@ -37,7 +37,8 @@ import {
   Plus,
   X
 } from 'lucide-react'
-
+import { cn } from '@/lib/utils'
+import { Progress } from './ui/progress'
 
 type SettingsTab = 'account' | 'content' | 'notifications' | 'billing' | 'privacy'
 
