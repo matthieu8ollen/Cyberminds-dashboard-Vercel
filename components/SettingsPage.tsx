@@ -529,7 +529,6 @@ useEffect(() => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      //       <SidebarNavigation />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="bg-white border-b px-6 py-4">
