@@ -38,6 +38,7 @@ import {
   X
 } from 'lucide-react'
 
+
 type SettingsTab = 'account' | 'content' | 'notifications' | 'billing' | 'privacy'
 
 interface ContentPillar {
@@ -328,15 +329,16 @@ const SettingsPage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {aiPersonas.map((persona) => (
-            <div 
-              key={persona.id}
-              onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                selectedPersona === persona.id
-                  ? 'border-emerald-500 bg-emerald-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
+            <Card 
+  key={persona.id}
+  onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
+  className={`cursor-pointer transition-all ${
+    selectedPersona === persona.id
+      ? 'border-emerald-500 bg-emerald-50'
+      : 'hover:border-gray-300'
+  }`}
+>
+  <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="font-semibold mb-1">{persona.name}</div>
@@ -368,7 +370,8 @@ const SettingsPage = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {contentPillars.map((pillar) => (
-              <div key={pillar.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+              <Card key={pillar.id}>
+  <CardContent className="flex items-center space-x-3 p-3">
                 <Checkbox
                   checked={pillar.selected}
                   onCheckedChange={() => handlePillarToggle(pillar.id)}
@@ -451,7 +454,8 @@ const SettingsPage = () => {
             draftReminders: { label: 'Draft Reminders', description: 'Reminders about incomplete drafts' },
             systemUpdates: { label: 'System Updates', description: 'Product updates and new features' }
           }).map(([key, { label, description }]) => (
-            <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
+            <Card key={key}>
+  <CardContent className="flex items-center justify-between p-4">
               <div>
                 <div className="font-medium">{label}</div>
                 <div className="text-sm text-gray-600">{description}</div>
