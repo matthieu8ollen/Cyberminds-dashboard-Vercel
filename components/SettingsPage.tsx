@@ -329,7 +329,7 @@ useEffect(() => {
           {aiPersonas.map((persona) => (
             <div 
               key={persona.id}
-              onClick={() => setSelectedPersona(persona.id)}
+              onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
               className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                 selectedPersona === persona.id
                   ? 'border-emerald-500 bg-emerald-50'
