@@ -339,26 +339,26 @@ const SettingsPage = () => {
   }`}
 >
   <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="font-semibold mb-1">{persona.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
-                  <div className="text-xs text-gray-500">
-                    <strong>Tone:</strong> {persona.tone}
-                  </div>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 transition-all ${
-                  selectedPersona === persona.id
-                    ? 'bg-emerald-500 border-emerald-500'
-                    : 'border-gray-300'
-                }`}>
-                  {selectedPersona === persona.id && (
-                    <Check className="w-3 h-3 text-white m-0.5" />
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <div className="font-semibold mb-1">{persona.name}</div>
+        <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
+        <div className="text-xs text-gray-500">
+          <strong>Tone:</strong> {persona.tone}
+        </div>
+      </div>
+      <div className={`w-5 h-5 rounded-full border-2 transition-all ${
+        selectedPersona === persona.id
+          ? 'bg-emerald-500 border-emerald-500'
+          : 'border-gray-300'
+      }`}>
+        {selectedPersona === persona.id && (
+          <Check className="w-3 h-3 text-white m-0.5" />
+        )}
+      </div>
+    </div>
+  </CardContent>
+</Card>
         </CardContent>
       </Card>
 
