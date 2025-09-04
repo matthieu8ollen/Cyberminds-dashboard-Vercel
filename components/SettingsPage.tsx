@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { updateUserProfile } from '../lib/supabase'
 import { useLinkedInAuth } from '../lib/linkedInAPI'
-// // import { SidebarNavigation } from './sidebar-navigation'
+import { SidebarNavigation } from './sidebar-navigation'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -48,6 +48,9 @@ interface ContentPillar {
   selected: boolean
 }
 
+// Add this type definition
+type AiPersonaId = "insightful_cfo" | "bold_operator" | "strategic_advisor" | "data_driven_expert";
+
 const ModernSettingsPage = () => {
   const { user, profile, refreshProfile } = useAuth()
   const { isAuthenticated: isLinkedInConnected, login: connectLinkedIn, logout: disconnectLinkedIn } = useLinkedInAuth()
@@ -78,8 +81,7 @@ const ModernSettingsPage = () => {
     { id: 'tools_tech', name: 'Finance Tools & Technology', type: 'predefined', selected: false },
     { id: 'personal_stories', name: 'Personal Stories & Lessons', type: 'predefined', selected: false }
   ])
-  // Add this new type definition
-type AiPersonaId = "insightful_cfo" | "bold_operator" | "strategic_advisor" | "data_driven_expert";
+  
   const [postingFrequency, setPostingFrequency] = useState('weekly')
   const [targetAudience, setTargetAudience] = useState('')
   
@@ -93,41 +95,41 @@ type AiPersonaId = "insightful_cfo" | "bold_operator" | "strategic_advisor" | "d
     systemUpdates: false,
   })
 
-   // ===== DATA LOADING =====
-useEffect(() => {
-  if (user && profile) {
-    // Load account data
-    setAccountData({
-      firstName: '',
-      lastName: '',
-      email: user.email || '',
-      role: profile.role || ''
-    })
-    
-    // Load content preferences
-    setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
-    setTargetAudience(profile.target_audience || '')
-    setPostingFrequency(profile.posting_frequency || 'weekly')
-    
-    // Load content pillars
-    if (profile.content_pillars && Array.isArray(profile.content_pillars)) {
-      setContentPillars(prev => prev.map(pillar => ({
-        ...pillar,
-        selected: profile.content_pillars?.includes(pillar.id) || false
-      })))
+  // ===== DATA LOADING =====
+  useEffect(() => {
+    if (user && profile) {
+      // Load account data
+      setAccountData({
+        firstName: '',
+        lastName: '',
+        email: user.email || '',
+        role: profile.role || ''
+      })
+      
+      // Load content preferences
+      setSelectedPersona(profile.preferred_tone || 'insightful_cfo')
+      setTargetAudience(profile.target_audience || '')
+      setPostingFrequency(profile.posting_frequency || 'weekly')
+      
+      // Load content pillars
+      if (profile.content_pillars && Array.isArray(profile.content_pillars)) {
+        setContentPillars(prev => prev.map(pillar => ({
+          ...pillar,
+          selected: profile.content_pillars?.includes(pillar.id) || false
+        })))
+      }
+      
+      // Extract email parts for default names
+      if (user.email) {
+        const emailParts = user.email.split('@')[0].split('.')
+        setAccountData(prev => ({
+          ...prev,
+          firstName: emailParts[0]?.charAt(0).toUpperCase() + emailParts[0]?.slice(1) || '',
+          lastName: emailParts[1]?.charAt(0).toUpperCase() + emailParts[1]?.slice(1) || ''
+        }))
+      }
     }
-    
-    // Extract email parts for default names
-    if (user.email) {
-      const emailParts = user.email.split('@')[0].split('.')
-      setAccountData(prev => ({
-        ...prev,
-        firstName: emailParts[0]?.charAt(0).toUpperCase() + emailParts[0]?.slice(1) || '',
-        lastName: emailParts[1]?.charAt(0).toUpperCase() + emailParts[1]?.slice(1) || ''
-      }))
-    }
-  }
-}, [user, profile])
+  }, [user, profile])
 
   // ===== DATA DEFINITIONS =====
   const settingsSections = [
@@ -186,13 +188,13 @@ useEffect(() => {
         .filter(pillar => pillar.selected)
         .map(pillar => pillar.id)
       
-     await updateUserProfile(user.id, {
-  role: accountData.role,
-  preferred_tone: selectedPersona,
-  content_pillars: selectedPillars,
-  target_audience: targetAudience,
-  posting_frequency: postingFrequency
-})
+      await updateUserProfile(user.id, {
+        role: accountData.role,
+        preferred_tone: selectedPersona,
+        content_pillars: selectedPillars,
+        target_audience: targetAudience,
+        posting_frequency: postingFrequency
+      })
       
       await refreshProfile()
       setSaved(true)
@@ -529,6 +531,7 @@ useEffect(() => {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <SidebarNavigation />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="bg-white border-b px-6 py-4">
