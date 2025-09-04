@@ -186,15 +186,13 @@ useEffect(() => {
         .filter(pillar => pillar.selected)
         .map(pillar => pillar.id)
       
-      await updateUserProfile(user.id, {
-        first_name: accountData.firstName,
-        last_name: accountData.lastName,
-        role: accountData.role,
-        preferred_tone: selectedPersona,
-        content_pillars: selectedPillars,
-        target_audience: targetAudience,
-        posting_frequency: postingFrequency
-      })
+     await updateUserProfile(user.id, {
+  role: accountData.role,
+  preferred_tone: selectedPersona,
+  content_pillars: selectedPillars,
+  target_audience: targetAudience,
+  posting_frequency: postingFrequency
+})
       
       await refreshProfile()
       setSaved(true)
