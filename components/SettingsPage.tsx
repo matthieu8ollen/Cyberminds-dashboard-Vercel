@@ -158,7 +158,7 @@ useEffect(() => {
       tone: "Thoughtful, experienced, advisory",
     },
     {
-      id: "data-driven_expert",
+      id: "data_driven_expert",
       name: "Data-Driven Expert",
       description: "Evidence-based insights with analytical depth",
       tone: "Precise, factual, research-oriented",
