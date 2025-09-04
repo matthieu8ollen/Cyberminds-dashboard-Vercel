@@ -358,8 +358,9 @@ const SettingsPage = () => {
     </div>
   </CardContent>
 </Card>
-
-
+))}
+</CardContent>
+</Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-emerald-800">Content Focus Areas</CardTitle>
@@ -531,13 +532,31 @@ const SettingsPage = () => {
   )
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-emerald-800">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account preferences and Writer Suite configuration</p>
-      </div>
+    <div className="flex h-screen bg-gray-50">
+  <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+     {/* Header */}
+<div className="bg-white border-b border-gray-200 px-6 py-4">
+  <Breadcrumb>
+    <BreadcrumbList>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/" className="flex items-center gap-2">
+          <Home className="h-4 w-4" />
+          Dashboard
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        <BreadcrumbPage>Settings</BreadcrumbPage>
+      </BreadcrumbItem>
+    </BreadcrumbList>
+  </Breadcrumb>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+  <div className="mt-4">
+    <h1 className="text-3xl font-medium tracking-tight text-balance font-sans text-emerald-800">Settings</h1>
+    <p className="text-gray-600 text-pretty">Manage your account preferences and Writer Suite configuration</p>
+  </div>
+</div>
+      <div className="flex overflow-hidden">
         <div className="lg:w-64 flex-shrink-0">
           <nav className="space-y-1">
             {settingsSections.map(section => {
@@ -590,12 +609,13 @@ const SettingsPage = () => {
                     Save Changes
                   </>
                 )}
-              </Button>
+</Button>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </div>  
+  </div>
   )
 }
 
