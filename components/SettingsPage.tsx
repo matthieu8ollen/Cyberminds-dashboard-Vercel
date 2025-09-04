@@ -561,66 +561,64 @@ const SettingsPage = () => {
   </div>
 </div>
       <div className="flex overflow-hidden">
-        <div className="lg:w-64 flex-shrink-0">
-          <nav className="space-y-1">
-            {settingsSections.map(section => {
-              const Icon = section.icon
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition ${
-                    activeSection === section.id
-                      ? 'bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{section.label}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
-
-        <div className="flex-1">
-          {activeSection === 'account' && renderAccountTab()}
-          {activeSection === 'content' && renderContentTab()}
-          {activeSection === 'notifications' && renderNotificationsTab()}
-          {activeSection === 'billing' && renderBillingTab()}
-          {activeSection === 'privacy' && renderPrivacyTab()}
-
-          {(activeSection === 'account' || activeSection === 'content' || activeSection === 'notifications') && (
-            <div className="mt-8 flex justify-end space-x-4">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90"
-              >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Saving...
-                  </>
-                ) : saved ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Saved!
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-</Button>
-            </div>
+  {/* Left Navigation */}
+  <div className="w-64 bg-white border-r border-gray-200 p-4">
+    <nav className="space-y-2">
+      {settingsSections.map((section) => (
+        <Button
+          key={section.id}
+          variant={activeSection === section.id ? "default" : "ghost"}
+          className={cn(
+            "w-full justify-start gap-3 h-12",
+            activeSection === section.id && "bg-emerald-100 text-emerald-800 hover:bg-emerald-200",
           )}
-        </div>
-      </div>
-    </div>  
+          onClick={() => setActiveSection(section.id)}
+        >
+          <section.icon className="h-5 w-5" />
+          {section.label}
+        </Button>
+      ))}
+    </nav>
   </div>
-  )
-}
 
+  {/* Right Content */}
+  <div className="flex-1 overflow-auto p-6">
+    {activeSection === 'account' && renderAccountTab()}
+    {activeSection === 'content' && renderContentTab()}
+    {activeSection === 'notifications' && renderNotificationsTab()}
+    {activeSection === 'billing' && renderBillingTab()}
+    {activeSection === 'privacy' && renderPrivacyTab()}
+
+    {(activeSection === 'account' || activeSection === 'content' || activeSection === 'notifications') && (
+      <div className="mt-8 flex justify-end space-x-4">
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90"
+        >
+          {saving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Saving...
+            </>
+          ) : saved ? (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Saved!
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Save Changes
+            </>
+          )}
+        </Button>
+      </div>
+    )}
+  </div>
+</div>
+</div>  
+</div>
+)
+}
 export default SettingsPage;
