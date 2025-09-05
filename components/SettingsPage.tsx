@@ -326,14 +326,14 @@ const SettingsPage = () => {
       </CardContent>
     </Card>
   </div>
-)
+)  
   
- const renderContentTab = () => (
+const renderContentTab = () => (
   <div className="space-y-6 max-w-2xl">
     {/* AI Writing Persona Section */}
     <div>
-      <h3 className="leading-none font-semibold mb-4">  AI Writing Persona</h3>
-      <p className="text-muted-foreground text-sm mb-4">  {Choose your AI writing style and tone</p>
+<h3 className="leading-none font-semibold mb-4">AI Writing Persona</h3>
+<p className="text-muted-foreground text-sm mb-4">Choose your AI writing style and tone</p>
       
       <div className="space-y-4">
         <div>
@@ -461,7 +461,7 @@ const SettingsPage = () => {
     </div>
   </CardContent>
 </Card>
-      </div>
+  </div>
 )
 
   const renderNotificationsTab = () => (
