@@ -102,6 +102,11 @@ a {
   background: #94a3b8;
 }
 
+/* Input background styling */
+input:not(:disabled), 
+textarea:not(:disabled) {
+  background-color: white !important;
+}
 
 
 @layer base {
