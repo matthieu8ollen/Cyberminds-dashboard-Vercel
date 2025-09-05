@@ -104,10 +104,13 @@ a {
 
 /* Input background styling */
 input:not(:disabled), 
-textarea:not(:disabled) {
+textarea:not(:disabled),
+select:not(:disabled),
+[role="combobox"]:not([aria-disabled="true"]),
+.select-trigger:not([data-disabled]),
+[data-slot="select-trigger"]:not([data-disabled]) {
   background-color: white !important;
 }
-
 
 @layer base {
   :root {
