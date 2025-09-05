@@ -124,14 +124,24 @@ select:not(:disabled),
   border-color: #065f46 !important;
 }
 
-/* Green headings */
-h1, h2, h3, h4, h5, h6,
-.text-3xl,
-.text-2xl,
-.text-xl,
-.text-lg,
-[data-slot="card-title"] {
-  color: #059669 !important; /* emerald-600 */
+/* Green headings - more specific selectors */
+.text-emerald-800,
+h1.text-3xl,
+[data-slot="card-title"],
+.leading-none.font-semibold {
+  color: #059669 !important;
+}
+
+/* Card titles specifically */
+.card h3,
+.card [data-slot="card-title"],
+.space-y-6 h3 {
+  color: #059669 !important;
+}
+
+/* Settings main heading */
+h1[class*="text-emerald"] {
+  color: #059669 !important;
 }
 
 /* Settings page main heading specifically */
