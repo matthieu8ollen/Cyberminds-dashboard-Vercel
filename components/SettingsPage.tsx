@@ -35,7 +35,8 @@ import {
   Trash2,
   Linkedin,
   Plus,
-  X
+  X,
+  AlertTriangle 
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Progress } from './ui/progress'
@@ -326,14 +327,14 @@ const SettingsPage = () => {
     </Card>
   </div>
 )
-  const renderContentTab = () => (
+ const renderContentTab = () => (
   <div className="space-y-6 max-w-2xl">
-    <Card>
-      <CardHeader>
-        <CardTitle>AI Writing Persona</CardTitle>
-        <CardDescription>Choose the professional voice that best matches your style</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    {/* AI Writing Persona Section */}
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Writing Persona</h3>
+      <p className="text-sm text-gray-600 mb-4">Choose your AI writing style and tone</p>
+      
+      <div className="space-y-4">
         <div>
           <Label className="block text-sm font-medium text-gray-700 mb-2">Preferred Tone</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -341,102 +342,118 @@ const SettingsPage = () => {
               <div
                 key={persona.id}
                 onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
-                className={`p-3 border-2 rounded-lg cursor-pointer transition ${
+                className={`p-4 border-2 rounded-lg cursor-pointer transition ${
                   selectedPersona === persona.id
                     ? 'border-emerald-500 bg-emerald-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="font-medium text-gray-900">{persona.name}</div>
-                <div className="text-sm text-gray-600">{persona.description}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  <strong>Tone:</strong> {persona.tone}
+                <div className="font-medium text-gray-900 mb-1">{persona.name}</div>
+                <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
+                <div className="text-xs text-gray-500">
+                  <span className="font-medium">Tone:</span> {persona.tone}
                 </div>
               </div>
             ))}
           </div>
         </div>
+      </div>
+    </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="audience">Target Audience</Label>
-            <Select value={targetAudience} onValueChange={setTargetAudience}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your audience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fellow_cfos">Fellow CFOs</SelectItem>
-                <SelectItem value="startup_founders">Startup Founders</SelectItem>
-                <SelectItem value="finance_professionals">Finance Professionals</SelectItem>
-                <SelectItem value="potential_clients">Potential Clients</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="frequency">Posting Frequency</Label>
-            <Select value={postingFrequency} onValueChange={setPostingFrequency}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="biweekly">Bi-weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    {/* Target Audience & Posting Section */}
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Target Audience & Posting</h3>
+      <p className="text-sm text-gray-600 mb-4">Configure your audience and posting preferences</p>
+      
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</Label>
+          <Select value={targetAudience} onValueChange={setTargetAudience}>
+            <SelectTrigger>
+              <SelectValue placeholder="C-Suite Executives" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fellow_cfos">Fellow CFOs</SelectItem>
+              <SelectItem value="startup_founders">Startup Founders</SelectItem>
+              <SelectItem value="finance_professionals">Finance Professionals</SelectItem>
+              <SelectItem value="potential_clients">Potential Clients</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
-
-    <Card>
-      <CardHeader>
-        <CardTitle>Content Focus Areas</CardTitle>
-        <CardDescription>Select topics for better personalized suggestions</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {contentPillars.map(pillar => (
-            <div
-              key={pillar.id}
-              className={`flex items-center justify-between p-3 border rounded-lg ${
-                pillar.selected ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Checkbox
-                  checked={pillar.selected}
-                  onCheckedChange={() => handlePillarToggle(pillar.id)}
-                />
-                <span className="text-sm font-medium text-gray-900">{pillar.name}</span>
-              </div>
-              {pillar.type === 'custom' && (
-                <Button
-                  onClick={() => removePillar(pillar.id)}
-                  size="sm"
-                  variant="ghost"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          ))}
+        <div>
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Industry</Label>
+          <Select defaultValue="saas_technology">
+            <SelectTrigger>
+              <SelectValue placeholder="SaaS & Technology" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="saas_technology">SaaS & Technology</SelectItem>
+              <SelectItem value="finance">Finance</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        <div>
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</Label>
+          <Select value={postingFrequency} onValueChange={setPostingFrequency}>
+            <SelectTrigger>
+              <SelectValue placeholder="Weekly" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="biweekly">Bi-weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
 
-        <div className="flex gap-2">
+    {/* Content Pillars Section */}
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Pillars</h3>
+      <p className="text-sm text-gray-600 mb-4">Select topics you want to create content about</p>
+      
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {contentPillars.map(pillar => (
+          <div key={pillar.id} className="flex items-center space-x-3">
+            <Checkbox
+              checked={pillar.selected}
+              onCheckedChange={() => handlePillarToggle(pillar.id)}
+              className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+            />
+            <Label className="text-sm font-medium text-gray-900 cursor-pointer">
+              {pillar.name}
+            </Label>
+            {pillar.type === 'custom' && (
+              <Button
+                onClick={() => removePillar(pillar.id)}
+                size="sm"
+                variant="ghost"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">Add Custom Pillar</Label>
+        <div className="flex space-x-2">
           <Input
             value={newCustomPillar}
             onChange={(e) => setNewCustomPillar(e.target.value)}
-            placeholder="Add custom content pillar..."
+            placeholder="Enter custom topic..."
+            className="flex-1"
             onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
           />
           <Button onClick={addCustomPillar} variant="outline">
-            <Plus className="w-4 h-4" />
+            Add
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   </div>
 )
 
@@ -474,66 +491,126 @@ const SettingsPage = () => {
     </div>
   )
 
-  const renderBillingTab = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Billing & Subscription</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="w-8 h-8 text-emerald-600" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Billing Management</h4>
-            <p className="text-gray-600 mb-6">
-              Subscription management, payment methods, and billing history will be available soon.
-            </p>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              Contact Support
-            </Button>
+const renderBillingTab = () => (
+  <div className="space-y-6 max-w-2xl">
+    <Card>
+      <CardHeader>
+        <CardTitle>Current Subscription</CardTitle>
+        <CardDescription>Professional Plan - $49/month</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-sm font-medium text-gray-700">Next billing date</Label>
+            <p className="text-sm text-gray-900">January 15, 2025</p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+          <div>
+            <Label className="text-sm font-medium text-gray-700">Payment method</Label>
+            <p className="text-sm text-gray-900">•••• •••• •••• 4242</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">Change Plan</Button>
+          <Button variant="outline" size="sm">Update Payment</Button>
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Download Invoice
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
 
-  const renderPrivacyTab = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-emerald-800">Privacy & Data</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Export Your Data</div>
-                <div className="text-sm text-gray-600">Download all your content and settings</div>
-              </div>
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle>Usage Analytics</CardTitle>
+        <CardDescription>Track your monthly usage and limits</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-700">Posts generated</span>
+              <span className="text-gray-900">23 / 50</span>
             </div>
+            <Progress value={46} className="h-2" />
           </div>
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-700">AI enhancements used</span>
+              <span className="text-gray-900">156 / 200</span>
+            </div>
+            <Progress value={78} className="h-2" />
+          </div>
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-700">Images generated</span>
+              <span className="text-gray-900">8 / 25</span>
+            </div>
+            <Progress value={32} className="h-2" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+)
+
+const renderPrivacyTab = () => (
+  <div className="space-y-6 max-w-2xl">
+    <Card>
+      <CardHeader>
+        <CardTitle>Data Management</CardTitle>
+        <CardDescription>Export and manage your data</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div>
+            <div className="font-medium">Export all data</div>
+            <div className="text-sm text-gray-600">Download all your content, settings, and analytics</div>
+          </div>
+          <Button>
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div>
+            <div className="font-medium">Export content only</div>
+            <div className="text-sm text-gray-600">Download just your posts and drafts</div>
+          </div>
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+
+    <div className="p-6 border border-red-200 rounded-lg bg-red-50">
+      <div className="flex items-start">
+        <div className="w-5 h-5 text-red-500 mr-3 mt-0.5">⚠️</div>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-red-900 mb-1">Danger Zone</h3>
+          <p className="text-sm text-red-700 mb-4">Irreversible actions that will permanently affect your account</p>
           
-          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-red-900">Delete Account</div>
-                <div className="text-sm text-red-700">Permanently delete your account and all data</div>
+          <div className="p-4 border border-red-200 rounded-lg bg-white">
+            <div className="flex items-start">
+              <div className="w-5 h-5 text-red-500 mr-3 mt-0.5">⚠️</div>
+              <div className="flex-1">
+                <p className="text-sm text-red-900 mb-4">
+                  Deleting your account will permanently remove all your data, including posts, drafts, and analytics. This action cannot be undone.
+                </p>
+                <Button variant="destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Account
+                </Button>
               </div>
-              <Button variant="destructive">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
-  )
+  </div>
+)
 
   return (
     <div className="flex h-screen bg-gray-50">
