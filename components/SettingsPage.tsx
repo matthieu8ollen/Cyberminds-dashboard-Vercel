@@ -361,101 +361,105 @@ const SettingsPage = () => {
     </div>
 
     {/* Target Audience & Posting Section */}
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Target Audience & Posting</h3>
-      <p className="text-sm text-gray-600 mb-4">Configure your audience and posting preferences</p>
-      
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</Label>
-          <Select value={targetAudience} onValueChange={setTargetAudience}>
-            <SelectTrigger>
-              <SelectValue placeholder="C-Suite Executives" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fellow_cfos">Fellow CFOs</SelectItem>
-              <SelectItem value="startup_founders">Startup Founders</SelectItem>
-              <SelectItem value="finance_professionals">Finance Professionals</SelectItem>
-              <SelectItem value="potential_clients">Potential Clients</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Industry</Label>
-          <Select defaultValue="saas_technology">
-            <SelectTrigger>
-              <SelectValue placeholder="SaaS & Technology" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="saas_technology">SaaS & Technology</SelectItem>
-              <SelectItem value="finance">Finance</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</Label>
-          <Select value={postingFrequency} onValueChange={setPostingFrequency}>
-            <SelectTrigger>
-              <SelectValue placeholder="Weekly" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="biweekly">Bi-weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Target Audience & Posting</CardTitle>
+    <CardDescription>Configure your audience and posting preferences</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-3 gap-4">
+      <div>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</Label>
+        <Select value={targetAudience} onValueChange={setTargetAudience}>
+          <SelectTrigger>
+            <SelectValue placeholder="C-Suite Executives" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="fellow_cfos">Fellow CFOs</SelectItem>
+            <SelectItem value="startup_founders">Startup Founders</SelectItem>
+            <SelectItem value="finance_professionals">Finance Professionals</SelectItem>
+            <SelectItem value="potential_clients">Potential Clients</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">Industry</Label>
+        <Select defaultValue="saas_technology">
+          <SelectTrigger>
+            <SelectValue placeholder="SaaS & Technology" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="saas_technology">SaaS & Technology</SelectItem>
+            <SelectItem value="finance">Finance</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</Label>
+        <Select value={postingFrequency} onValueChange={setPostingFrequency}>
+          <SelectTrigger>
+            <SelectValue placeholder="Weekly" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="weekly">Weekly</SelectItem>
+            <SelectItem value="daily">Daily</SelectItem>
+            <SelectItem value="biweekly">Bi-weekly</SelectItem>
+            <SelectItem value="monthly">Monthly</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
+  </CardContent>
+</Card>
 
     {/* Content Pillars Section */}
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Pillars</h3>
-      <p className="text-sm text-gray-600 mb-4">Select topics you want to create content about</p>
-      
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        {contentPillars.map(pillar => (
-          <div key={pillar.id} className="flex items-center space-x-3">
-            <Checkbox
-              checked={pillar.selected}
-              onCheckedChange={() => handlePillarToggle(pillar.id)}
-              className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-            />
-            <Label className="text-sm font-medium text-gray-900 cursor-pointer">
-              {pillar.name}
-            </Label>
-            {pillar.type === 'custom' && (
-              <Button
-                onClick={() => removePillar(pillar.id)}
-                size="sm"
-                variant="ghost"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Add Custom Pillar</Label>
-        <div className="flex space-x-2">
-          <Input
-            value={newCustomPillar}
-            onChange={(e) => setNewCustomPillar(e.target.value)}
-            placeholder="Enter custom topic..."
-            className="flex-1"
-            onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
+<Card>
+  <CardHeader>
+    <CardTitle>Content Pillars</CardTitle>
+    <CardDescription>Select topics you want to create content about</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="grid grid-cols-3 gap-4">
+      {contentPillars.map(pillar => (
+        <div key={pillar.id} className="flex items-center space-x-3">
+          <Checkbox
+            checked={pillar.selected}
+            onCheckedChange={() => handlePillarToggle(pillar.id)}
+            className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
           />
-          <Button onClick={addCustomPillar} variant="outline">
-            Add
-          </Button>
+          <Label className="text-sm font-medium text-gray-900 cursor-pointer">
+            {pillar.name}
+          </Label>
+          {pillar.type === 'custom' && (
+            <Button
+              onClick={() => removePillar(pillar.id)}
+              size="sm"
+              variant="ghost"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
+      ))}
+    </div>
+
+    <div>
+      <Label className="block text-sm font-medium text-gray-700 mb-2">Add Custom Pillar</Label>
+      <div className="flex space-x-2">
+        <Input
+          value={newCustomPillar}
+          onChange={(e) => setNewCustomPillar(e.target.value)}
+          placeholder="Enter custom topic..."
+          className="flex-1"
+          onKeyPress={(e) => e.key === 'Enter' && addCustomPillar()}
+        />
+        <Button onClick={addCustomPillar} variant="outline">
+          Add
+        </Button>
       </div>
     </div>
-  </div>
-)
+  </CardContent>
+</Card>
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
