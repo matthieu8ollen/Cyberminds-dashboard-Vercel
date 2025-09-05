@@ -274,7 +274,7 @@ const SettingsPage = () => {
             disabled
             placeholder="your.email@company.com"
           />
-          <p className="text-xs text-gray-500">Email cannot be changed. Contact support if needed.</p>
+          <p className="text-xs text-muted-foreground">Email cannot be changed. Contact support if needed.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -311,7 +311,7 @@ const SettingsPage = () => {
             </div>
             <div>
               <div className="font-medium">LinkedIn</div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 {isLinkedInConnected ? 'Connected and ready to publish' : 'Connect to publish directly'}
               </div>
             </div>
@@ -349,9 +349,9 @@ const renderContentTab = () => (
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="font-medium text-gray-900 mb-1">{persona.name}</div>
-                <div className="text-sm text-gray-600 mb-2">{persona.description}</div>
-                <div className="text-xs text-gray-500">
+               <div className="font-medium text-foreground mb-1">{persona.name}</div>
+               <div className="text-sm text-muted-foreground mb-2">{persona.description}</div>
+               <div className="text-xs text-muted-foreground">
                   <span className="font-medium">Tone:</span> {persona.tone}
                 </div>
               </div>
@@ -428,7 +428,7 @@ const renderContentTab = () => (
             onCheckedChange={() => handlePillarToggle(pillar.id)}
             className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
           />
-          <Label className="text-sm font-medium text-gray-900 cursor-pointer">
+          <Label className="text-sm font-medium cursor-pointer">
             {pillar.name}
           </Label>
           {pillar.type === 'custom' && (
@@ -468,7 +468,7 @@ const renderContentTab = () => (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-emerald-800">Notification Preferences</CardTitle>
+          <CardTitle>Notification Preferences</CardTitle>
           <CardDescription>Manage how you receive updates</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -484,7 +484,7 @@ const renderContentTab = () => (
   <CardContent className="flex items-center justify-between p-4">
               <div>
                 <div className="font-medium">{label}</div>
-                <div className="text-sm text-gray-600">{description}</div>
+                <div className="text-muted-foreground text-sm">{description}</div>
               </div>
               <Switch
                 checked={notifications[key as keyof typeof notifications]}
@@ -508,11 +508,11 @@ const renderBillingTab = () => (
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label className="text-sm font-medium text-gray-700">Next billing date</Label>
+            <Label className="text-sm font-medium">Next billing date</Label>
             <p className="text-sm text-gray-900">January 15, 2025</p>
           </div>
           <div>
-            <Label className="text-sm font-medium text-gray-700">Payment method</Label>
+            <Label className="text-sm font-medium">Payment method</Label>
             <p className="text-sm text-gray-900">•••• •••• •••• 4242</p>
           </div>
         </div>
@@ -536,8 +536,8 @@ const renderBillingTab = () => (
         <div className="space-y-3">
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-700">Posts generated</span>
-              <span className="text-gray-900">23 / 50</span>
+             <span className="text-muted-foreground">Posts generated</span>
+             <span className="text-foreground">23 / 50</span>
             </div>
             <Progress value={46} className="h-2" />
           </div>
@@ -572,7 +572,7 @@ const renderPrivacyTab = () => (
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div>
             <div className="font-medium">Export all data</div>
-            <div className="text-sm text-gray-600">Download all your content, settings, and analytics</div>
+            <div className="text-muted-foreground text-sm">Download all your content, settings, and analytics</div>
           </div>
           <Button>
             <Download className="w-4 h-4 mr-2" />
