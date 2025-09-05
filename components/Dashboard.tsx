@@ -22,7 +22,6 @@ import StandardGenerator from './StandardGenerator'
 import { aiImprovementService } from '../lib/aiImprovementService'
 import { schedulingService } from '../lib/schedulingService'
 import { linkedInAPI, useLinkedInAuth } from '../lib/linkedInAPI'
-import SettingsPage from './SettingsPage'
 import MarcusCopilot from './MarcusCopilot'
 import SchedulingModal from './SchedulingModal'
 import ImageGeneration from './ImageGeneration'
@@ -809,7 +808,8 @@ return (
         return <ContentCalendar />
       
       case 'settings':
-        return <SettingsPage />
+  window.location.href = '/settings'
+  return null
 
         case 'images':
 return (
