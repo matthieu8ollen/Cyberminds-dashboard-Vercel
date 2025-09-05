@@ -327,6 +327,7 @@ const SettingsPage = () => {
     </Card>
   </div>
 )
+  
  const renderContentTab = () => (
   <div className="space-y-6 max-w-2xl">
     {/* AI Writing Persona Section */}
