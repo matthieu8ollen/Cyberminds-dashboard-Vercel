@@ -112,6 +112,27 @@ select:not(:disabled),
   background-color: white !important;
 }
 
+/* Checkbox styling */
+[type="checkbox"]:checked {
+  background-color: #059669 !important; /* emerald-600 */
+  border-color: #059669 !important;
+}
+
+[type="checkbox"]:focus {
+  ring-color: #059669 !important;
+  border-color: #059669 !important;
+}
+
+/* Progress bar styling */
+[data-slot="progress-indicator"] {
+  background-color: #059669 !important; /* emerald-600 */
+}
+
+.progress-bar,
+[role="progressbar"] > div {
+  background-color: #059669 !important; /* emerald-600 */
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -120,7 +141,7 @@ select:not(:disabled),
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 160 84% 39%; 
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
