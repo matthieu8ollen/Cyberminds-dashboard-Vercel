@@ -114,13 +114,13 @@ select:not(:disabled),
 
 /* Checkbox styling */
 [type="checkbox"]:checked {
-  background-color: #059669 !important; /* emerald-600 */
-  border-color: #059669 !important;
+  background-color: #065f46 !important; /* emerald-800 - dark green */
+  border-color: #065f46 !important;
 }
 
 [type="checkbox"]:focus {
-  ring-color: #059669 !important;
-  border-color: #059669 !important;
+  ring-color: #065f46 !important;
+  border-color: #065f46 !important;
 }
 
 /* Progress bar styling */
