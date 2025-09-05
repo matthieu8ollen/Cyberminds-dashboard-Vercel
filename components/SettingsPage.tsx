@@ -326,7 +326,7 @@ const SettingsPage = () => {
       </CardContent>
     </Card>
   </div>
- )  
+ )
 }
 
 const renderContentTab = () => (
