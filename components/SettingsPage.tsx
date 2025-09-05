@@ -461,6 +461,8 @@ const SettingsPage = () => {
     </div>
   </CardContent>
 </Card>
+      </div>
+)
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
