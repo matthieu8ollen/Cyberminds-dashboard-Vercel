@@ -330,36 +330,37 @@ const SettingsPage = () => {
   
 const renderContentTab = () => (
   <div className="space-y-6 max-w-2xl">
-    {/* AI Writing Persona Section */}
+{/* AI Writing Persona Section */}
+<Card>
+  <CardHeader>
+    <CardTitle>AI Writing Persona</CardTitle>
+    <CardDescription>Choose your AI writing style and tone</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-4">
     <div>
-<h3 className="leading-none font-semibold mb-4">AI Writing Persona</h3>
-<p className="text-muted-foreground text-sm mb-4">Choose your AI writing style and tone</p>
-      
-      <div className="space-y-4">
-        <div>
-          <Label className="text-sm font-medium">Preferred Tone</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {aiPersonas.map(persona => (
-              <div
-                key={persona.id}
-                onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition ${
-                  selectedPersona === persona.id
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-               <div className="font-medium text-foreground mb-1">{persona.name}</div>
-               <div className="text-sm text-muted-foreground mb-2">{persona.description}</div>
-               <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">Tone:</span> {persona.tone}
-                </div>
-              </div>
-            ))}
+      <Label className="text-sm font-medium">Preferred Tone</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {aiPersonas.map(persona => (
+          <div
+            key={persona.id}
+            onClick={() => setSelectedPersona(persona.id as AiPersonaId)}
+            className={`p-4 border-2 rounded-lg cursor-pointer transition ${
+              selectedPersona === persona.id
+                ? 'border-emerald-500 bg-emerald-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="font-medium text-foreground mb-1">{persona.name}</div>
+            <div className="text-sm text-muted-foreground mb-2">{persona.description}</div>
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Tone:</span> {persona.tone}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
+  </CardContent>
+</Card>
 
     {/* Target Audience & Posting Section */}
 <Card>
