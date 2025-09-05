@@ -332,12 +332,12 @@ const SettingsPage = () => {
   <div className="space-y-6 max-w-2xl">
     {/* AI Writing Persona Section */}
     <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Writing Persona</h3>
-      <p className="text-sm text-gray-600 mb-4">Choose your AI writing style and tone</p>
+      <h3 className="leading-none font-semibold mb-4">  AI Writing Persona</h3>
+      <p className="text-muted-foreground text-sm mb-4">  {Choose your AI writing style and tone</p>
       
       <div className="space-y-4">
         <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Preferred Tone</Label>
+          <Label className="text-sm font-medium">Preferred Tone</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {aiPersonas.map(persona => (
               <div
@@ -370,7 +370,7 @@ const SettingsPage = () => {
   <CardContent>
     <div className="grid grid-cols-3 gap-4">
       <div>
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</Label>
+        <Label className="text-sm font-medium">Target Audience</Label>
         <Select value={targetAudience} onValueChange={setTargetAudience}>
           <SelectTrigger>
             <SelectValue placeholder="C-Suite Executives" />
@@ -384,7 +384,7 @@ const SettingsPage = () => {
         </Select>
       </div>
       <div>
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Industry</Label>
+        <Label className="text-sm font-medium">Industry</Label>
         <Select defaultValue="saas_technology">
           <SelectTrigger>
             <SelectValue placeholder="SaaS & Technology" />
@@ -396,7 +396,7 @@ const SettingsPage = () => {
         </Select>
       </div>
       <div>
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Posting Frequency</Label>
+        <Label className="text-sm font-medium">Posting Frequency</Label>
         <Select value={postingFrequency} onValueChange={setPostingFrequency}>
           <SelectTrigger>
             <SelectValue placeholder="Weekly" />
@@ -445,7 +445,7 @@ const SettingsPage = () => {
     </div>
 
     <div>
-      <Label className="block text-sm font-medium text-gray-700 mb-2">Add Custom Pillar</Label>
+      <Label className="text-sm font-medium">Add Custom Pillar</Label>
       <div className="flex space-x-2">
         <Input
           value={newCustomPillar}
