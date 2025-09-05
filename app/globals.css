@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://api.fonts.coollabs.io/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -20,7 +21,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', 'Inter', sans-serif;
 }
 
 a {
@@ -121,6 +122,21 @@ select:not(:disabled),
 [type="checkbox"]:focus {
   ring-color: #065f46 !important;
   border-color: #065f46 !important;
+}
+
+/* Green headings */
+h1, h2, h3, h4, h5, h6,
+.text-3xl,
+.text-2xl,
+.text-xl,
+.text-lg,
+[data-slot="card-title"] {
+  color: #059669 !important; /* emerald-600 */
+}
+
+/* Settings page main heading specifically */
+.text-emerald-800 {
+  color: #059669 !important;
 }
 
 /* Progress bar styling */
