@@ -474,10 +474,11 @@ export default function DashboardPage() {
                           <Eye className="w-4 h-4" />
                         </Button>
                         <InteractiveHoverButton
-                          text="Edit"
-                          className="w-16 h-8 text-xs"
-                          onClick={() => handleNavigateToPage(`edit/${post.id}`)}
-                        />
+  className="w-16 h-8 text-xs"
+  onClick={() => handleNavigateToPage(`edit/${post.id}`)}
+>
+  Edit
+</InteractiveHoverButton>
                       </div>
                     </div>
                   </Card>
