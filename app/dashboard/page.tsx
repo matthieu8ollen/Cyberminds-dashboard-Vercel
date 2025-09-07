@@ -421,21 +421,21 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {featureCards.map((card) => {
-              const IconComponent = card.icon
+            {navigationFeatures.map((feature) => {
+              const IconComponent = feature.icon
               return (
                 <Card 
-                  key={card.id} 
+                  key={feature.id} 
                   className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 overflow-hidden"
-                  onClick={() => handleNavigateToPage(card.href.slice(1))}
+                  onClick={() => handleNavigateToPage(feature.href.slice(1))}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className={cn(
-                        "w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center",
-                        card.color
+                        "w-12 h-12 rounded-lg flex items-center justify-center",
+                        feature.bgColor
                       )}>
-                        <IconComponent className="w-6 h-6 text-white" />
+                        <IconComponent className={cn("w-6 h-6", feature.color)} />
                       </div>
                       <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
@@ -443,17 +443,17 @@ export default function DashboardPage() {
                   <CardContent className="space-y-3">
                     <div className="space-y-1">
                       <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {card.title}
+                        {feature.title}
                       </CardTitle>
                       <CardDescription className="text-sm">
-                        {card.description}
+                        {feature.description}
                       </CardDescription>
                     </div>
                     
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{card.preview}</span>
+                      <span className="text-muted-foreground">{feature.preview}</span>
                       <Badge variant="secondary" className="text-xs">
-                        {card.stats.value}
+                        {feature.stats}
                       </Badge>
                     </div>
                   </CardContent>
