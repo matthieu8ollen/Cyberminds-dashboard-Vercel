@@ -339,10 +339,11 @@ export default function DashboardPage() {
                 {user?.plan} Plan
               </Badge>
               <InteractiveHoverButton
-                <InteractiveHoverButton>Create Content</InteractiveHoverButton>
-                className="bg-primary hover:bg-primary/90 text-white"
-                onClick={() => handleCreateContent()}
-              />
+  className="bg-primary hover:bg-primary/90 text-white"
+  onClick={() => handleCreateContent()}
+>
+  Create Content
+</InteractiveHoverButton>
             </div>
           </div>
           
