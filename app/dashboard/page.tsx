@@ -466,7 +466,7 @@ export default function DashboardPage() {
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           <span>{new Date(post.scheduled_date).toLocaleDateString()}</span>
-                          <Badge variant="outline" size="sm">{post.type}</Badge>
+                          <Badge variant="outline">{post.type}</Badge>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
