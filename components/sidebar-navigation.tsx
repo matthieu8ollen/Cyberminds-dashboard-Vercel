@@ -10,7 +10,8 @@ import { Home,
         BarChart,
         Rss,
         Settings,
-        ChevronRight
+        ChevronRight,
+        ChevronLeft
        } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
