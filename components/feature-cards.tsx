@@ -90,7 +90,7 @@ export function FeatureCards() {
   className="w-20 h-8 text-xs bg-muted text-muted-foreground rounded-full"
   onClick={() => handleCardClick(feature.href)}
 >
-  Open →
+  Open
 </InteractiveHoverButton>
               </div>
             </CardContent>
