@@ -12,8 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FocusCards } from "@/components/ui/focus-cards"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
-import { TweetCard } from "@/components/magicui/tweet-card"
-import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
+import { InteractiveHoverButton } from "@/components/interactive-hover-button"
 import {
   Lightbulb,
   Sparkles,
@@ -245,59 +244,27 @@ export default function DashboardPage() {
     // Implement your inspiration post actions
   }
 
-  // Feature cards for main navigation hub
-  const featureCards = [
+  // FocusCards data for main navigation hub (as per Dashboard Page plan)
+  const focusCardsData = [
     {
-      id: "ideation",
       title: "Ideation Hub",
-      description: "Generate ideas with Marcus AI",
-      icon: Lightbulb,
-      preview: `${trendingTopics.length} trending topics`,
-      color: "from-blue-500 to-cyan-500",
-      href: "/ideas",
-      stats: {
-        label: "Ideas generated",
-        value: "47 this week"
-      }
+      src: "/dashboard/ideation-hero.jpg", // Add these images to your public folder
+      onClick: () => handleNavigateToPage('ideas')
     },
     {
-      id: "writer-suite",
       title: "Writer Suite", 
-      description: "Create professional content",
-      icon: Sparkles,
-      preview: "Advanced AI writing tools",
-      color: "from-purple-500 to-pink-500", 
-      href: "/writer-suite",
-      stats: {
-        label: "Posts created",
-        value: `${user?.usage.posts_generated || 0}/${user?.usage.monthly_limit || 100}`
-      }
+      src: "/dashboard/writer-suite-hero.jpg",
+      onClick: () => handleNavigateToPage('writer-suite')
     },
     {
-      id: "analytics",
       title: "Performance Tracking",
-      description: "Track your content success",
-      icon: BarChart3,
-      preview: "Real-time engagement metrics",
-      color: "from-green-500 to-emerald-500",
-      href: "/analytics", 
-      stats: {
-        label: "Avg engagement",
-        value: "+24% this month"
-      }
+      src: "/dashboard/analytics-hero.jpg",
+      onClick: () => handleNavigateToPage('analytics')
     },
     {
-      id: "content-strategist",
       title: "Content Strategist",
-      description: "Plan your content calendar",
-      icon: CalendarIcon,
-      preview: `${scheduledPosts.length} posts scheduled`,
-      color: "from-orange-500 to-red-500",
-      href: "/calendar",
-      stats: {
-        label: "Success rate",
-        value: "89% on-time"
-      }
+      src: "/dashboard/calendar-hero.jpg", 
+      onClick: () => handleNavigateToPage('calendar')
     }
   ]
 
@@ -340,7 +307,22 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Header Section */}
+      {/* Sticky Banner (as per Dashboard Page plan) */}
+      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6 py-3">
+          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/50">
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              🎉 <strong>New Feature:</strong> AI content optimization is now live! 
+              <Button variant="link" className="p-0 h-auto ml-1 text-blue-600">
+                Learn more →
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+
+      {/* Page Header Section (as per Dashboard Page plan) */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
@@ -358,7 +340,7 @@ export default function DashboardPage() {
               </Badge>
               <InteractiveHoverButton
                 text="Create Content"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-white"
                 onClick={() => handleCreateContent()}
               />
             </div>
@@ -383,7 +365,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="container mx-auto px-6 py-8 space-y-8">
-        {/* Inspiration Feed */}
+        {/* Top Content: Inspiration Feed (as per Dashboard Page plan) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -411,7 +393,7 @@ export default function DashboardPage() {
 
         <Separator />
 
-        {/* Main Navigation Hub */}
+        {/* Main Navigation Hub - Four Core Feature Cards in 2x2 Grid (as per Dashboard Page plan) */}
         <section className="space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-semibold tracking-tight">What would you like to do today?</h2>
@@ -420,61 +402,63 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {navigationFeatures.map((feature) => {
-              const IconComponent = feature.icon
-              return (
-                <Card 
-                  key={feature.id} 
-                  className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 overflow-hidden"
-                  onClick={() => handleNavigateToPage(feature.href.slice(1))}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className={cn(
-                        "w-12 h-12 rounded-lg flex items-center justify-center",
-                        feature.bgColor
-                      )}>
-                        <IconComponent className={cn("w-6 h-6", feature.color)} />
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {feature.title}
-                      </CardTitle>
-                      <CardDescription className="text-sm">
-                        {feature.description}
-                      </CardDescription>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{feature.preview}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {feature.stats}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+          {/* Using FocusCards for the main navigation as specified */}
+          <div className="max-w-5xl mx-auto">
+            <FocusCards cards={focusCardsData} />
+          </div>
+
+          {/* Feature Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-6">
+            <Card className="p-4 text-center">
+              <div className="space-y-2">
+                <Lightbulb className="w-8 h-8 mx-auto text-blue-600" />
+                <h4 className="font-medium">Ideas Generated</h4>
+                <p className="text-2xl font-bold text-blue-600">47</p>
+                <p className="text-xs text-muted-foreground">This week</p>
+              </div>
+            </Card>
+            
+            <Card className="p-4 text-center">
+              <div className="space-y-2">
+                <Sparkles className="w-8 h-8 mx-auto text-purple-600" />
+                <h4 className="font-medium">Posts Created</h4>
+                <p className="text-2xl font-bold text-purple-600">{user?.usage.posts_generated || 0}</p>
+                <p className="text-xs text-muted-foreground">This month</p>
+              </div>
+            </Card>
+            
+            <Card className="p-4 text-center">
+              <div className="space-y-2">
+                <BarChart3 className="w-8 h-8 mx-auto text-green-600" />
+                <h4 className="font-medium">Engagement</h4>
+                <p className="text-2xl font-bold text-green-600">+24%</p>
+                <p className="text-xs text-muted-foreground">vs last month</p>
+              </div>
+            </Card>
+            
+            <Card className="p-4 text-center">
+              <div className="space-y-2">
+                <CalendarIcon className="w-8 h-8 mx-auto text-orange-600" />
+                <h4 className="font-medium">Scheduled</h4>
+                <p className="text-2xl font-bold text-orange-600">{scheduledPosts.length}</p>
+                <p className="text-xs text-muted-foreground">Posts pending</p>
+              </div>
+            </Card>
           </div>
         </section>
 
         <Separator />
 
-        {/* Bottom Section: Schedule Overview & Quick Stats */}
+        {/* Weekly Schedule Overview (as per Dashboard Page plan) */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Schedule Overview */}
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-xl font-semibold">Upcoming Schedule</h3>
+            <h3 className="text-xl font-semibold">Weekly Schedule Overview</h3>
             
             {getUpcomingPosts().length > 0 ? (
               <div className="space-y-3">
                 {getUpcomingPosts().map((post) => (
-                  <Card key={post.id} className="p-4">
+                  <Card key={post.id} className="p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <h4 className="font-medium">{post.title}</h4>
@@ -484,12 +468,25 @@ export default function DashboardPage() {
                           <Badge variant="outline" size="sm">{post.type}</Badge>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <InteractiveHoverButton
+                          text="Edit"
+                          className="w-16 h-8 text-xs"
+                          onClick={() => handleNavigateToPage(`edit/${post.id}`)}
+                        />
+                      </div>
                     </div>
                   </Card>
                 ))}
+                <Card className="p-4 border-dashed border-2 border-muted-foreground/20 hover:border-primary/50 transition-colors">
+                  <div className="flex items-center justify-center space-x-2 text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                    <Plus className="w-5 h-5" />
+                    <span>Add to schedule</span>
+                  </div>
+                </Card>
               </div>
             ) : (
               <Card className="p-8 text-center">
@@ -498,10 +495,10 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Schedule your first post to see it here
                 </p>
-                <Button onClick={() => handleNavigateToPage('calendar')}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Schedule Post
-                </Button>
+                <InteractiveHoverButton
+                  text="Schedule Post"
+                  onClick={() => handleNavigateToPage('calendar')}
+                />
               </Card>
             )}
           </div>
@@ -522,6 +519,10 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Ideas Generated</span>
                   <span className="font-medium">47</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Success Rate</span>
+                  <span className="font-medium text-blue-600">89%</span>
                 </div>
               </div>
             </Card>
