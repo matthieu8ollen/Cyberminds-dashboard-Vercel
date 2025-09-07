@@ -60,7 +60,7 @@ export function SidebarNavigation() {
         {/* Navigation Items */}
         <nav className="flex-1 p-2">
           <ul className="space-y-1">
-            {navigationItems.map((item) => (
+            {items.map((item) => (
               <li key={item.label}>
                 <Link href={item.href}>
                   <Button
