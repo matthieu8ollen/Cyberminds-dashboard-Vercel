@@ -13,6 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FocusCards } from "@/components/ui/focus-cards"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/admin-panel/app-sidebar"
 import {
   Lightbulb,
   Sparkles,
@@ -306,7 +308,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+  <SidebarProvider>
+    <AppSidebar />
+    <main className="flex-1">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       {/* Sticky Banner (as per Dashboard Page plan) */}
       <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6 py-3">
@@ -327,9 +332,12 @@ export default function DashboardPage() {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Writer Suite Dashboard
-              </h1>
+              <div className="flex items-center space-x-4">
+  <SidebarTrigger />
+  <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+    Writer Suite Dashboard
+  </h1>
+</div>
               <p className="text-muted-foreground">
                 {getCurrentGreeting()}, {user?.name || 'there'}! Ready to create amazing content?
               </p>
@@ -381,15 +389,56 @@ export default function DashboardPage() {
             </Button>
           </div>
           
-          <div className="relative">
-            <InfiniteMovingCards
-              items={inspirationItems}
-              direction="right"
-              speed="slow"
-              pauseOnHover={true}
-              className="py-4"
-            />
+         <div className="flex space-x-4 overflow-x-auto pb-4">
+  {inspirationPosts.map((post) => (
+    <div key={post.id} className="flex-shrink-0 w-80 p-4 border border-border rounded-lg bg-card hover:shadow-md transition-shadow">
+      <div className="flex items-center space-x-3 mb-3">
+        <Avatar className="w-10 h-10">
+          <AvatarImage src={post.author.avatar} alt={post.author.name} />
+          <AvatarFallback>{post.author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex items-center space-x-2">
+            <h4 className="font-semibold text-sm">{post.author.name}</h4>
+            {post.author.verified && (
+              <Badge variant="secondary" className="text-xs">✓</Badge>
+            )}
           </div>
+          <p className="text-xs text-muted-foreground">{post.author.handle}</p>
+        </div>
+        <span className="text-xs text-muted-foreground">{post.timestamp}</span>
+      </div>
+      
+      <p className="text-sm leading-relaxed mb-3 line-clamp-4">{post.content}</p>
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+          <div className="flex items-center space-x-1">
+            <Heart className="w-4 h-4" />
+            <span>{post.engagement.likes}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <MessageCircle className="w-4 h-4" />
+            <span>{post.engagement.comments}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Share className="w-4 h-4" />
+            <span>{post.engagement.shares}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="sm" onClick={() => handleInspirationAction('save', post.id)}>
+            <Bookmark className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleInspirationAction('create', post.id)}>
+            <Sparkles className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
         </section>
 
         <Separator />
@@ -556,5 +605,7 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+  </main>
+  </SidebarProvider>
   )
 }
