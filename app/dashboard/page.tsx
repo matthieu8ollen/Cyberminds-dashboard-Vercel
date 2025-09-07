@@ -15,6 +15,9 @@ import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/admin-panel/app-sidebar"
+import { TypingAnimation } from "@/components/magicui/typing-animation"
+import { StickyBanner } from "@/components/ui/sticky-banner"
+import { TweetCard } from "@/components/magicui/tweet-card"
 import {
   Lightbulb,
   Sparkles,
