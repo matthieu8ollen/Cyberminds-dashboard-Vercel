@@ -1,18 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Home,
-  Plus,
-  Lightbulb,
-  Folder,
-  Calendar,
-  BarChart3,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  ImageIcon,
-} from "lucide-react"
+import { Home,
+        Sparkles,
+        Lightbulb,
+        Camera,
+        BarChart3,
+        Calendar,
+        BarChart,
+        Rss,
+        Settings,
+        ChevronRight
+       } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
