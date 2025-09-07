@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-export default function ResetPassword() {
+// Move the main logic to a separate component
+function ResetPasswordContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -12,7 +13,7 @@ export default function ResetPassword() {
   const [isValidToken, setIsValidToken] = useState(false)
   
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() // Now inside Suspense boundary
 
   useEffect(() => {
     // Check if we have the required tokens in the URL
@@ -206,5 +207,23 @@ export default function ResetPassword() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Main component with Suspense boundary
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="mt-6 text-center">
+            <div className="loading-spinner mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }
