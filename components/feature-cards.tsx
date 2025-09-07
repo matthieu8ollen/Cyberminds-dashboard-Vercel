@@ -61,16 +61,18 @@ export function FeatureCards() {
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 border border-emerald-200 overflow-hidden">
                   {typeof feature.icon === "string" ? (
-                    <Image
-                      src={`/${feature.icon}-icon.png`}
-                      alt={feature.title}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 object-contain"
-                    />
-                  ) : (
-                    <feature.icon className="h-6 w-6 text-emerald-700" />
-                  )}
+  <Image
+    src={`/${feature.icon}-icon.png`}
+    alt={feature.title}
+    width={32}
+    height={32}
+    className="h-8 w-8 object-contain"
+  />
+) : (
+  React.createElement(feature.icon as React.ComponentType<any>, { 
+    className: "h-6 w-6 text-emerald-700" 
+  })
+)}
                 </div>
                 <div>
                   <CardTitle className="text-lg leading-tight text-emerald-800 font-sans font-medium">
