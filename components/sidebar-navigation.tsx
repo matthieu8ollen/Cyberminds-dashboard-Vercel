@@ -18,15 +18,16 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 
-const navigationItems = [
-  { icon: Home, label: "Dashboard", href: "/" },
-  { icon: Plus, label: "Create Content", href: "/create" },
-  { icon: Lightbulb, label: "Ideas Hub", href: "/ideas-hub" },
-  { icon: Folder, label: "Production Pipeline", href: "/production-pipeline" },
-  { icon: Calendar, label: "Calendar", href: "/content-calendar" },
-  { icon: ImageIcon, label: "Image Generation", href: "/image-generation" },
-  { icon: BarChart3, label: "Analytics", href: "/analytics" },
-  { icon: Settings, label: "Settings", href: "/settings" },
+const items = [
+  { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Writer Suite", url: "/writer-suite", icon: Sparkles },
+  { title: "Ideas", url: "/ideas", icon: Lightbulb },
+  { title: "Images", url: "/images", icon: Camera },
+  { title: "Production", url: "/production-pipeline", icon: BarChart3 },
+  { title: "Plan", url: "/plan", icon: Calendar },
+  { title: "Analytics", url: "/analytics", icon: BarChart },
+  { title: "Feed", url: "/feed", icon: Rss },
+  { title: "Settings", url: "/settings", icon: Settings },
 ]
 
 export function SidebarNavigation() {
