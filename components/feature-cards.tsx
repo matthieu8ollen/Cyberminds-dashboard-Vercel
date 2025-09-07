@@ -87,10 +87,11 @@ export function FeatureCards() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-emerald-600">{feature.preview}</span>
                 <InteractiveHoverButton
-                  text="Open →"
-                  className="w-20 h-8 text-xs bg-muted text-muted-foreground rounded-full"
-                  onClick={() => handleCardClick(feature.href)}
-                />
+  className="w-20 h-8 text-xs bg-muted text-muted-foreground rounded-full"
+  onClick={() => handleCardClick(feature.href)}
+>
+  Open →
+</InteractiveHoverButton>
               </div>
             </CardContent>
           </Card>
