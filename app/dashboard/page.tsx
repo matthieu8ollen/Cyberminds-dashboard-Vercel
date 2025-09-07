@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FocusCards } from "@/components/ui/focus-cards"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
-import { InteractiveHoverButton } from "@/components/interactive-hover-button"
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
 import {
   Lightbulb,
   Sparkles,
