@@ -61,21 +61,21 @@ export function SidebarNavigation() {
         <nav className="flex-1 p-2">
           <ul className="space-y-1">
             {items.map((item) => (
-              <li key={item.label}>
-                <Link href={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start gap-3 h-12 text-white hover:bg-teal-800 hover:text-white",
-                      !isExpanded && "px-3",
-                    )}
-                  >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {isExpanded && <span>{item.label}</span>}
-                  </Button>
-                </Link>
-              </li>
-            ))}
+  <li key={item.title}>
+    <Link href={item.url}>
+      <Button
+        variant="ghost"
+        className={cn(
+          "w-full justify-start gap-3 h-12 text-white hover:bg-teal-800 hover:text-white",
+          !isExpanded && "px-3",
+        )}
+      >
+        <item.icon className="h-5 w-5 flex-shrink-0" />
+        {isExpanded && <span>{item.title}</span>}
+      </Button>
+    </Link>
+  </li>
+))}
           </ul>
         </nav>
 
