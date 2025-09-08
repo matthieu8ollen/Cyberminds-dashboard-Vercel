@@ -191,9 +191,9 @@ export default function IdeasHubPage() {
                         className="w-full"
                       />
                     </div>
-                    <InteractiveHoverButton onClick={() => setShowOverlay(true)}>
+                    <HoverButton onClick={() => setShowOverlay(true)}>
   Start Chat Consultation
-</InteractiveHoverButton>
+</HoverButton>
                   </CardContent>
                 </Card>
 
@@ -218,7 +218,9 @@ export default function IdeasHubPage() {
                     <div className="flex justify-center">
                       <AIVoice />
                     </div>
-                    <InteractiveHoverButton text="Start Voice Session" onClick={() => setShowVoiceOverlay(true)} />{" "}
+                    <InteractiveHoverButton onClick={() => setShowVoiceOverlay(true)}>
+  Start Voice Session
+</InteractiveHoverButton>
                     {/* Added onClick handler to show voice overlay */}
                   </CardContent>
                 </Card>
@@ -259,7 +261,9 @@ export default function IdeasHubPage() {
                     </div>
                     <div className="flex-1"></div>
                     <div className="mt-4">
-                      <InteractiveHoverButton text="Get Started" onClick={() => router.push("/content-repurposer")} />
+                      <InteractiveHoverButton onClick={() => router.push("/content-repurposer")}>
+  Get Started
+</InteractiveHoverButton>
                     </div>
                   </CardContent>
                 </Card>
@@ -296,10 +300,9 @@ export default function IdeasHubPage() {
                     </div>
                     <div className="flex-1"></div>
                     <div className="mt-4">
-                      <InteractiveHoverButton
-                        text="Explore Formulas"
-                        onClick={() => router.push("/formula-workshop")}
-                      />
+                      <InteractiveHoverButton onClick={() => router.push("/formula-workshop")}>
+  Explore Formulas
+</InteractiveHoverButton>
                     </div>
                   </CardContent>
                 </Card>
@@ -358,7 +361,9 @@ export default function IdeasHubPage() {
                     </div>
                     <div className="flex-1"></div>
                     <div className="mt-6">
-                      <InteractiveHoverButton text="Explore Topics" onClick={() => router.push("/explore-topics")} />
+                      <InteractiveHoverButton onClick={() => router.push("/explore-topics")}>
+  Explore Topics
+</InteractiveHoverButton>
                     </div>
                   </CardContent>
                 </Card>
