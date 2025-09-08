@@ -191,9 +191,9 @@ export default function IdeasHubPage() {
                         className="w-full"
                       />
                     </div>
-                    <HoverButton onClick={() => setShowOverlay(true)}>
+                    <InteractiveHoverButton onClick={() => setShowOverlay(true)}>
   Start Chat Consultation
-</HoverButton>
+</InteractiveHoverButton>
                   </CardContent>
                 </Card>
 
