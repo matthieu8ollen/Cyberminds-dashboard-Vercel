@@ -1,5 +1,4 @@
 "use client"
-
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { ArrowUp } from "lucide-react"
@@ -9,35 +8,79 @@ import { AITextLoading } from "@/components/kokonutui/ai-text-loading"
 interface PromptInputProps {
   isLoading?: boolean
   className?: string
+  // Add functional props that the ideal UI expects:
+  value?: string
+  onValueChange?: (value: string) => void
+  onSubmit?: () => void
+  placeholder?: string
 }
 
-const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(({ isLoading = false, className }, ref) => {
+const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(({ 
+  isLoading = false, 
+  className,
+  value,
+  onValueChange,
+  onSubmit,
+  placeholder
+}, ref) => {
   const [phase, setPhase] = React.useState<"typing" | "hidden" | "loading">("typing")
   const [key, setKey] = React.useState(0)
 
+  // Animation logic for display mode
   React.useEffect(() => {
-    const typingDuration = 50 * "Hey Lisa can you help me write a topic about...".length + 500 // delay + typing time
+    // Only run animation if this is NOT a functional input
+    if (value === undefined && !onValueChange && !onSubmit) {
+      const typingDuration = 50 * "Hey Lisa can you help me write a topic about...".length + 500 // delay + typing time
+      const hideTimer = setTimeout(() => {
+        setPhase("hidden")
+      }, typingDuration + 1000) // 1 second after typing completes
+      const loadingTimer = setTimeout(() => {
+        setPhase("loading")
+      }, typingDuration + 2000) // Show loading after 1 second of being hidden
+      const restartTimer = setTimeout(() => {
+        setPhase("typing")
+        setKey((prev) => prev + 1) // Reset typing animation
+      }, typingDuration + 4500) // Show loading for 2.5 seconds then restart
 
-    const hideTimer = setTimeout(() => {
-      setPhase("hidden")
-    }, typingDuration + 1000) // 1 second after typing completes
-
-    const loadingTimer = setTimeout(() => {
-      setPhase("loading")
-    }, typingDuration + 2000) // Show loading after 1 second of being hidden
-
-    const restartTimer = setTimeout(() => {
-      setPhase("typing")
-      setKey((prev) => prev + 1) // Reset typing animation
-    }, typingDuration + 4500) // Show loading for 2.5 seconds then restart
-
-    return () => {
-      clearTimeout(hideTimer)
-      clearTimeout(loadingTimer)
-      clearTimeout(restartTimer)
+      return () => {
+        clearTimeout(hideTimer)
+        clearTimeout(loadingTimer)
+        clearTimeout(restartTimer)
+      }
     }
-  }, [key]) // Re-run when key changes to create loop
+  }, [key, value, onValueChange, onSubmit]) // Re-run when key changes or functional props change
 
+  // If functional props are provided, render as functional input
+  if (value !== undefined || onValueChange || onSubmit) {
+    return (
+      <div className={cn("relative", className)} ref={ref}>
+        <div className="relative flex items-center w-full rounded-full border border-gray-200 bg-gray-50 px-6 py-4 shadow-sm blur-[1px] hover:blur-none transition-all duration-300">
+          <input
+            type="text"
+            value={value || ""}
+            onChange={(e) => onValueChange?.(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1 bg-transparent text-base text-gray-700 placeholder-gray-500 border-0 outline-none focus:outline-none"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && onSubmit) {
+                onSubmit()
+              }
+            }}
+          />
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={onSubmit}
+            className="ml-2 flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Animation mode - existing logic
   if (phase === "hidden") {
     return null
   }
@@ -50,6 +93,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(({ isLoad
     )
   }
 
+  // Animation display mode
   return (
     <div className={cn("relative", className)} ref={ref}>
       <div className="relative flex items-center w-full rounded-full border border-gray-200 bg-gray-50 px-6 py-4 shadow-sm blur-[1px] hover:blur-none transition-all duration-300">
@@ -74,6 +118,7 @@ const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(({ isLoad
     </div>
   )
 })
+
 PromptInput.displayName = "PromptInput"
 
 export { PromptInput }
